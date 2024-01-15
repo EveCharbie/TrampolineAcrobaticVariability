@@ -88,24 +88,20 @@ class MyData:
         return {col.split('_')[-1]: self.dataframe[col].tolist() for col in matching_columns}
 
 
-# file_path_pkl = "/home/lim/Documents/StageMathieu/Data/caccfb24_0_0-48_286__42__4__eyetracking_metrics.pkl"
-# with open(file_path_pkl, 'rb') as f:
-#     donnees = pickle.load(f)
-#     print(donnees)
-
-
-file_path_math = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat'
-data_loaded = scipy.io.loadmat(file_path_math)
+file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
+file_name_mat = 'Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat'
 
 folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Sa_821_822_2_MOD200.00_GenderF"
+
+data_loaded = scipy.io.loadmat(file_path_mat+file_name_mat)
+
+
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
 # print(data_loaded.keys())
-
 data_info_reloaded = {key: str(type(data_loaded[key])) for key in data_loaded.keys() if not key.startswith('__')}
 # print(data_info_reloaded)
-
 q2_data = data_loaded['Q2']
 # print(q2_data)
 
@@ -139,8 +135,6 @@ my_data = MyData(DataFrame_with_colname)
 
 # print(my_data["PiedD"]["X"])
 
-# Sélectionner les lignes de 3299 à 3590
-# Sélectionner les lignes de 3299 à 3590
 selected_data = my_data.dataframe.iloc[3299:3591]
 
 # Identifier les groupes de membres
@@ -169,5 +163,23 @@ for group in member_groups:
     file_path = os.path.join(folder_path, file_name)
 
     # Enregistrer le graphique dans le dossier spécifié
-    plt.savefig(file_path)
+    #plt.savefig(file_path)
     plt.close()  # Fermer le graphique après l'avoir enregistré
+
+####
+import glob
+import numpy as np
+import pandas as pd
+import scipy.io
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+
+# Chemin du dossier contenant les fichiers .mat
+file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
+
+# Chemin du dossier de sortie pour les graphiques
+folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/test"
+
+# Liste des fichiers avec les intervals de frames spécifiques
+file_intervals = [
+    (file_path_mat + 'Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat', (3299, 3591)),
