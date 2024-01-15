@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 import biorbd
+import os
+
+dossier_graphiques = "/Users/mathieubourgeois/Desktop/Dossier_Graphique"
+
 
 filepath = "/Users/mathieubourgeois/Documents/GitHub/Stage2024/2019-08-29/JeCh/tests/Je_833_1.c3d"
 #filepath = "/Users/mathieubourgeois/Library/Mobile Documents/com~apple~CloudDocs/Desktop/MASTER/M1/STAGE_M1_TRAITEMENT/Analyse/C3DFiles/Sujet_01/Sujet_01_velo_60.c3d"
@@ -45,30 +49,19 @@ Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
 Xsens_CoM_per_move = eye_tracking_metrics["Xsens_CoM_per_move"]
 time_vector_pupil_per_move = eye_tracking_metrics["time_vector_pupil_per_move"]
 
-#print(gaze_position_temporal_evolution_projected)
-
-
+print(subject_name)
 # Créer le graphique
-plt.figure(figsize=(8, 6))
-plt.plot(gaze_position_temporal_evolution_projected, marker='o', linestyle='-')
-plt.title('Évolution temporelle de la position du regard')
-plt.xlabel('Temps')
-plt.ylabel('Position du regard')
-plt.grid(True)
+#plt.figure(figsize=(8, 6))
+#plt.plot(gaze_position_temporal_evolution_projected, marker='o', linestyle='-')
+#plt.title('Évolution temporelle de la position du regard')
+#plt.xlabel('Temps')
+#plt.ylabel('Position du regard')
+#plt.grid(True)
 
 # Afficher le graphique
 #plt.show()
 
-# Supposons que x et y sont vos coordonnées de fixation
-x = [position[0] for position in gaze_position_temporal_evolution_projected]
-y = [position[1] for position in gaze_position_temporal_evolution_projected]
 
-plt.hist2d(x, y, bins=[50, 50], cmap='hot')
-plt.colorbar(label='Nombre de fixations')
-plt.xlabel('Coordonnée X')
-plt.ylabel('Coordonnée Y')
-plt.title('Heatmap des Fixations Oculaires')
-#plt.show()
 
 def get_q(Xsens_orientation_per_move):
     """
@@ -135,58 +128,69 @@ def get_q(Xsens_orientation_per_move):
     return Q
 
 q= get_q(Xsens_orientation_per_move)
-print(q)
+#print(q)
 
-print("_______")
+# Définir la liste des membres
+parent_idx_list = {
+    "Pelvis": None,
+    "L5": [0, "Pelvis"],
+    "L3": [1, "L5"],
+    "T12": [2, "L3"],
+    "T8": [3, "T12"],
+    "Neck": [4, "T8"],
+    "Head": [5, "Neck"],
+    "ShoulderR": [4, "T8"],
+    "UpperArmR": [7, "ShoulderR"],
+    "LowerArmR": [8, "UpperArmR"],
+    "HandR": [9, "LowerArmR"],
+    "ShoulderL": [4, "T8"],
+    "UpperArmL": [11, "ShoulderR"],
+    "LowerArmL": [12, "UpperArmR"],
+    "HandL": [13, "LowerArmR"],
+    "UpperLegR": [0, "Pelvis"],
+    "LowerLegR": [15, "UpperLegR"],
+    "FootR": [16, "LowerLegR"],
+    "ToesR": [17, "FootR"],
+    "UpperLegL": [0, "Pelvis"],
+    "LowerLegL": [19, "UpperLegL"],
+    "FootL": [20, "LowerLegL"],
+    "ToesL": [21, "FootL"],
+}
 
-# Calcul des angles articulaires
-def calculer_angles_articulaires(Q):
-    nb_segments = Q.shape[0] // 3
-    nb_frames = Q.shape[1]
-
-    angles_articulaires = np.zeros((nb_segments-1, 3, nb_frames))  # -1 car le segment racine n'a pas d'articulation parente
-
-    for i in range(1, nb_segments):  # Commence à 1 pour ignorer le segment racine
-        for j in range(nb_frames):
-            # Extrait les angles d'Euler pour le segment actuel et son parent
-            angles_parent = Q[(i-1)*3:(i-1)*3 + 3, j]
-            angles_segment = Q[i*3:i*3 + 3, j]
-
-            # Calcule les angles articulaires comme la différence entre le segment et son parent
-            angles_articulaires[i-1, :, j] = angles_segment - angles_parent
-
-    return angles_articulaires
-
-# Appel de la fonction
-angles_articulaires = calculer_angles_articulaires(q)
-
-# Afficher un aperçu des résultats
-#print(angles_articulaires[:, :, 0])  # Affiche les angles articulaires pour la première frame
-angles_articulaires_deg = np.degrees(angles_articulaires)
+# Supposer que 'q' contient les données que vous souhaitez tracer
+nb_frames = q.shape[1]
+time = np.arange(nb_frames)  # Créez une séquence de temps pour l'axe x
 
 
-# Noms des articulations (à adapter en fonction de votre modèle)
-noms_articulations = [
-    "Pelvis", "L5", "L3", "T12", "T8", "Neck", "Head",
-    "ShoulderR", "UpperArmR", "LowerArmR", "HandR",
-    "ShoulderL", "UpperArmL", "LowerArmL", "HandL",
-    "UpperLegR", "LowerLegR", "FootR", "ToesR",
-    "UpperLegL", "LowerLegL", "FootL", "ToesL"
-]
+# Créer le dossier s'il n'existe pas
+if not os.path.exists(dossier_graphiques):
+    os.makedirs(dossier_graphiques)
 
-# Création des graphiques pour chaque articulation
-for i, nom in enumerate(noms_articulations):
-    plt.figure(figsize=(15, 5))
+# Parcourez chaque membre de la liste et tracez un graphique
+for member, parent_info in parent_idx_list.items():
+    i_segment = parent_info[0] if parent_info is not None else 0
+    start_idx = i_segment * 3
+    end_idx = (i_segment + 1) * 3
 
-    # Tracer les trois angles pour l'articulation actuelle
-    for j in range(3):
-        plt.subplot(1, 3, j+1)
-        plt.plot(angles_articulaires_deg[i, j, :], label=f'Angle {j+1}')
-        plt.title(f'{nom} - Angle {j+1}')
-        plt.xlabel('Frame')
-        plt.ylabel('Angle (rad)')
-        plt.legend()
-        plt.grid(True)
+    # Convertir les données en degrés
+    q_degrees = np.degrees(q[start_idx:end_idx, :])
 
-    plt.tight_layout()
+    # Créez un subplot pour chaque membre
+    plt.figure(figsize=(10, 4))
+    plt.subplot(1, 1, 1)
+
+    # Tracez les données converties en degrés
+    plt.plot(time, q_degrees.T, label=['X', 'Y', 'Z'])
+    plt.title(f"Orientation pour {member}")
+    plt.xlabel("Frames")
+    plt.ylabel("Orientation (degrés)")
+
+    # Affichez une légende
+    plt.legend(['X', 'Y', 'Z'])
+
+    # Enregistrez le graphique dans le dossier spécifié
+    nom_fichier = os.path.join(dossier_graphiques, f"{member}_orientation_degrees.png")
+    plt.savefig(nom_fichier)
+
+    # Affichez le graphique
     #plt.show()
