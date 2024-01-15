@@ -1,7 +1,6 @@
 """
 The goal of this program is to convert the joint angles from xsens to biorbd.
 """
-
 import numpy as np
 import pickle
 from IPython import embed
