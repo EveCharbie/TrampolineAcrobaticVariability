@@ -166,20 +166,3 @@ for group in member_groups:
     #plt.savefig(file_path)
     plt.close()  # Fermer le graphique après l'avoir enregistré
 
-####
-import glob
-import numpy as np
-import pandas as pd
-import scipy.io
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-
-# Chemin du dossier contenant les fichiers .mat
-file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
-
-# Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/test"
-
-# Liste des fichiers avec les intervals de frames spécifiques
-file_intervals = [(file_path_mat + 'Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat', (3299, 3591)),
-    ]
