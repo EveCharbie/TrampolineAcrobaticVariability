@@ -1,5 +1,3 @@
-
-####
 import os
 import glob
 import numpy as np
@@ -90,62 +88,39 @@ def load_and_interpolate(file, interval, num_points=1000):
     my_data_instance = MyData(df_interpolated)
     return my_data_instance
 
+
+def calculate_mean_std(data_instances, member, axis):
+    """
+    Calcule la moyenne et l'écart-type pour un membre et un axe donnés
+    sur toutes les instances de données.
+    """
+    data_arrays = [instance.get_column_by_index(member, axis) for instance in data_instances]
+    mean_data = np.mean(data_arrays, axis=0)
+    std_dev_data = np.std(data_arrays, axis=0)
+    return mean_data, std_dev_data
+
+
 # Charger et interpoler chaque essai
-
-
 my_data_instances = [load_and_interpolate(file, interval) for file, interval in file_intervals]
 
-data_first_file = my_data_instances[0]  # Première instance de MyData
 
 # Exemple acces aux données de 'Pelvis_X' en utilisant l'index
-# pelvis_x_data = data_first_file.get_column_by_index("Pelvis", 0)
-
-
 # data_first_file = my_data_instances[0]  # Première instance de MyData
-# data_second_file = my_data_instances[1]  # Deuxième instance de MyData
-#
-# # Accéder aux données de 'Pelvis_X' pour les deux instances
-# pelvis_x_data_first = data_first_file.get_column_by_index("Pelvis", 0)
-# pelvis_x_data_second = data_second_file.get_column_by_index("Pelvis", 0)
-#
-#
-# # Calculer la moyenne des deux ensembles de données
-# mean_pelvis_x = np.mean([pelvis_x_data_first, pelvis_x_data_second], axis=0)
-#
-# # Calculer l'écart-type
-# std_dev_pelvis_x = np.std([pelvis_x_data_first, pelvis_x_data_second], axis=0)
-#
-# # Tracer le graphique de la moyenne
-# plt.figure(figsize=(10, 6))
-# plt.plot(mean_pelvis_x, label='Moyenne - Pelvis X')
-#
-# # Ajouter la zone d'écart-type
-# plt.fill_between(range(len(mean_pelvis_x)), mean_pelvis_x - std_dev_pelvis_x, mean_pelvis_x + std_dev_pelvis_x, color='gray', alpha=0.5)
-#
-# plt.title('Moyenne des Données Pelvis X pour les Première et Deuxième Instances avec Écart-Type')
-# plt.xlabel('Index')
-# plt.ylabel('Valeurs')
-# plt.legend()
-# plt.show()
+# pelvis_x_data = data_first_file.get_column_by_index("Pelvis", 0)
 
 
 # Liste des membres (à adapter en fonction de vos données)
 members = ["Pelvis", "Thorax", "Tete", "EpauleD", "BrasD", "AvBrasD", "MainD", "EpauleG", "BrasG", "AvBrasG", "MainG",
            "CuisseD", "JambeD", "PiedD", "CuisseG", "JambeG", "PiedG"]
 
-# Axes (X, Y, Z)
+####### UNE COMPOSANTE PAR GRAPHIQUE #######
 axes = [0, 1, 2]  # 0 pour X, 1 pour Y, 2 pour Z
 
 for member in members:
     for axis in axes:
         try:
-            # Accéder aux données pour chaque membre et axe pour les deux instances
-            data_first = my_data_instances[0].get_column_by_index(member, axis)
-            data_second = my_data_instances[1].get_column_by_index(member, axis)
-
-            # Calculer la moyenne et l'écart-type
-            mean_data = np.mean([data_first, data_second], axis=0)
-            std_dev_data = np.std([data_first, data_second], axis=0)
+            # Calculer la moyenne et l'écart-type pour chaque membre et axe
+            mean_data, std_dev_data = calculate_mean_std(my_data_instances, member, axis)
 
             # Tracer le graphique de la moyenne avec la zone d'écart-type
             plt.figure(figsize=(10, 6))
@@ -164,9 +139,37 @@ for member in members:
             plt.savefig(file_path)
             plt.close()
 
+        except KeyError:
+            # Gérer le cas où une combinaison membre-axe n'existe pas
+            print(f"Le membre {member} avec l'axe {['X', 'Y', 'Z'][axis]} n'existe pas.")
 
 
+####### TOUTES LES COMPOSANTES PAR GRAPHIQUE #######
+
+for member in members:
+    plt.figure(figsize=(10, 6))
+
+    for axis in axes:
+        try:
+            # Calculer la moyenne et l'écart-type pour chaque membre et axe
+            mean_data, std_dev_data = calculate_mean_std(my_data_instances, member, axis)
+
+            # Tracer le graphique de la moyenne avec la zone d'écart-type pour chaque axe
+            plt.plot(mean_data, label=f'Moyenne - {member} {["X", "Y", "Z"][axis]}')
+            plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, alpha=0.5)
 
         except KeyError:
             # Gérer le cas où une combinaison membre-axe n'existe pas
             print(f"Le membre {member} avec l'axe {['X', 'Y', 'Z'][axis]} n'existe pas.")
+
+    # Configurer le graphique
+    plt.title(f'Moyenne des Données pour {member} avec Écart-Type pour Chaque Axe')
+    plt.xlabel('Index')
+    plt.ylabel('Valeurs')
+    plt.legend()
+
+    # Enregistrer le graphique
+    file_name = f"{member}_all_axes_graph.png"
+    file_path = os.path.join(folder_path, file_name)
+    plt.savefig(file_path)
+    plt.close()
