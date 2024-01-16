@@ -41,7 +41,7 @@ class MyData:
 file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/test"
+folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/MeanSD"
 
 # Assurez-vous que le dossier de sauvegarde existe
 if not os.path.exists(folder_path):
@@ -130,7 +130,8 @@ data_first_file = my_data_instances[0]  # Première instance de MyData
 
 
 # Liste des membres (à adapter en fonction de vos données)
-members = ["Pelvis", "Thorax", "EpauleD", "BrasD", "AvBrasD", "MainD", "EpauleG", "BrasG", "AvBrasG", "MainG", "CuisseD", "JambeD", "PiedD", "CuisseG", "JambeG", "PiedG"]
+members = ["Pelvis", "Thorax", "Tete", "EpauleD", "BrasD", "AvBrasD", "MainD", "EpauleG", "BrasG", "AvBrasG", "MainG",
+           "CuisseD", "JambeD", "PiedD", "CuisseG", "JambeG", "PiedG"]
 
 # Axes (X, Y, Z)
 axes = [0, 1, 2]  # 0 pour X, 1 pour Y, 2 pour Z
