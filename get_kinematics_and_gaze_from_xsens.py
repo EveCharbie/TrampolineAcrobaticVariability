@@ -6,12 +6,13 @@ import numpy as np
 import pickle
 from IPython import embed
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import os
-# import biorbd
-# import bioviz
+import biorbd
+import bioviz
 import scipy
 
-def get_q(Xsens_orientation_per_move):
+def get_q(Xsens_orientation_per_move, move_orientation):
     """
     This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation
     of the Xsens segments.
@@ -58,7 +59,10 @@ def get_q(Xsens_orientation_per_move):
                                      Quat_normalized[3])
 
             RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi/2]), 'z').to_array()
+            if move_orientation == 1:
+                z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi/2]), 'z').to_array()
+            else:
+                z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-3*np.pi/2]), 'z').to_array()
             RotMat_current = z_rotation @ RotMat_current
 
             if parent_idx_list[key] is None:
@@ -71,8 +75,8 @@ def get_q(Xsens_orientation_per_move):
                             RotMat_between[1, 0], RotMat_between[1, 1], RotMat_between[1, 2],
                             RotMat_between[2, 0], RotMat_between[2, 1], RotMat_between[2, 2])
             Q[i_segment*3:(i_segment+1)*3, i_frame] = biorbd.Rotation.toEulerAngles(RotMat_between, 'xyz').to_array()
-
             rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
+
     return Q
 
 
@@ -149,7 +153,7 @@ joint_labels = [
 ### ------------------------ Code beginnig ------------------------ ###
 
 GENRATE_DATA_FRAME_FLAG = True
-name_results = "40ms"  #
+name_results = ""
 save_path = "/home/charbie/Documents/Programmation/TrampolineAcrobaticVariability/XsensReconstructions/"
 
 
@@ -169,14 +173,17 @@ else:
 
 # This section is only to answer questions from the reviewers
 pelvis_orientations = {}
-
+time_vector = {}
 if GENRATE_DATA_FRAME_FLAG:
     for folder_subject in os.listdir(results_path):
         # biorbd_model_path = f"models/{folder_subject}_Xsens_Model_rotated.bioMod"
+        biorbd_model_path = "/home/charbie/Documents/Programmation/VisionOCP/models/SoMe_Xsens_Model_rotated_without_cone.bioMod"
         pelvis_orientations[folder_subject] = {}
+        time_vector[folder_subject] = {}
         for folder_move in os.listdir(results_path + '/' + folder_subject):
             if folder_move in move_list:
                 pelvis_orientations[folder_subject][folder_move] = []
+                time_vector[folder_subject][folder_move] = []
                 for file in os.listdir(results_path + '/' + folder_subject + '/' + folder_move):
                     if len(file) > 23:
                         if file[-23:] == "eyetracking_metrics.pkl":
@@ -222,82 +229,80 @@ if GENRATE_DATA_FRAME_FLAG:
 
 
                             ### ------------- Computations begin here ------------- ###
-                            model = biorbd.Model(biorbd_model_path)
-                            num_dofs = model.nbQ()
+                            # model = biorbd.Model(biorbd_model_path)
+                            num_dofs = 69 + 3 + 2  # model.nbQ()
 
-                            # eye_angles_without_nans = np.zeros(eye_angles.shape)
-                            # eye_angles_without_nans[:, :] = eye_angles[:, :]
-                            # blink_index = np.isnan(eye_angles[0, :]).astype(int)
-                            # end_of_blinks = np.where(blink_index[1:] - blink_index[:-1] == -1)[0]
-                            # start_of_blinks = np.where(blink_index[1:] - blink_index[:-1] == 1)[0]
-                            # for i in range(len(start_of_blinks)):
-                            #     eye_angles_without_nans[:, start_of_blinks[i]+1:end_of_blinks[i]+1] = np.linspace(eye_angles_without_nans[:, start_of_blinks[i]], eye_angles_without_nans[:, end_of_blinks[i]+1], end_of_blinks[i]-start_of_blinks[i]).T
+                            eye_angles_without_nans = np.zeros(eye_angles.shape)
+                            eye_angles_without_nans[:, :] = eye_angles[:, :]
+                            blink_index = np.isnan(eye_angles[0, :]).astype(int)
+                            end_of_blinks = np.where(blink_index[1:] - blink_index[:-1] == -1)[0]
+                            start_of_blinks = np.where(blink_index[1:] - blink_index[:-1] == 1)[0]
+
+                            if blink_index[0] == 1:
+                                start_of_blinks = np.hstack((-1, start_of_blinks))
+
+                            for i in range(len(start_of_blinks)):
+                                if len(end_of_blinks) == i:
+                                    eye_angles_without_nans[0, start_of_blinks[i] + 1:] = eye_angles_without_nans[0,
+                                                                                          start_of_blinks[i]]
+                                    eye_angles_without_nans[1, start_of_blinks[i] + 1:] = eye_angles_without_nans[1,
+                                                                                          start_of_blinks[i]]
+                                else:
+                                    eye_angles_without_nans[:, start_of_blinks[i]+1:end_of_blinks[i]+1] = np.linspace(eye_angles_without_nans[:, start_of_blinks[i]], eye_angles_without_nans[:, end_of_blinks[i]+1], end_of_blinks[i]-start_of_blinks[i]).T
 
                             DoFs = np.zeros((num_dofs, len(Xsens_jointAngle_per_move)))
-                            DoFs[3:-2, :] = get_q(Xsens_orientation_per_move)
-                            # DoFs[-2:, :] = eye_angles_without_nans
+                            DoFs[3:-2, :] = get_q(Xsens_orientation_per_move, move_orientation)
+                            DoFs[-2:, :] = eye_angles_without_nans
                             for i in range(DoFs.shape[0]):
                                 DoFs[i, :] = np.unwrap(DoFs[i, :])
 
                             time_vector_pupil_per_move = time_vector_pupil_per_move - time_vector_pupil_per_move[0]
                             duration = time_vector_pupil_per_move[-1]
-                            # vz_init = 9.81 * duration / 2
-                            #
-                            # trans = np.zeros((3, len(Xsens_jointAngle_per_move)))
-                            # trans[2, :] = vz_init * time_vector_pupil_per_move - 0.5 * 9.81 * time_vector_pupil_per_move ** 2
-                            #
-                            # model = biorbd.Model(biorbd_model_path)
-                            # for i in range(DoFs.shape[1]):
-                            #     CoM = model.CoM(DoFs[:, i]).to_array()
-                            #     trans[:, i] = trans[:, i] - CoM
-                            # DoFs[:3, :] = trans
-                            #
-                            # # real-time video
-                            # fps = 60
-                            # n_frames = round(duration * fps)
-                            # time_vector = np.linspace(0, duration, n_frames)
-                            # interpolated_DoFs = np.zeros((num_dofs, n_frames))
-                            # for i in range(DoFs.shape[0]):
-                            #     interp = scipy.interpolate.interp1d(time_vector_pupil_per_move, DoFs[i, :])
-                            #     interpolated_DoFs[i, :] = interp(time_vector)
-                            #
-                            # with open(save_path + filename[:-25] + "_DoFs.pkl", "wb") as f:
-                            #     pickle.dump({"DoFs": DoFs, "interpolated_DoFs": interpolated_DoFs}, f)
-                            #
-                            # print(f"Videos/official/{filename[:-25]}.ogv")
-                            # model_type = ["with_cone", "without_cone"]
-                            # biorbe_model_paths = ["models/SoMe_Xsens_Model_rotated.bioMod", "models/SoMe_Xsens_Model_rotated_without_cone.bioMod"]
-                            # for i in range(2):
-                            #     b = bioviz.Viz(biorbe_model_paths[i],
-                            #                    mesh_opacity=0.8,
-                            #                    show_global_center_of_mass=False,
-                            #                    show_gravity_vector=False,
-                            #                    show_segments_center_of_mass=False,
-                            #                    show_global_ref_frame=False,
-                            #                    show_local_ref_frame=False,
-                            #                    experimental_markers_color=(1, 1, 1),
-                            #                    background_color=(1.0, 1.0, 1.0),
-                            #                    )
-                            #     b.set_camera_zoom(0.25)
-                            #     b.set_camera_focus_point(0, 0, 2.5)
-                            #     b.maximize()
-                            #     b.update()
-                            #     b.load_movement(interpolated_DoFs)
-                            #
-                            #     b.set_camera_zoom(0.25)
-                            #     b.set_camera_focus_point(0, 0, 2.5)
-                            #     b.maximize()
-                            #     b.update()
-                            #
-                            #     b.start_recording(f"Videos/official/{filename[:-25]}_{model_type[i]}.ogv")
-                            #     for frame in range(interpolated_DoFs.shape[1] + 1):
-                            #         b.movement_slider[0].setValue(frame)
-                            #         b.add_frame()
-                            #     b.stop_recording()
-                            #     b.quit()
+                            vz_init = 9.81 * duration / 2
 
+                            trans = np.zeros((3, len(Xsens_jointAngle_per_move)))
+                            trans[2, :] = vz_init * time_vector_pupil_per_move - 0.5 * 9.81 * time_vector_pupil_per_move ** 2
 
-                pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
+                            model = biorbd.Model(biorbd_model_path)
+                            for i in range(DoFs.shape[1]):
+                                CoM = model.CoM(DoFs[:, i]).to_array()
+                                trans[:, i] = trans[:, i] - CoM
+                            DoFs[:3, :] = trans
+
+                            # b = bioviz.Viz(biorbd_model_path,
+                            #                mesh_opacity=0.8,
+                            #                show_global_center_of_mass=False,
+                            #                show_gravity_vector=False,
+                            #                show_segments_center_of_mass=False,
+                            #                show_global_ref_frame=False,
+                            #                show_local_ref_frame=False,
+                            #                experimental_markers_color=(1, 1, 1),
+                            #                background_color=(1.0, 1.0, 1.0),
+                            #                )
+                            # b.set_camera_zoom(0.25)
+                            # b.set_camera_focus_point(0, 0, 2.5)
+                            # b.maximize()
+                            # b.update()
+                            # b.load_movement(DoFs)
+                            #
+                            # b.set_camera_zoom(0.25)
+                            # b.set_camera_focus_point(0, 0, 2.5)
+                            # b.maximize()
+                            # b.update()
+                            # b.exec()
+
+                            pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
+                            time_vector[folder_subject][folder_move].append(time_vector_pupil_per_move/duration)
+
+                            if acrobatics in ["41", "42", "43"] and subject_name in ["ArMa"]:
+                                print(move_orientation)
+                                plt.figure()
+                                plt.plot(time_vector_pupil_per_move, DoFs[3, :], '-r', label="x")
+                                plt.plot(time_vector_pupil_per_move, DoFs[4, :], '-g', label="y")
+                                plt.plot(time_vector_pupil_per_move, DoFs[5, :] + np.pi/2, '-b', label="z")
+                                plt.title(acrobatics + " " + expertise + " " + subject_name + " " + file + " " + str(move_orientation))
+                                plt.show()
+                                # print("ici")
 
 
 elite_names = ["AlAd", "GuSe", "JeCa", "JeCh", "MaBo", "SaBe", "SaMi", "SoMe"]
@@ -305,19 +310,45 @@ subelite_names = ["AlLe", "AnBe", "AnSt", "ArMa", "JaNo", "JaSh", "JoBu", "LeJa"
 colors_subelites = [cm.get_cmap('plasma')(k) for k in np.linspace(0, 0.4, len(subelite_names))]
 colors_elites = [cm.get_cmap('plasma')(k) for k in np.linspace(0.6, 1, len(elite_names))]
 
-fig, axs = plt.subplots(2, 4)
+fig, axs = plt.subplots(4, 4, figsize=(10, 10))
 for subject in pelvis_orientations:
-    if subject in elite_names:
-        color = colors_subelites[subelite_names.index(subject)]
-    elif subject in subelite_names:
-        color = colors_elites[elite_names.index(subject)]
-    else:
-        raise RuntimeError(f"Subject {subject} not found")
-
     for i_move, move in enumerate(move_list):
-        axs[0, i_move].plot(pelvis_orientations[subject][move][0][0, :], color=color)
-        axs[1, i_move].plot(pelvis_orientations[subject][move][0][2, :], color=color)
+        if move in pelvis_orientations[subject]:
+            for i_trial in range(len(pelvis_orientations[subject][move])):
+                if subject in elite_names:
+                    color = colors_elites[elite_names.index(subject)]
+                    axs[0, i_move].plot(time_vector[subject][move][i_trial],
+                                        pelvis_orientations[subject][move][i_trial][0, :], color=color)
+                    axs[2, i_move].plot(time_vector[subject][move][i_trial],
+                                        pelvis_orientations[subject][move][i_trial][2, :] + np.pi / 2, color=color)
 
+                elif subject in subelite_names:
+                    color = colors_subelites[subelite_names.index(subject)]
+                    axs[1, i_move].plot(time_vector[subject][move][i_trial],
+                                        pelvis_orientations[subject][move][i_trial][0, :], color=color)
+                    axs[3, i_move].plot(time_vector[subject][move][i_trial],
+                                        pelvis_orientations[subject][move][i_trial][2, :] + np.pi / 2, color=color)
+
+                else:
+                    raise RuntimeError(f"Subject {subject} not found")
+
+for i_move, move in enumerate(move_list):
+    axs[0, i_move].set_title(move)
+
+for i_athlete, athlete in enumerate(elite_names):
+    axs[0, 3].plot([], [], color=colors_elites[i_athlete], label=athlete)
+for i_athlete, athlete in enumerate(subelite_names):
+    axs[1, 3].plot([], [], color=colors_subelites[i_athlete], label=athlete)
+axs[0, 3].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+axs[1, 3].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+
+axs[0, 0].set_ylabel("Somersault")
+axs[1, 0].set_ylabel("Somersault")
+axs[2, 0].set_ylabel("Twist")
+axs[3, 0].set_ylabel("Twist")
+
+plt.tight_layout()
 plt.savefig("SomersaultsTwist.png", dpi=300)
 plt.show()
 
