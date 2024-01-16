@@ -294,16 +294,6 @@ if GENRATE_DATA_FRAME_FLAG:
                             pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
                             time_vector[folder_subject][folder_move].append(time_vector_pupil_per_move/duration)
 
-                            if acrobatics in ["41", "42", "43"] and subject_name in ["ArMa"]:
-                                print(move_orientation)
-                                plt.figure()
-                                plt.plot(time_vector_pupil_per_move, DoFs[3, :], '-r', label="x")
-                                plt.plot(time_vector_pupil_per_move, DoFs[4, :], '-g', label="y")
-                                plt.plot(time_vector_pupil_per_move, DoFs[5, :] + np.pi/2, '-b', label="z")
-                                plt.title(acrobatics + " " + expertise + " " + subject_name + " " + file + " " + str(move_orientation))
-                                plt.show()
-                                # print("ici")
-
 
 elite_names = ["AlAd", "GuSe", "JeCa", "JeCh", "MaBo", "SaBe", "SaMi", "SoMe"]
 subelite_names = ["AlLe", "AnBe", "AnSt", "ArMa", "JaNo", "JaSh", "JoBu", "LeJa", "LiDu"]
@@ -347,6 +337,9 @@ axs[0, 0].set_ylabel("Somersault")
 axs[1, 0].set_ylabel("Somersault")
 axs[2, 0].set_ylabel("Twist")
 axs[3, 0].set_ylabel("Twist")
+
+for i in range(4):
+    axs[i, 0].set_ylim(-6, 6)
 
 plt.tight_layout()
 plt.savefig("SomersaultsTwist.png", dpi=300)
