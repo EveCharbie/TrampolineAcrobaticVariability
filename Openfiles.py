@@ -89,9 +89,9 @@ class MyData:
 
 
 file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
-file_name_mat = 'Sa_821_822_3_MOD200.00_GenderF_SaMig_Q.mat'
+file_name_mat = 'Sa_821_822_5_MOD200.00_GenderF_SaMig_Q.mat'
 
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Sa_821_822_3_MOD200.00_GenderF"
+folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Sa_821_822_5_MOD200.00_GenderF"
 
 data_loaded = scipy.io.loadmat(file_path_mat+file_name_mat)
 
@@ -136,7 +136,7 @@ my_data = MyData(DataFrame_with_colname)
 # print(my_data["PiedD"]["X"])
 
 selected_data = my_data.dataframe.iloc[3139:3440]
-selected_data = my_data.dataframe.iloc[3299:3591]
+selected_data = my_data.dataframe.iloc[3339:3630]
 
 # Identifier les groupes de membres
 member_groups = set([name.split('_')[0] for name in column_names])
@@ -158,12 +158,13 @@ for group in member_groups:
     plt.xlabel("Index")
     plt.ylabel("Valeur")
     plt.legend()
+    # plt.show
 
     # Nom du fichier image
     file_name = f"{group}_graph.png"
     file_path = os.path.join(folder_path, file_name)
 
     # Enregistrer le graphique dans le dossier spécifié
-    # plt.savefig(file_path)
+    plt.savefig(file_path)
     plt.close()  # Fermer le graphique après l'avoir enregistré
 
