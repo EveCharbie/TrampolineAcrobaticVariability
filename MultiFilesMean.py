@@ -52,7 +52,7 @@ file_intervals = [
 ]
 
 
-def load_and_interpolate(file, interval, num_points=1000):
+def load_and_interpolate(file, interval, num_points=100):
     # Charger les données
     data = scipy.io.loadmat(file)
     df = pd.DataFrame(data['Q2']).T
@@ -124,11 +124,11 @@ for member in members:
 
             # Tracer le graphique de la moyenne avec la zone d'écart-type
             plt.figure(figsize=(10, 6))
-            plt.plot(mean_data, label=f'Moyenne - {member} {["X", "Y", "Z"][axis]}')
+            plt.plot(mean_data, label=f'{member} {["X", "Y", "Z"][axis]}')
             plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, color='gray', alpha=0.5)
             plt.title(f'Moyenne des Données {member} {["X", "Y", "Z"][axis]} avec Écart-Type')
-            plt.xlabel('Index')
-            plt.ylabel('Valeurs')
+            plt.xlabel('Time (%)')
+            plt.ylabel('Value')
             plt.legend()
             # plt.show()
             # Nom du fichier image
@@ -146,6 +146,9 @@ for member in members:
 
 ####### TOUTES LES COMPOSANTES PAR GRAPHIQUE #######
 
+# Définir les couleurs pour les axes X, Y, et Z
+colors = ['red', 'green', 'blue']
+
 for member in members:
     plt.figure(figsize=(10, 6))
 
@@ -154,18 +157,20 @@ for member in members:
             # Calculer la moyenne et l'écart-type pour chaque membre et axe
             mean_data, std_dev_data = calculate_mean_std(my_data_instances, member, axis)
 
+            # Obtenir la couleur correspondante pour l'axe actuel
+            color = colors[axis]
+
             # Tracer le graphique de la moyenne avec la zone d'écart-type pour chaque axe
-            plt.plot(mean_data, label=f'Moyenne - {member} {["X", "Y", "Z"][axis]}')
-            plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, alpha=0.5)
+            plt.plot(mean_data, label=f'{member} {["X", "Y", "Z"][axis]}', color=color)
+            plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, alpha=0.4, color=color)
 
         except KeyError:
             # Gérer le cas où une combinaison membre-axe n'existe pas
             print(f"Le membre {member} avec l'axe {['X', 'Y', 'Z'][axis]} n'existe pas.")
 
     # Configurer le graphique
-    plt.title(f'Moyenne des Données pour {member} avec Écart-Type pour Chaque Axe')
-    plt.xlabel('Index')
-    plt.ylabel('Valeurs')
+    plt.xlabel('Time (%)')
+    plt.ylabel('Value')
     plt.legend()
 
     # Enregistrer le graphique
