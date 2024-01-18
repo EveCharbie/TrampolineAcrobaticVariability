@@ -4,10 +4,10 @@ import math
 
 
 # Define a function to create a composite image with the body at the center
-def create_composite_image(graph_images_info, bg_size=(1920, 1082), body_size=(383, 669), body_position=(761, 228), graph_size=(366, 220), border_thickness=0):
+def create_composite_image(graph_images_info, bg_size=(1920, 1082), body_size=(383, 669), body_position=(761, 228),
+                           graph_size=(366, 220), border_thickness=0):
     """
     Create a composite image with a central body image, surrounding graph images, and a border around each graph.
-
     :param graph_images_info: A dictionary with graph image filenames as keys and positions as values.
     :param bg_size: Size of the background image (width, height).
     :param body_size: Size to resize the body image (width, height).
@@ -46,7 +46,7 @@ def create_composite_image(graph_images_info, bg_size=(1920, 1082), body_size=(3
             background.paste(bordered_image, (position[0] - border_thickness, position[1] - border_thickness))
         except FileNotFoundError:
             print(f"Graph image file {graph_image_name} not found. Skipping this image.")
-    # Load and place the legend image at X=1723 and Y=0
+    # Load and place the legend image at X=1723 and Y=0 ( top right )
     legend_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/MeanSD/legend.png'
     try:
         legend_image = Image.open(legend_image_path)
@@ -54,13 +54,12 @@ def create_composite_image(graph_images_info, bg_size=(1920, 1082), body_size=(3
     except FileNotFoundError:
         print("Legend image file not found. Skipping this image.")
 
-
     # Save the composite image
     composite_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Graph_with_body.png'
     background.save(composite_image_path)
     return composite_image_path
 
-
+# Pos of the different graph
 graph_images_info = {
     'Thorax_all_axes_graph.png': (623, -10),
     'Tete_all_axes_graph.png': (960, -10),
@@ -84,12 +83,13 @@ graph_images_info = {
 
 # Call the function to create the composite image with borders around the graphs
 composite_image_path = create_composite_image(graph_images_info)
-# composite_image_path
 
 
-def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_size=15, circle_radius=5, scale_factor=4):
+def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_size=15,
+                                    circle_radius=5, scale_factor=4):
     """
-    Draw smooth lines with arrows on one end and circles on the other on the image using a scaling technique for anti-aliasing.
+    Draw smooth lines with arrows on one end and circles on the other on the image using a scaling technique for
+    anti-aliasing.
 
     :param image_path: Path to the image where lines will be drawn.
     :param lines_info: A dictionary with keys as line identifiers and values as tuples containing
@@ -147,7 +147,7 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
     return output_path
 
 
-# Example usage:
+# Pos of different arrow
 lines_info = {
     'line1': ((952, 400), (1130, 210)),  # Replace with actual coordinates
     'line2': ((952, 450), (794, 210)),  # Replace with actual coordinates
@@ -166,8 +166,6 @@ lines_info = {
     'line15': ((1008, 496), (1222, 436)),  # Replace with actual coordinates
     'line16': ((1000, 424), (1543, 250)),  # Replace with actual coordinates
     'line17': ((971, 411), (1410, 190)),  # Replace with actual coordinates
-
-    # Add more lines as needed
 }
 
 # Call the function
