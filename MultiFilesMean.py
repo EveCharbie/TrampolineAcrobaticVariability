@@ -148,10 +148,15 @@ for member in members:
 
 # Définir les couleurs pour les axes X, Y, et Z
 colors = ['red', 'green', 'blue']
+dpi = 300  # Haute résolution
+desired_width_px = 333  # Largeur souhaitée en pixels
+desired_height_px = 200  # Hauteur souhaitée en pixels
+fig_width = desired_width_px / dpi  # Largeur en pouces
+fig_height = desired_height_px / dpi  # Hauteur en pouces
+legend_created = False  # Un indicateur pour vérifier si la légende a déjà été créée
 
 for member in members:
-    plt.figure(figsize=(10, 6))
-
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
     for axis in axes:
         try:
             # Calculer la moyenne et l'écart-type pour chaque membre et axe
@@ -161,20 +166,57 @@ for member in members:
             color = colors[axis]
 
             # Tracer le graphique de la moyenne avec la zone d'écart-type pour chaque axe
-            plt.plot(mean_data, label=f'{member} {["X", "Y", "Z"][axis]}', color=color)
-            plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, alpha=0.4, color=color)
+            plt.plot(mean_data, label=f'{["X", "Y", "Z"][axis]}', color=color, linewidth=0.3)
+            plt.fill_between(range(len(mean_data)), mean_data - std_dev_data, mean_data + std_dev_data, alpha=0.4,
+                             color=color, edgecolor='none')
 
         except KeyError:
             # Gérer le cas où une combinaison membre-axe n'existe pas
             print(f"Le membre {member} avec l'axe {['X', 'Y', 'Z'][axis]} n'existe pas.")
 
     # Configurer le graphique
-    plt.xlabel('Time (%)')
-    plt.ylabel('Value')
-    plt.legend()
+    plt.xlabel('Time (%)', fontsize=4)
+    plt.ylabel('Value', fontsize=4)
+    plt.tick_params(axis='both', labelsize=3, width=0.3, length=1.5)
+
+    # Rendre les traits de l'axe plus fins
+    for spine in plt.gca().spines.values():
+        spine.set_linewidth(0.3)
+
+    # plt.legend()
+    # plt.tick_params(axis='x', labelsize=3)  # Modifiez 'labelsize' selon vos besoins
 
     # Enregistrer le graphique
     file_name = f"{member}_all_axes_graph.png"
     file_path = os.path.join(folder_path, file_name)
-    plt.savefig(file_path)
-    plt.close()
+    plt.savefig(file_path, format='png', bbox_inches='tight')
+    # Créer et enregistrer la légende uniquement pour le membre 'tête'
+    if member == 'Tete' and not legend_created:
+        # Récupérer les handles et les labels pour la légende
+        handles, labels = ax.get_legend_handles_labels()
+
+        # Créer une nouvelle figure pour la légende avec la taille souhaitée
+        fig_leg = plt.figure(figsize=(2, 2), dpi=100)  # Dimensions en pouces, dpi pour la résolution
+        ax_leg = fig_leg.add_subplot(111)
+
+        # Ajouter la légende à la nouvelle figure avec une grande taille de police et en gras
+        legend = ax_leg.legend(handles, labels, loc='center',
+                               prop={'size': 20, 'weight': 'bold'})  # Ajustez la taille de police selon vos besoins
+
+        # Augmenter l'épaisseur des traits de couleur dans la légende
+        legend.get_lines()[0].set_linewidth(4)  # Augmentez l'épaisseur du trait pour "X"
+        legend.get_lines()[1].set_linewidth(4)  # Augmentez l'épaisseur du trait pour "Y"
+        legend.get_lines()[2].set_linewidth(4)  # Augmentez l'épaisseur du trait pour "Z"
+
+        ax_leg.axis('off')
+
+        # Enregistrer l'image de la légende avec les dimensions souhaitées
+        leg_file_name = "legend.png"
+        leg_file_path = os.path.join(folder_path, leg_file_name)
+        fig_leg.savefig(leg_file_path, format='png', bbox_inches='tight',
+                        pad_inches=0)  # Utilisation de pad_inches=0 pour supprimer les marges
+        plt.close(fig_leg)  # Fermer la figure pour libérer la mémoire
+
+        legend_created = True
+
+    plt.close('all')

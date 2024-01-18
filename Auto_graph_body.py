@@ -4,7 +4,7 @@ import math
 
 
 # Define a function to create a composite image with the body at the center
-def create_composite_image_with_borders(graph_images_info, bg_size=(1920, 1082), body_size=(383, 669), body_position=(761, 228), graph_size=(366, 220), border_thickness=0):
+def create_composite_image(graph_images_info, bg_size=(1920, 1082), body_size=(383, 669), body_position=(761, 228), graph_size=(366, 220), border_thickness=0):
     """
     Create a composite image with a central body image, surrounding graph images, and a border around each graph.
 
@@ -20,7 +20,7 @@ def create_composite_image_with_borders(graph_images_info, bg_size=(1920, 1082),
     background = Image.new('RGB', bg_size, color='white')
 
     # Load and place the body image
-    body_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/DALL_E_Body.png'
+    body_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/DALL_E_Body.png'
     try:
         body_image = Image.open(body_image_path)
         body_image = body_image.resize(body_size, Image.Resampling.LANCZOS)
@@ -38,29 +38,40 @@ def create_composite_image_with_borders(graph_images_info, bg_size=(1920, 1082),
             graph_image = graph_image.resize(graph_size, Image.Resampling.LANCZOS)
 
             # Create a border for the graph image
-            bordered_image = Image.new('RGB', (graph_size[0] + 2*border_thickness, graph_size[1] + 2*border_thickness), color='black')
+            bordered_image = Image.new('RGB', (graph_size[0] + 2*border_thickness, graph_size[1] +
+                                               2*border_thickness), color='black')
             bordered_image.paste(graph_image, (border_thickness, border_thickness))
 
             # Place the bordered image on the background
             background.paste(bordered_image, (position[0] - border_thickness, position[1] - border_thickness))
         except FileNotFoundError:
             print(f"Graph image file {graph_image_name} not found. Skipping this image.")
+    # Load and place the legend image at X=1723 and Y=0
+    legend_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/MeanSD/legend.png'
+    try:
+        legend_image = Image.open(legend_image_path)
+        background.paste(legend_image, (1723, 0))
+    except FileNotFoundError:
+        print("Legend image file not found. Skipping this image.")
+
 
     # Save the composite image
-    composite_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/composite_image_no_borders.png'
+    composite_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Graph_with_body.png'
     background.save(composite_image_path)
     return composite_image_path
 
 
 graph_images_info = {
-    'AvBrasG_all_axes_graph.png': (1212, 327),
-    'AvBrasD_all_axes_graph.png': (358, 327),
-    'BrasG_all_axes_graph.png': (1544, 186),
-    'BrasD_all_axes_graph.png': (29, 186),
+    'Thorax_all_axes_graph.png': (623, -10),
+    'Tete_all_axes_graph.png': (960, -10),
     'CuisseG_all_axes_graph.png': (1211, 558),
     'CuisseD_all_axes_graph.png': (358, 558),
-    'EpauleG_all_axes_graph.png': (1298, -10),  # Note: Negative values might need special handling
+    'EpauleG_all_axes_graph.png': (1298, -10),
     'EpauleD_all_axes_graph.png': (285, -10),
+    'BrasG_all_axes_graph.png': (1554, 186),
+    'BrasD_all_axes_graph.png': (16, 186),
+    'AvBrasG_all_axes_graph.png': (1212, 340),
+    'AvBrasD_all_axes_graph.png': (358, 340),
     'MainG_all_axes_graph.png': (1554, 443),
     'MainD_all_axes_graph.png': (16, 443),
     'JambeG_all_axes_graph.png': (1544, 804),
@@ -68,16 +79,12 @@ graph_images_info = {
     'PiedG_all_axes_graph.png': (1153, 865),
     'PiedD_all_axes_graph.png': (443, 865),
     'Pelvis_all_axes_graph.png': (793, 865),
-    'Thorax_all_axes_graph.png': (628, -10),
-    'Tete_all_axes_graph.png': (963, -10)
 }
 
 
-
 # Call the function to create the composite image with borders around the graphs
-composite_image_path_with_borders = create_composite_image_with_borders(graph_images_info)
-composite_image_path_with_borders
-
+composite_image_path = create_composite_image(graph_images_info)
+# composite_image_path
 
 
 def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_size=15, circle_radius=5, scale_factor=4):
@@ -116,8 +123,10 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
 
             # Calculate arrow points
             arrow_tip = end_scaled
-            arrow_left = (end_scaled[0] - arrow_size_scaled * math.cos(angle - math.pi/6), end_scaled[1] - arrow_size_scaled * math.sin(angle - math.pi/6))
-            arrow_right = (end_scaled[0] - arrow_size_scaled * math.cos(angle + math.pi/6), end_scaled[1] - arrow_size_scaled * math.sin(angle + math.pi/6))
+            arrow_left = (end_scaled[0] - arrow_size_scaled * math.cos(angle - math.pi/6), end_scaled[1] -
+                          arrow_size_scaled * math.sin(angle - math.pi/6))
+            arrow_right = (end_scaled[0] - arrow_size_scaled * math.cos(angle + math.pi/6), end_scaled[1] -
+                           arrow_size_scaled * math.sin(angle + math.pi/6))
 
             # Draw the arrow
             draw.polygon([arrow_tip, arrow_left, arrow_right], fill="black")
@@ -132,7 +141,7 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
         smooth_img = large_img.resize(img.size, Image.Resampling.LANCZOS)
 
         # Save the modified image
-        output_path = image_path.replace(".png", "_smooth_lines_and_circles.png")
+        output_path = image_path.replace(".png", ".png")
         smooth_img.save(output_path)
 
     return output_path
@@ -142,24 +151,24 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
 lines_info = {
     'line1': ((952, 400), (1130, 210)),  # Replace with actual coordinates
     'line2': ((952, 450), (794, 210)),  # Replace with actual coordinates
-    'line3': ((935, 411), (452, 210)),  # Replace with actual coordinates
-    'line4': ((903, 424), (362, 235)),  # Replace with actual coordinates
-    'line5': ((898, 496), (691, 436)),  # Replace with actual coordinates
-    'line6': ((879, 557), (349, 553)),  # Replace with actual coordinates
-    'line7': ((929, 546), (691, 667)),  # Replace with actual coordinates
-    'line8': ((929, 649), (386, 913)),  # Replace with actual coordinates
+    'line3': ((935, 411), (570, 190)),  # Replace with actual coordinates
+    'line4': ((903, 424), (370, 250)),  # Replace with actual coordinates
+    'line5': ((898, 496), (720, 436)),  # Replace with actual coordinates
+    'line6': ((879, 557), (360, 553)),  # Replace with actual coordinates
+    'line7': ((929, 546), (720, 667)),  # Replace with actual coordinates
+    'line8': ((929, 649), (400, 890)),  # Replace with actual coordinates
     'line9': ((930, 762), (609, 880)),  # Replace with actual coordinates
     'line10': ((953, 532), (960, 880)),  # Replace with actual coordinates
     'line11': ((976, 762), (1319, 880)),  # Replace with actual coordinates
-    'line12': ((976, 649), (1543, 913)),  # Replace with actual coordinates
+    'line12': ((976, 649), (1543, 890)),  # Replace with actual coordinates
     'line13': ((976, 546), (1221, 667)),  # Replace with actual coordinates
     'line14': ((1024, 557), (1551, 553)),  # Replace with actual coordinates
     'line15': ((1008, 496), (1222, 436)),  # Replace with actual coordinates
-    'line16': ((1000, 424), (1543, 235)),  # Replace with actual coordinates
-    'line17': ((971, 411), (1465, 210)),  # Replace with actual coordinates
+    'line16': ((1000, 424), (1543, 250)),  # Replace with actual coordinates
+    'line17': ((971, 411), (1410, 190)),  # Replace with actual coordinates
 
     # Add more lines as needed
 }
 
 # Call the function
-output_image_path = add_lines_with_arrow_and_circle("/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/composite_image_no_borders.png", lines_info)
+output_image_path = add_lines_with_arrow_and_circle("/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/Graph_with_body.png", lines_info)
