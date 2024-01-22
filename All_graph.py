@@ -1,35 +1,87 @@
+import pickle
+import ezc3d
 import os
-import glob
+import scipy.io
+import biorbd
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.io
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-from Function_Class_Graph import OrderMatData, load_and_interpolate, calculate_mean_std
+from Function_Class_Graph import (OrderMatData, load_and_interpolate, calculate_mean_std, column_names,
+                                  create_composite_image, add_lines_with_arrow_and_circle, graph_images_info, lines_info)
 
-# Path of the .mat file
+# Chemin du dossier contenant les fichiers .mat
 file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
 
-# Output path for the graph
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/MeanSD"
+# Chemin du dossier de sortie pour les graphiques
+folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMiBis/821_822/"
 
-# Create folder path
+# Créer le dossier de sortie s'il n'existe pas
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
-# Interval and name of different path
+
+# Liste des tuples (chemin du fichier, intervalle)
 file_intervals = [
-    (file_path_mat + 'Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat', (3299, 3591)),
+    (file_path_mat + 'Sa_821_822_2_MOD200.00_GenderF_SaMig_Q.mat', (3299, 3590)),
     (file_path_mat + 'Sa_821_822_3_MOD200.00_GenderF_SaMig_Q.mat', (3139, 3440)),
-    # Other file
+    # Autres fichiers...
 ]
 
-# Load and interpolate all try
+
+for file_path, interval in file_intervals:
+    # Extraire le nom de base du fichier pour le nom du dossier
+    base_name = os.path.basename(file_path).split('.')[0]
+
+    # Créer un sous-dossier pour cet essai
+    trial_folder_path = os.path.join(folder_path, base_name)
+    if not os.path.exists(trial_folder_path):
+        os.makedirs(trial_folder_path)
+
+    # Charger les données depuis le fichier .mat
+    data_loaded = scipy.io.loadmat(file_path)
+    q2_data = data_loaded['Q2']
+    DataFrame_with_colname = pd.DataFrame(q2_data).T
+    DataFrame_with_colname.columns = column_names
+    my_data = OrderMatData(DataFrame_with_colname)
+
+    selected_data = my_data.dataframe.iloc[interval[0]:interval[1]]
+
+    member_groups = set([name.split('_')[0] for name in column_names])
+
+    for group in member_groups:
+        group_columns = [col for col in column_names if col.startswith(group)]
+        group_data = selected_data[group_columns]
+
+        plt.figure(figsize=(10, 6))
+        for col in group_columns:
+            plt.plot(group_data[col], label=col)
+
+        plt.title(f"Graphique pour {group}")
+        plt.xlabel("Index")
+        plt.ylabel("Valeur")
+        plt.legend()
+
+        # Enregistrer le graphique dans le sous-dossier de l'essai
+        file_name = f"{group}_graph.png"
+        file_path_graph = os.path.join(trial_folder_path, file_name)
+
+        plt.savefig(file_path_graph)
+        plt.close()
+
+
+# Chemin du nouveau dossier "mean"
+mean_folder_path = os.path.join(folder_path, "MeanSD/")
+
+# Créer le dossier "mean" s'il n'existe pas déjà
+if not os.path.exists(mean_folder_path):
+    os.makedirs(mean_folder_path)
+
 my_data_instances = [load_and_interpolate(file, interval) for file, interval in file_intervals]
 
 # List of members
 members = ["Pelvis", "Thorax", "Tete", "EpauleD", "BrasD", "AvBrasD", "MainD", "EpauleG", "BrasG", "AvBrasG", "MainG",
            "CuisseD", "JambeD", "PiedD", "CuisseG", "JambeG", "PiedG"]
+
 
 ####### ONE COMPONENT BY GRAPH #######
 axes = [0, 1, 2]  # 0 for X, 1 for Y, 2 for Z
@@ -52,15 +104,14 @@ for member in members:
             # plt.show()
             # Name of graph file
             file_name = f"{member}_{['X', 'Y', 'Z'][axis]}_graph.png"
-            file_path = os.path.join(folder_path, file_name)
-
+            file_path = os.path.join(mean_folder_path, file_name)
             # Register the graph in specific path
             plt.savefig(file_path)
             plt.close()
 
         except KeyError:
             # Handle the case where a member-axis combination does not exist
-            print(f"The member {member} with axis {['X', 'Y', 'Z'][axis]} does not exist.")
+            print(f"The member {member} with axis {['X', 'Y', 'Z'][axis]} doesn't exist.")
 
 
 ####### ALL COMPONENT BY GRAPH  #######
@@ -91,7 +142,7 @@ for member in members:
 
         except KeyError:
             # Handle the case where a combination member axis doesn't exist
-            print(f"Le membre {member} avec l'axe {['X', 'Y', 'Z'][axis]} n'existe pas.")
+            print(f"The member {member} with axis {['X', 'Y', 'Z'][axis]} doesn't exist.")
 
     # Configure the graph
     plt.xlabel('Time (%)', fontsize=4)
@@ -107,7 +158,7 @@ for member in members:
 
     # Register the graph
     file_name = f"{member}_all_axes_graph.png"
-    file_path = os.path.join(folder_path, file_name)
+    file_path = os.path.join(mean_folder_path, file_name)
     plt.savefig(file_path, format='png', bbox_inches='tight')
     # Create and register legend for only one member (Tete)
     if member == 'Tete' and not legend_created:
@@ -131,7 +182,7 @@ for member in members:
 
         # Register the picture of the legend with the desired size
         leg_file_name = "legend.png"
-        leg_file_path = os.path.join(folder_path, leg_file_name)
+        leg_file_path = os.path.join(mean_folder_path, leg_file_name)
         fig_leg.savefig(leg_file_path, format='png', bbox_inches='tight',
                         pad_inches=0)  # Delete pad
         plt.close(fig_leg)
@@ -139,3 +190,11 @@ for member in members:
         legend_created = True
 
     plt.close('all')
+
+
+final_path = folder_path + "Graph_with_body.png"
+
+# Call the function to create the composite image
+composite_image_path = create_composite_image(graph_images_info, mean_folder_path, save_path=final_path)
+# Call the function
+output_image_path = add_lines_with_arrow_and_circle(composite_image_path, lines_info)
