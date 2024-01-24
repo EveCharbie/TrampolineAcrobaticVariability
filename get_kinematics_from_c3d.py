@@ -9,34 +9,6 @@ import biorbd
 import scipy
 import ezc3d
 
-c = ezc3d.c3d('/media/lim/My Passport/labelling/2019-08-30/Sarah/Tests/Sa_821_seul_2.c3d')
-print('Nombre de marqueurs présents:',c['parameters']['POINT']['USED']['value'][0]); # nombre de marqueurs
-
-point_data = c['data']['points'] #récupération trajectoires marqueurs
-point_labels = c['parameters']['POINT']['LABELS']# récupération labels marqueurs
-point_rate = c['parameters']['POINT']['RATE'] # récupération fréquence mocap
-analog_data = c['data']['analogs'] # récupération données analogiques
-analog_labels =c['parameters']['ANALOG']['LABELS'] # récupération labels analogiques
-analog_rate = c['parameters']['ANALOG']['RATE'] # récupération fréquence analogique
-
-print('fréquence échantillonnage capture de mouvement:', point_rate['value'][0],'Hz')
-print('fréquence échantillonnage données analogiques:', analog_rate['value'][0],'Hz')
-
-# nombre d'échantillons mocap et analog
-nf_mocap=len(point_data[0][0][:])
-n_markers=len(point_data[0][:])
-n_dims=len(point_data[:])
-nf_analog=len(analog_data[0][:][:])
-
-#reconstruction vecteur temps capture et signaux analogiques
-t_point=np.linspace(0., nf_mocap/point_rate['value'][0], num=nf_mocap)
-t_analog=np.linspace(0., nf_analog/analog_rate['value'][0], num=nf_analog)
-f_mocap=point_rate['value'][0] #fréquence capture
-
-
-print('Noms des marqueurs',point_labels)
-print('Nombre de marqueurs',n_markers)
-print('Nombre de frames',nf_mocap)
 
 def recons_kalman(num_frames, num_markers, markers_xsens, model):
     markersOverFrames = []
@@ -46,9 +18,11 @@ def recons_kalman(num_frames, num_markers, markers_xsens, model):
             node_segment.append(biorbd.NodeSegment(markers_xsens[:, j, i].T))
         markersOverFrames.append(node_segment)
 
-    # Create a Kalman filter structure
-    freq = 200  # Hz
-    params = biorbd.KalmanParam(freq)
+    freq = 200
+    noise_factor = 0.01
+    error_factor = 0.1
+    params = biorbd.KalmanParam(freq, noise_factor, error_factor)
+
     kalman = biorbd.KalmanReconsMarkers(model, params)
 
     # Perform the kalman filter for each frame (the first frame is much longer than the next)
@@ -63,7 +37,26 @@ def recons_kalman(num_frames, num_markers, markers_xsens, model):
         qdot_recons[:, i] = Qdot.to_array()
     return q_recons, qdot_recons
 
-model = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod"
 
-q_recons, qdot_recons= recons_kalman(nf_mocap, n_markers,point_data,model)
+c = ezc3d.c3d('/media/lim/My Passport/labelling/2019-08-30/Sarah/Tests/Sa_821_seul_1.c3d')
+point_data = c['data']['points']
+n_markers = point_data.shape[1]
+nf_mocap = point_data.shape[2]
+f_mocap = c['parameters']['POINT']['RATE']['value'][0]
 
+markers = np.zeros((3, n_markers, nf_mocap))
+for i in range(nf_mocap):
+    for j in range(n_markers):
+        markers[:, j, i] = point_data[:3, j, i]
+
+model = biorbd.Model('/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod')
+
+q_recons, qdot_recons = recons_kalman(nf_mocap, n_markers, markers, model)
+
+q_recons = q_recons/1000
+
+# Création d'un dictionnaire pour le stockage
+mat_data = {'Q2': q_recons}
+
+# Enregistrement dans un fichier .mat
+scipy.io.savemat('/home/lim/Documents/StageMathieu/Data_propre/SaMi/fichier.mat', mat_data)

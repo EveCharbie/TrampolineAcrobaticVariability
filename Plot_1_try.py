@@ -9,9 +9,9 @@ import pandas as pd
 from Function_Class_Graph import OrderMatData, column_names
 
 
-file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/GuSe/Q/'
-file_name_mat = 'Gui_44_mvt_Prep_3_MOD200.00_GenderM_GuSeg_Q.mat'
-folder_path = f"/home/lim/Documents/StageMathieu/Graph_from_mot/GuSe/{file_name_mat}"
+file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/'
+file_name_mat = 'fichier.mat'
+folder_path = f"/home/lim/Documents/StageMathieu/Data_propre/SaMi/test/"
 
 data_loaded = scipy.io.loadmat(file_path_mat+file_name_mat)
 
@@ -33,7 +33,7 @@ DataFrame_with_colname.columns = column_names
 
 my_data = OrderMatData(DataFrame_with_colname)
 
-selected_data = my_data.dataframe.iloc[1699:1950]
+selected_data = my_data.dataframe.iloc[3349:3650]
 
 # Identifier les groupes de membres
 member_groups = set([name.split('_')[0] for name in column_names])
