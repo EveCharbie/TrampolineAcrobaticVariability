@@ -33,7 +33,7 @@ DataFrame_with_colname.columns = column_names
 
 my_data = OrderMatData(DataFrame_with_colname)
 
-selected_data = my_data.dataframe.iloc[3349:3650]
+selected_data = my_data.dataframe.iloc[0:281]
 
 # Identifier les groupes de membres
 member_groups = set([name.split('_')[0] for name in column_names])

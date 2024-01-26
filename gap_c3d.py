@@ -2,7 +2,7 @@ import ezc3d
 import numpy as np
 import matplotlib.pyplot as plt
 
-c = ezc3d.c3d('/media/lim/My Passport/labelling/2019-08-30/Sarah/Tests/Sa_821_seul_2.c3d')
+c = ezc3d.c3d('/media/lim/My Passport/collecte_MoCap/2019-08-30/Sarah/Tests/Sa_831_831_1.c3d')
 print('Nombre de marqueurs présents:',c['parameters']['POINT']['USED']['value'][0]) # nombre de marqueurs
 
 point_data = c['data']['points'] #récupération trajectoires marqueurs
@@ -39,7 +39,7 @@ markers_validity = {marker: True for marker in markers}
 
 
 for i, marker in enumerate(markers):
-    marker_data = point_data[:, i, 3429:3740]
+    marker_data = point_data[:, i, 3099:3747]
     is_missing = np.any(np.isnan(marker_data))
     markers_validity[marker] = not is_missing
 
@@ -60,8 +60,10 @@ for i, marker in enumerate(markers):
     plt.plot(x_data, label='X', color='r')
     plt.plot(y_data, label='Y', color='g')
     plt.plot(z_data, label='Z', color='b')
-    plt.axvline(x=3429, color='gray', linestyle='--')
-    plt.axvline(x=3740, color='gray', linestyle='--')
+    plt.axvline(x=3099, color='gray', linestyle='--')
+    plt.axvline(x=3403, color='gray', linestyle='--')
+    plt.axvline(x=3466, color='gray', linestyle='--')
+    plt.axvline(x=3747, color='gray', linestyle='--')
     plt.title(f"Composantes X, Y, Z pour le marqueur {marker}")
     plt.xlabel("Frame")
     plt.ylabel("Valeur")
