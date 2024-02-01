@@ -323,3 +323,26 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
     return output_path
 
 
+def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
+    markersOverFrames = []
+    for i in range(n_frames):
+        node_segment = []
+        for j in range(num_markers):
+            node_segment.append(biorbd.NodeSegment(markers_xsens[:, j, i].T))
+        markersOverFrames.append(node_segment)
+
+    freq = 200
+    params = biorbd.KalmanParam(freq)
+    kalman = biorbd.KalmanReconsMarkers(model, params)
+    kalman.setInitState(initial_guess[0], initial_guess[1], initial_guess[2])
+
+    Q = biorbd.GeneralizedCoordinates(model)
+    Qdot = biorbd.GeneralizedVelocity(model)
+    Qddot = biorbd.GeneralizedAcceleration(model)
+    q_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
+    qdot_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
+    for i, targetMarkers in enumerate(markersOverFrames):
+        kalman.reconstructFrame(model, targetMarkers, Q, Qdot, Qddot)
+        q_recons[:, i] = Q.to_array()
+        qdot_recons[:, i] = Qdot.to_array()
+    return q_recons, qdot_recons

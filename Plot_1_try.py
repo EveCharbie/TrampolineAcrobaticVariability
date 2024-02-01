@@ -10,8 +10,8 @@ from Function_Class_Graph import OrderMatData, column_names
 
 
 file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/'
-file_name_mat = 'fichier.mat'
-folder_path = f"/home/lim/Documents/StageMathieu/Data_propre/SaMi/test/"
+file_name_mat = 'fichier5.mat'
+folder_path = f"/home/lim/Documents/StageMathieu/Data_propre/SaMi/test5/"
 
 data_loaded = scipy.io.loadmat(file_path_mat+file_name_mat)
 
