@@ -15,19 +15,29 @@ import bioviz
 model = biorbd.Model('/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod')
 
 # Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/831_831/'
+file_path_c3d = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/821_seul/'
 
 # Chemin du dossier de sortie pour les graphiques
 folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/"
 
 
 # Liste des tuples (chemin du fichier, intervalle)
+# file_intervals = [
+#     (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
+#     (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
+#     (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
+#     (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
+#     (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
+# ]
+
+
 file_intervals = [
-    (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
-    (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
-    (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
-    (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
-    (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
+    (file_path_c3d + 'Sa_821_seul_1.c3d', (3349, 3650)),
+    (file_path_c3d + 'Sa_821_seul_2.c3d', (3429, 3740)),
+    (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
+    (file_path_c3d + 'Sa_821_seul_4.c3d', (3309, 3620)),
+    (file_path_c3d + 'Sa_821_seul_5.c3d', (2689, 3000)),
+
 ]
 
 def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
@@ -67,16 +77,17 @@ for file_path, interval in file_intervals:
     # Extraire les noms de marqueurs utiles de 'point_labels'
     useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
     # Liste des noms de marqueurs dans l'ordre souhaité
-    desired_order = ['EIASD','CID','EIPSD','EIPSG','CIG','EIASG','MANU','MIDSTERNUM','XIPHOIDE','C7','D3','D10','ZYGD',
-                          'TEMPD','GLABELLE','TEMPG','ZYGG','CLAV1D','CLAV2D','CLAV3D','ACRANTD','ACRPOSTD','SCAPD','DELTD',
-                          'BICEPSD','TRICEPSD','EPICOND','EPITROD','OLE1D','OLE2D','BRACHD','BRACHANTD','ABRAPOSTD',
-                          'ABRASANTD','ULNAD','RADIUSD','METAC5D','METAC2D','MIDMETAC3D','CLAV1G','CLAV2G','CLAV3G',
-                          'ACRANTG','ACRPOSTG','SCAPG','DELTG','BICEPSG','TRICEPSG','EPICONG','EPITROG','OLE1G','OLE2G',
-                          'BRACHG','BRACHANTG','ABRAPOSTG','ABRANTG','ULNAG','RADIUSG','METAC5G','METAC2G','MIDMETAC3G',
-                          'ISCHIO1D','TFLD','ISCHIO2D','CONDEXTD','CONDINTD','CRETED','JAMBLATD','TUBD','ACHILED','MALEXTD',
-                          'MALINTD','CALCD','MIDMETA4D','MIDMETA1D','SCAPHOIDED','METAT5D','METAT1D','ISCHIO1G','TFLG',
-                          'ISCHIO2G','CONEXTG','CONDINTG','CRETEG','JAMBLATG','TUBG','ACHILLEG','MALEXTG','MALINTG',
-                          'CALCG','MIDMETA4G','MIDMETA1G','SCAPHOIDEG','METAT5G','METAT1G']
+    desired_order = ['EIASD', 'CID', 'EIPSD', 'EIPSG', 'CIG', 'EIASG', 'MANU', 'MIDSTERNUM', 'XIPHOIDE', 'C7', 'D3',
+                     'D10', 'ZYGD', 'TEMPD', 'GLABELLE', 'TEMPG', 'ZYGG', 'CLAV1D', 'CLAV2D', 'CLAV3D', 'ACRANTD',
+                     'ACRPOSTD', 'SCAPD', 'DELTD', 'BICEPSD', 'TRICEPSD', 'EPICOND', 'EPITROD', 'OLE1D', 'OLE2D',
+                     'BRACHD', 'BRACHANTD', 'ABRAPOSTD', 'ABRASANTD', 'ULNAD', 'RADIUSD', 'METAC5D', 'METAC2D',
+                     'MIDMETAC3D', 'CLAV1G', 'CLAV2G', 'CLAV3G', 'ACRANTG', 'ACRPOSTG', 'SCAPG', 'DELTG', 'BICEPSG',
+                     'TRICEPSG', 'EPICONG', 'EPITROG', 'OLE1G', 'OLE2G', 'BRACHG', 'BRACHANTG', 'ABRAPOSTG', 'ABRANTG',
+                     'ULNAG', 'RADIUSG', 'METAC5G', 'METAC2G', 'MIDMETAC3G', 'ISCHIO1D', 'TFLD', 'ISCHIO2D', 'CONDEXTD',
+                     'CONDINTD', 'CRETED', 'JAMBLATD', 'TUBD', 'ACHILED', 'MALEXTD', 'MALINTD', 'CALCD', 'MIDMETA4D',
+                     'MIDMETA1D', 'SCAPHOIDED', 'METAT5D', 'METAT1D', 'ISCHIO1G', 'TFLG', 'ISCHIO2G', 'CONEXTG',
+                     'CONDINTG', 'CRETEG', 'JAMBLATG', 'TUBG', 'ACHILLEG', 'MALEXTG', 'MALINTG', 'CALCG', 'MIDMETA4G',
+                     'MIDMETA1G', 'SCAPHOIDEG', 'METAT5G', 'METAT1G']
 
     indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
 

@@ -13,7 +13,7 @@ from Function_Class_Graph import (OrderMatData, load_and_interpolate, calculate_
 file_path_mat = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/'
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMiBis/831_831/"
+folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMiBis/822_contact/"
 
 # Créer le dossier de sortie s'il n'existe pas
 if not os.path.exists(folder_path):
@@ -22,11 +22,11 @@ if not os.path.exists(folder_path):
 
 # Liste des tuples (chemin du fichier, intervalle)
 file_intervals = [
-    (file_path_mat + 'Sa_831_831_1.mat', (0, 281)),
-    (file_path_mat + 'Sa_831_831_3.mat', (0, 289)),
-    (file_path_mat + 'Sa_831_831_4.mat', (0, 293)),
-    (file_path_mat + 'Sa_831_831_5.mat', (0, 296)),
-    (file_path_mat + 'Sa_831_831_6.mat', (0, 299)),
+    (file_path_mat + 'Sa_822_contact_1.mat', (0, 292)),
+    (file_path_mat + 'Sa_822_contact_2.mat', (0, 292)),
+    (file_path_mat + 'Sa_822_contact_3.mat', (0, 278)),
+    # (file_path_mat + 'Sa_831_831_5.mat', (0, 296)),
+    # (file_path_mat + 'Sa_831_831_6.mat', (0, 299)),
 ]
 
 for file_path, interval in file_intervals:
