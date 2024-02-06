@@ -23,23 +23,23 @@ folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/QBis/"
 
 
 # Liste des tuples (chemin du fichier, intervalle)
-file_intervals = [
-    (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
-    (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
-    (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
-    (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
-    (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
-]
-
-
 # file_intervals = [
-#     (file_path_c3d + 'Sa_821_seul_1.c3d', (3357, 3665)),
-#     (file_path_c3d + 'Sa_821_seul_2.c3d', (3431, 3736)),
-#     (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
-#     (file_path_c3d + 'Sa_821_seul_4.c3d', (3311, 3620)),
-#     (file_path_c3d + 'Sa_821_seul_5.c3d', (2696, 3000)),
-#
+#     (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
+#     (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
+#     (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
+#     (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
+#     (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
 # ]
+
+
+file_intervals = [
+    (file_path_c3d + 'Sa_821_seul_1.c3d', (3357, 3665)),
+    (file_path_c3d + 'Sa_821_seul_2.c3d', (3431, 3736)),
+    (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
+    (file_path_c3d + 'Sa_821_seul_4.c3d', (3311, 3620)),
+    (file_path_c3d + 'Sa_821_seul_5.c3d', (2696, 3000)),
+
+]
 
 def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
     markersOverFrames = []
@@ -66,6 +66,9 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
     return q_recons, qdot_recons
 
 
+def find_index(name, list):
+    return list.index(name)
+
 for file_path, interval in file_intervals:
     file_name = os.path.basename(file_path).split('.')[0]
     print(f"{file_name} is running")
@@ -78,17 +81,32 @@ for file_path, interval in file_intervals:
     # Extraire les noms de marqueurs utiles de 'point_labels'
     useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
 
+    sample_label = useful_labels[0]
+    typical_dimensions = point_data[0][find_index(sample_label, point_labels["value"])].shape[0]
+
     desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
     indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
+    ## Premiere methode pour remettre les marqueurs dans l'ordre
     # Vérifier si tous les marqueurs de 'desired_order' ont été trouvés
-    if len(indices) != len(desired_order):
-        missing_markers = set(desired_order) - set(useful_labels)
-        raise ValueError(f"Certains marqueurs de 'desired_order' "
-                         f"ne sont pas trouvés dans 'point_labels': {missing_markers}")
+    # if len(indices) != len(desired_order):
+    #     missing_markers = set(desired_order) - set(useful_labels)
+    #     raise ValueError(f"Certains marqueurs de 'desired_order' "
+    #                      f"ne sont pas trouvés dans 'point_labels': {missing_markers}")
 
-    reordered_point_data = point_data[:, indices, :]
+    # reordered_point_data = point_data[:, indices, :]
+    ##
+    
+    ## Deuxieme methode pour remettre les marqueurs dans l'ordre
+    n_markers_desired = len(desired_order)
+    reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)  # 4 pour x, y, z, et la confidence
 
+    # Remplir le tableau avec les données existantes ou NaN
+    for i, marker in enumerate(desired_order):
+        if marker in useful_labels:
+            index = find_index(marker, point_labels["value"])
+            reordered_point_data[:, i, :] = point_data[:, index, :]
+    ##
     n_markers_reordered = reordered_point_data.shape[1]
 
     markers = np.zeros((3, n_markers_reordered, nf_mocap))
@@ -117,10 +135,10 @@ for file_path, interval in file_intervals:
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
     q_recons, qdot_recons = recons_kalman(nf_mocap, n_markers_reordered, markers, model, initial_guess)
-    # b = bioviz.Viz(loaded_model=model)
-    # b.load_movement(q_recons)
-    # b.load_experimental_markers(markers[:, :, :])
-    # b.exec()
+    b = bioviz.Viz(loaded_model=model)
+    b.load_movement(q_recons)
+    b.load_experimental_markers(markers[:, :, :])
+    b.exec()
 
     Q = pd.DataFrame(Q.transpose(), columns=column_names)
     Q_pred = q_recons[:, frame_index]
