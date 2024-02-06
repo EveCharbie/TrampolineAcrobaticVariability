@@ -12,35 +12,34 @@ import bioviz
 from Function_Class_Graph import (column_names)
 import pandas as pd
 
-# start_frame = 3754
-# end_frame = 4047
+
 model = biorbd.Model('/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod')
 
 # Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/821_seul/'
+file_path_c3d = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/'
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/"
+folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/QBis/"
 
 
 # Liste des tuples (chemin du fichier, intervalle)
-# file_intervals = [
-#     (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
-#     (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
-#     (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
-#     (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
-#     (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
-# ]
-
-
 file_intervals = [
-    (file_path_c3d + 'Sa_821_seul_1.c3d', (3349, 3650)),
-    (file_path_c3d + 'Sa_821_seul_2.c3d', (3429, 3740)),
-    (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
-    (file_path_c3d + 'Sa_821_seul_4.c3d', (3309, 3620)),
-    (file_path_c3d + 'Sa_821_seul_5.c3d', (2689, 3000)),
-
+    (file_path_c3d + 'Sa_831_831_1.c3d', (3466, 3747)),
+    (file_path_c3d + 'Sa_831_831_3.c3d', (4138, 4427)),
+    (file_path_c3d + 'Sa_831_831_4.c3d', (3754, 4047)),
+    (file_path_c3d + 'Sa_831_831_5.c3d', (1632, 1928)),
+    (file_path_c3d + 'Sa_831_831_6.c3d', (4710, 5009)),
 ]
+
+
+# file_intervals = [
+#     (file_path_c3d + 'Sa_821_seul_1.c3d', (3357, 3665)),
+#     (file_path_c3d + 'Sa_821_seul_2.c3d', (3431, 3736)),
+#     (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
+#     (file_path_c3d + 'Sa_821_seul_4.c3d', (3311, 3620)),
+#     (file_path_c3d + 'Sa_821_seul_5.c3d', (2696, 3000)),
+#
+# ]
 
 def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
     markersOverFrames = []
@@ -69,31 +68,24 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
 
 for file_path, interval in file_intervals:
     file_name = os.path.basename(file_path).split('.')[0]
-c = ezc3d.c3d('/media/lim/My Passport/collecte_MoCap/2019-08-30/Sarah/Tests/Sa_831_831_1.c3d')
-point_data = c['data']['points'][:, :, start_frame:end_frame]
-n_markers = point_data.shape[1]
-nf_mocap = point_data.shape[2]
-f_mocap = c['parameters']['POINT']['RATE']['value'][0]
-point_labels = c['parameters']['POINT']['LABELS']
-# Extraire les noms de marqueurs utiles de 'point_labels'
-useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
-# Liste des noms de marqueurs dans l'ordre souhaité
+    print(f"{file_name} is running")
+    c = ezc3d.c3d(file_path)
+    point_data = c['data']['points'][:, :, interval[0]:interval[1]]
+    n_markers = point_data.shape[1]
+    nf_mocap = point_data.shape[2]
+    f_mocap = c['parameters']['POINT']['RATE']['value'][0]
+    point_labels = c['parameters']['POINT']['LABELS']
+    # Extraire les noms de marqueurs utiles de 'point_labels'
+    useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
 
-desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
-
-
-indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
-# Vérifier si tous les marqueurs de 'desired_order' ont été trouvés
-if len(indices) != len(desired_order):
-    missing_markers = set(desired_order) - set(point_labels)
-    raise ValueError(f"Certains marqueurs de 'desired_order' ne sont pas trouvés dans 'point_labels': {missing_markers}")
+    desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
     indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
-
     # Vérifier si tous les marqueurs de 'desired_order' ont été trouvés
     if len(indices) != len(desired_order):
-        missing_markers = [elem for elem in desired_order if elem not in useful_labels]
-        raise ValueError(f"Certains marqueurs de 'desired_order' ne sont pas trouvés dans 'point_labels': {missing_markers}")
+        missing_markers = set(desired_order) - set(useful_labels)
+        raise ValueError(f"Certains marqueurs de 'desired_order' "
+                         f"ne sont pas trouvés dans 'point_labels': {missing_markers}")
 
     reordered_point_data = point_data[:, indices, :]
 
@@ -124,19 +116,16 @@ if len(indices) != len(desired_order):
     # Créer initial_guess avec ces vecteurs 1D
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
-Q = pd.DataFrame(Q.transpose(), columns=column_names)
-Q_pred = q_recons[:, frame_index]
-error = Q_pred-Q
-print(error.transpose())
-
     q_recons, qdot_recons = recons_kalman(nf_mocap, n_markers_reordered, markers, model, initial_guess)
     # b = bioviz.Viz(loaded_model=model)
     # b.load_movement(q_recons)
     # b.load_experimental_markers(markers[:, :, :])
     # b.exec()
 
-# Enregistrement dans un fichier .mat
-scipy.io.savemat('/home/lim/Documents/StageMathieu/Data_propre/SaMi/fichier.mat', mat_data)
+    Q = pd.DataFrame(Q.transpose(), columns=column_names)
+    Q_pred = q_recons[:, frame_index]
+    error = Q_pred-Q
+    # print(error.transpose())
 
     # Création d'un dictionnaire pour le stockage
     mat_data = {'Q2': q_recons}
