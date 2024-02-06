@@ -9,6 +9,8 @@ import biorbd
 import scipy
 import ezc3d
 import bioviz
+from Function_Class_Graph import (column_names)
+import pandas as pd
 
 # start_frame = 3754
 # end_frame = 4047
@@ -67,27 +69,24 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
 
 for file_path, interval in file_intervals:
     file_name = os.path.basename(file_path).split('.')[0]
+c = ezc3d.c3d('/media/lim/My Passport/collecte_MoCap/2019-08-30/Sarah/Tests/Sa_831_831_1.c3d')
+point_data = c['data']['points'][:, :, start_frame:end_frame]
+n_markers = point_data.shape[1]
+nf_mocap = point_data.shape[2]
+f_mocap = c['parameters']['POINT']['RATE']['value'][0]
+point_labels = c['parameters']['POINT']['LABELS']
+# Extraire les noms de marqueurs utiles de 'point_labels'
+useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
+# Liste des noms de marqueurs dans l'ordre souhaité
 
-    c = ezc3d.c3d(file_path)
-    point_data = c['data']['points'][:, :, interval[0]:interval[1]]
-    n_markers = point_data.shape[1]
-    nf_mocap = point_data.shape[2]
-    f_mocap = c['parameters']['POINT']['RATE']['value'][0]
-    point_labels = c['parameters']['POINT']['LABELS']
-    # Extraire les noms de marqueurs utiles de 'point_labels'
-    useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
-    # Liste des noms de marqueurs dans l'ordre souhaité
-    desired_order = ['EIASD', 'CID', 'EIPSD', 'EIPSG', 'CIG', 'EIASG', 'MANU', 'MIDSTERNUM', 'XIPHOIDE', 'C7', 'D3',
-                     'D10', 'ZYGD', 'TEMPD', 'GLABELLE', 'TEMPG', 'ZYGG', 'CLAV1D', 'CLAV2D', 'CLAV3D', 'ACRANTD',
-                     'ACRPOSTD', 'SCAPD', 'DELTD', 'BICEPSD', 'TRICEPSD', 'EPICOND', 'EPITROD', 'OLE1D', 'OLE2D',
-                     'BRACHD', 'BRACHANTD', 'ABRAPOSTD', 'ABRASANTD', 'ULNAD', 'RADIUSD', 'METAC5D', 'METAC2D',
-                     'MIDMETAC3D', 'CLAV1G', 'CLAV2G', 'CLAV3G', 'ACRANTG', 'ACRPOSTG', 'SCAPG', 'DELTG', 'BICEPSG',
-                     'TRICEPSG', 'EPICONG', 'EPITROG', 'OLE1G', 'OLE2G', 'BRACHG', 'BRACHANTG', 'ABRAPOSTG', 'ABRANTG',
-                     'ULNAG', 'RADIUSG', 'METAC5G', 'METAC2G', 'MIDMETAC3G', 'ISCHIO1D', 'TFLD', 'ISCHIO2D', 'CONDEXTD',
-                     'CONDINTD', 'CRETED', 'JAMBLATD', 'TUBD', 'ACHILED', 'MALEXTD', 'MALINTD', 'CALCD', 'MIDMETA4D',
-                     'MIDMETA1D', 'SCAPHOIDED', 'METAT5D', 'METAT1D', 'ISCHIO1G', 'TFLG', 'ISCHIO2G', 'CONEXTG',
-                     'CONDINTG', 'CRETEG', 'JAMBLATG', 'TUBG', 'ACHILLEG', 'MALEXTG', 'MALINTG', 'CALCG', 'MIDMETA4G',
-                     'MIDMETA1G', 'SCAPHOIDEG', 'METAT5G', 'METAT1G']
+desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
+
+
+indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
+# Vérifier si tous les marqueurs de 'desired_order' ont été trouvés
+if len(indices) != len(desired_order):
+    missing_markers = set(desired_order) - set(point_labels)
+    raise ValueError(f"Certains marqueurs de 'desired_order' ne sont pas trouvés dans 'point_labels': {missing_markers}")
 
     indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
 
@@ -125,6 +124,10 @@ for file_path, interval in file_intervals:
     # Créer initial_guess avec ces vecteurs 1D
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
+Q = pd.DataFrame(Q.transpose(), columns=column_names)
+Q_pred = q_recons[:, frame_index]
+error = Q_pred-Q
+print(error.transpose())
 
     q_recons, qdot_recons = recons_kalman(nf_mocap, n_markers_reordered, markers, model, initial_guess)
     # b = bioviz.Viz(loaded_model=model)
@@ -132,6 +135,8 @@ for file_path, interval in file_intervals:
     # b.load_experimental_markers(markers[:, :, :])
     # b.exec()
 
+# Enregistrement dans un fichier .mat
+scipy.io.savemat('/home/lim/Documents/StageMathieu/Data_propre/SaMi/fichier.mat', mat_data)
 
     # Création d'un dictionnaire pour le stockage
     mat_data = {'Q2': q_recons}
