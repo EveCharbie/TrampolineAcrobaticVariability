@@ -86,17 +86,6 @@ for file_path, interval in file_intervals:
 
     desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
-    indices = [useful_labels.index(marker) for marker in desired_order if marker in useful_labels]
-    ## Premiere methode pour remettre les marqueurs dans l'ordre
-    # Vérifier si tous les marqueurs de 'desired_order' ont été trouvés
-    # if len(indices) != len(desired_order):
-    #     missing_markers = set(desired_order) - set(useful_labels)
-    #     raise ValueError(f"Certains marqueurs de 'desired_order' "
-    #                      f"ne sont pas trouvés dans 'point_labels': {missing_markers}")
-
-    # reordered_point_data = point_data[:, indices, :]
-    ##
-    
     ## Deuxieme methode pour remettre les marqueurs dans l'ordre
     n_markers_desired = len(desired_order)
     reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)  # 4 pour x, y, z, et la confidence
@@ -104,8 +93,11 @@ for file_path, interval in file_intervals:
     # Remplir le tableau avec les données existantes ou NaN
     for i, marker in enumerate(desired_order):
         if marker in useful_labels:
-            index = find_index(marker, point_labels["value"])
-            reordered_point_data[:, i, :] = point_data[:, index, :]
+            original_index = find_index(marker, point_labels["value"])
+            reordered_point_data[:, i, :] = point_data[:, original_index, :]
+        else:
+        # Si le marqueur n'est pas trouvé, imprimer un message indiquant que le marqueur est manquant
+            print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
     ##
     n_markers_reordered = reordered_point_data.shape[1]
 
