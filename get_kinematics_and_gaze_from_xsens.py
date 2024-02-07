@@ -1,14 +1,17 @@
 """
 The goal of this program is to convert the joint angles from xsens to biorbd.
 """
+
 import numpy as np
 import pickle
 from IPython import embed
 import matplotlib.pyplot as plt
 import os
+
 # import biorbd
 # import bioviz
 import scipy
+
 
 def get_q(Xsens_orientation_per_move):
     """
@@ -18,46 +21,44 @@ def get_q(Xsens_orientation_per_move):
     I am not sure if I would use this for kinematics analysis, but for visualisation it is not that bad.
     """
 
-    parent_idx_list = {"Pelvis": None,  # 0
-                       "L5": [0, "Pelvis"],  # 1
-                       "L3": [1, "L5"],  # 2
-                       "T12": [2, "L3"],  # 3
-                       "T8": [3, "T12"],  # 4
-                       "Neck": [4, "T8"],  # 5
-                       "Head": [5, "Neck"],  # 6
-                       "ShoulderR": [4, "T8"],  # 7
-                       "UpperArmR": [7, "ShoulderR"],  # 8
-                       "LowerArmR": [8, "UpperArmR"],  # 9
-                       "HandR": [9, "LowerArmR"],  # 10
-                       "ShoulderL": [4, "T8"],  # 11
-                       "UpperArmL": [11, "ShoulderR"],  # 12
-                       "LowerArmL": [12, "UpperArmR"],  # 13
-                       "HandL": [13, "LowerArmR"],  # 14
-                       "UpperLegR": [0, "Pelvis"],  # 15
-                       "LowerLegR": [15, "UpperLegR"],  # 16
-                       "FootR": [16, "LowerLegR"],  # 17
-                       "ToesR": [17, "FootR"],  # 18
-                       "UpperLegL": [0, "Pelvis"],  # 19
-                       "LowerLegL": [19, "UpperLegL"],  # 20
-                       "FootL": [20, "LowerLegL"],  # 21
-                       "ToesL": [21, "FootL"],  # 22
-                       }
+    parent_idx_list = {
+        "Pelvis": None,  # 0
+        "L5": [0, "Pelvis"],  # 1
+        "L3": [1, "L5"],  # 2
+        "T12": [2, "L3"],  # 3
+        "T8": [3, "T12"],  # 4
+        "Neck": [4, "T8"],  # 5
+        "Head": [5, "Neck"],  # 6
+        "ShoulderR": [4, "T8"],  # 7
+        "UpperArmR": [7, "ShoulderR"],  # 8
+        "LowerArmR": [8, "UpperArmR"],  # 9
+        "HandR": [9, "LowerArmR"],  # 10
+        "ShoulderL": [4, "T8"],  # 11
+        "UpperArmL": [11, "ShoulderR"],  # 12
+        "LowerArmL": [12, "UpperArmR"],  # 13
+        "HandL": [13, "LowerArmR"],  # 14
+        "UpperLegR": [0, "Pelvis"],  # 15
+        "LowerLegR": [15, "UpperLegR"],  # 16
+        "FootR": [16, "LowerLegR"],  # 17
+        "ToesR": [17, "FootR"],  # 18
+        "UpperLegL": [0, "Pelvis"],  # 19
+        "LowerLegL": [19, "UpperLegL"],  # 20
+        "FootL": [20, "LowerLegL"],  # 21
+        "ToesL": [21, "FootL"],  # 22
+    }
 
     nb_frames = Xsens_orientation_per_move.shape[0]
-    Q = np.zeros((23*3, nb_frames))
+    Q = np.zeros((23 * 3, nb_frames))
     rotation_matrices = np.zeros((23, nb_frames, 3, 3))
     for i_segment, key in enumerate(parent_idx_list):
         for i_frame in range(nb_frames):
-            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4] / np.linalg.norm(
-                Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4]
+            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
+                Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4]
             )
-            Quat = biorbd.Quaternion(Quat_normalized[0],
-                                     Quat_normalized[1],
-                                     Quat_normalized[2],
-                                     Quat_normalized[3])
+            Quat = biorbd.Quaternion(Quat_normalized[0], Quat_normalized[1], Quat_normalized[2], Quat_normalized[3])
 
             RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi/2]), 'z').to_array()
+            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
             RotMat_current = z_rotation @ RotMat_current
 
             if parent_idx_list[key] is None:
@@ -66,10 +67,20 @@ def get_q(Xsens_orientation_per_move):
                 RotMat = rotation_matrices[parent_idx_list[key][0], i_frame, :, :]
 
             RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
-            RotMat_between = biorbd.Rotation(RotMat_between[0, 0], RotMat_between[0, 1], RotMat_between[0, 2],
-                            RotMat_between[1, 0], RotMat_between[1, 1], RotMat_between[1, 2],
-                            RotMat_between[2, 0], RotMat_between[2, 1], RotMat_between[2, 2])
-            Q[i_segment*3:(i_segment+1)*3, i_frame] = biorbd.Rotation.toEulerAngles(RotMat_between, 'xyz').to_array()
+            RotMat_between = biorbd.Rotation(
+                RotMat_between[0, 0],
+                RotMat_between[0, 1],
+                RotMat_between[0, 2],
+                RotMat_between[1, 0],
+                RotMat_between[1, 1],
+                RotMat_between[1, 2],
+                RotMat_between[2, 0],
+                RotMat_between[2, 1],
+                RotMat_between[2, 2],
+            )
+            Q[i_segment * 3 : (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                RotMat_between, "xyz"
+            ).to_array()
 
             rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
     return Q
@@ -152,7 +163,7 @@ name_results = "40ms"  #
 save_path = "/home/charbie/Documents/Programmation/TrampolineAcrobaticVariability/XsensReconstructions/"
 
 
-move_list = ['4-', '41', '42', '43']
+move_list = ["4-", "41", "42", "43"]
 
 if os.path.exists("/home/user"):
     home_path = "/home/user"
@@ -173,14 +184,14 @@ if GENRATE_DATA_FRAME_FLAG:
     for folder_subject in os.listdir(results_path):
         # biorbd_model_path = f"models/{folder_subject}_Xsens_Model_rotated.bioMod"
         pelvis_orientations[folder_subject] = {}
-        for folder_move in os.listdir(results_path + '/' + folder_subject):
+        for folder_move in os.listdir(results_path + "/" + folder_subject):
             if folder_move in move_list:
                 pelvis_orientations[folder_subject][folder_move] = []
-                for file in os.listdir(results_path + '/' + folder_subject + '/' + folder_move):
+                for file in os.listdir(results_path + "/" + folder_subject + "/" + folder_move):
                     if len(file) > 23:
                         if file[-23:] == "eyetracking_metrics.pkl":
 
-                            path = results_path + '/' + folder_subject + '/' + folder_move + '/'
+                            path = results_path + "/" + folder_subject + "/" + folder_move + "/"
                             move_filename = path + file
                             with open(move_filename, "rb") as f:
                                 eye_tracking_metrics = pickle.load(f)
@@ -191,8 +202,12 @@ if GENRATE_DATA_FRAME_FLAG:
 
                                 acrobatics = folder_move
 
-                                gaze_position_temporal_evolution_projected = eye_tracking_metrics["gaze_position_temporal_evolution_projected"]
-                                gaze_position_temporal_evolution_projected_facing_front_wall = eye_tracking_metrics["gaze_position_temporal_evolution_projected_facing_front_wall"]
+                                gaze_position_temporal_evolution_projected = eye_tracking_metrics[
+                                    "gaze_position_temporal_evolution_projected"
+                                ]
+                                gaze_position_temporal_evolution_projected_facing_front_wall = eye_tracking_metrics[
+                                    "gaze_position_temporal_evolution_projected_facing_front_wall"
+                                ]
                                 wall_index = eye_tracking_metrics["wall_index"]
                                 wall_index_facing_front_wall = eye_tracking_metrics["wall_index_facing_front_wall"]
                                 fixation_index = eye_tracking_metrics["fixation_index"]
@@ -210,15 +225,17 @@ if GENRATE_DATA_FRAME_FLAG:
                                 EulAngles_head_global = eye_tracking_metrics["EulAngles_head_global"]
                                 EulAngles_neck = eye_tracking_metrics["EulAngles_neck"]
                                 eye_angles = eye_tracking_metrics["eye_angles"]
-                                Xsens_orthogonal_thorax_position = eye_tracking_metrics["Xsens_orthogonal_thorax_position"]
+                                Xsens_orthogonal_thorax_position = eye_tracking_metrics[
+                                    "Xsens_orthogonal_thorax_position"
+                                ]
                                 Xsens_orthogonal_head_position = eye_tracking_metrics["Xsens_orthogonal_head_position"]
                                 Xsens_position_no_level_CoM_corrected_rotated_per_move = eye_tracking_metrics[
-                                    "Xsens_position_no_level_CoM_corrected_rotated_per_move"]
+                                    "Xsens_position_no_level_CoM_corrected_rotated_per_move"
+                                ]
                                 Xsens_jointAngle_per_move = eye_tracking_metrics["Xsens_jointAngle_per_move"]
                                 Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
                                 Xsens_CoM_per_move = eye_tracking_metrics["Xsens_CoM_per_move"]
                                 time_vector_pupil_per_move = eye_tracking_metrics["time_vector_pupil_per_move"]
-
 
                             ### ------------- Computations begin here ------------- ###
                             model = biorbd.Model(biorbd_model_path)
@@ -295,14 +312,13 @@ if GENRATE_DATA_FRAME_FLAG:
                             #     b.stop_recording()
                             #     b.quit()
 
-
                 pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
 
 
 elite_names = ["AlAd", "GuSe", "JeCa", "JeCh", "MaBo", "SaBe", "SaMi", "SoMe"]
 subelite_names = ["AlLe", "AnBe", "AnSt", "ArMa", "JaNo", "JaSh", "JoBu", "LeJa", "LiDu"]
-colors_subelites = [cm.get_cmap('plasma')(k) for k in np.linspace(0, 0.4, len(subelite_names))]
-colors_elites = [cm.get_cmap('plasma')(k) for k in np.linspace(0.6, 1, len(elite_names))]
+colors_subelites = [cm.get_cmap("plasma")(k) for k in np.linspace(0, 0.4, len(subelite_names))]
+colors_elites = [cm.get_cmap("plasma")(k) for k in np.linspace(0.6, 1, len(elite_names))]
 
 fig, axs = plt.subplots(2, 4)
 for subject in pelvis_orientations:
@@ -319,4 +335,3 @@ for subject in pelvis_orientations:
 
 plt.savefig("SomersaultsTwist.png", dpi=300)
 plt.show()
-

@@ -1,6 +1,7 @@
 """
 The goal of this program is to reconstruct the kinematics of the motion capture data using a Kalman filter.
 """
+
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
@@ -9,14 +10,14 @@ import biorbd
 import scipy
 import ezc3d
 import bioviz
-from Function_Class_Graph import (column_names)
+from Function_Class_Graph import column_names
 import pandas as pd
 
 
-model = biorbd.Model('/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod')
+model = biorbd.Model("/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod")
 
 # Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = '/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/'
+file_path_c3d = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/"
 
 # Chemin du dossier de sortie pour les graphiques
 folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/QBis/"
@@ -33,15 +34,15 @@ folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/QBis/"
 
 
 file_intervals = [
-    (file_path_c3d + 'Sa_821_seul_1.c3d', (3357, 3665)),
-    (file_path_c3d + 'Sa_821_seul_2.c3d', (3431, 3736)),
-    (file_path_c3d + 'Sa_821_seul_3.c3d', (3209, 3520)),
-    (file_path_c3d + 'Sa_821_seul_4.c3d', (3311, 3620)),
-    (file_path_c3d + 'Sa_821_seul_5.c3d', (2696, 3000)),
-
+    (file_path_c3d + "Sa_821_seul_1.c3d", (3357, 3665)),
+    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+    (file_path_c3d + "Sa_821_seul_3.c3d", (3209, 3520)),
+    (file_path_c3d + "Sa_821_seul_4.c3d", (3311, 3620)),
+    (file_path_c3d + "Sa_821_seul_5.c3d", (2696, 3000)),
 ]
 
-def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
+
+def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
     markersOverFrames = []
     for i in range(n_frames):
         node_segment = []
@@ -69,17 +70,18 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
 def find_index(name, list):
     return list.index(name)
 
+
 for file_path, interval in file_intervals:
-    file_name = os.path.basename(file_path).split('.')[0]
+    file_name = os.path.basename(file_path).split(".")[0]
     print(f"{file_name} is running")
     c = ezc3d.c3d(file_path)
-    point_data = c['data']['points'][:, :, interval[0]:interval[1]]
+    point_data = c["data"]["points"][:, :, interval[0] : interval[1]]
     n_markers = point_data.shape[1]
     nf_mocap = point_data.shape[2]
-    f_mocap = c['parameters']['POINT']['RATE']['value'][0]
-    point_labels = c['parameters']['POINT']['LABELS']
+    f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]
+    point_labels = c["parameters"]["POINT"]["LABELS"]
     # Extraire les noms de marqueurs utiles de 'point_labels'
-    useful_labels = [label for label in point_labels['value'] if not label.startswith('*')]
+    useful_labels = [label for label in point_labels["value"] if not label.startswith("*")]
 
     sample_label = useful_labels[0]
     typical_dimensions = point_data[0][find_index(sample_label, point_labels["value"])].shape[0]
@@ -88,7 +90,9 @@ for file_path, interval in file_intervals:
 
     ## Deuxieme methode pour remettre les marqueurs dans l'ordre
     n_markers_desired = len(desired_order)
-    reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)  # 4 pour x, y, z, et la confidence
+    reordered_point_data = np.full(
+        (4, n_markers_desired, typical_dimensions), np.nan
+    )  # 4 pour x, y, z, et la confidence
 
     # Remplir le tableau avec les données existantes ou NaN
     for i, marker in enumerate(desired_order):
@@ -96,7 +100,7 @@ for file_path, interval in file_intervals:
             original_index = find_index(marker, point_labels["value"])
             reordered_point_data[:, i, :] = point_data[:, original_index, :]
         else:
-        # Si le marqueur n'est pas trouvé, imprimer un message indiquant que le marqueur est manquant
+            # Si le marqueur n'est pas trouvé, imprimer un message indiquant que le marqueur est manquant
             print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
     ##
     n_markers_reordered = reordered_point_data.shape[1]
@@ -108,10 +112,12 @@ for file_path, interval in file_intervals:
     markers = markers / 1000
 
     frame_index = 0
-    start_frame = markers[:, :, frame_index:frame_index + 1]
+    start_frame = markers[:, :, frame_index : frame_index + 1]
 
     if start_frame.shape != (3, n_markers_reordered, 1):
-        raise ValueError(f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: {start_frame.shape}")
+        raise ValueError(
+            f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: {start_frame.shape}"
+        )
 
     ik = biorbd.InverseKinematics(model, start_frame)
     ik.solve("only_lm")
@@ -134,11 +140,11 @@ for file_path, interval in file_intervals:
 
     Q = pd.DataFrame(Q.transpose(), columns=column_names)
     Q_pred = q_recons[:, frame_index]
-    error = Q_pred-Q
+    error = Q_pred - Q
     # print(error.transpose())
 
     # Création d'un dictionnaire pour le stockage
-    mat_data = {'Q2': q_recons}
+    mat_data = {"Q2": q_recons}
 
     folder_and_file_name_path = folder_path + f"{file_name}.mat"
     # Enregistrement dans un fichier .mat

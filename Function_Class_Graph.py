@@ -13,66 +13,90 @@ import math
 
 
 column_names = [
-    "PelvisTranslation_X", "PelvisTranslation_Y", "PelvisTranslation_Z",
-    "Pelvis_X", "Pelvis_Y", "Pelvis_Z",
-    "Thorax_X", "Thorax_Y", "Thorax_Z",
-    "Tete_X", "Tete_Y", "Tete_Z",
-    "EpauleD_Y", "EpauleD_Z",
-    "BrasD_X", "BrasD_Y", "BrasD_Z",
-    "AvBrasD_X", "AvBrasD_Z",
-    "MainD_X", "MainD_Y",
-    "EpauleG_Y", "EpauleG_Z",
-    "BrasG_X", "BrasG_Y", "BrasG_Z",
-    "AvBrasG_X", "AvBrasG_Z",
-    "MainG_X", "MainG_Y",
-    "CuisseD_X", "CuisseD_Y", "CuisseD_Z",
+    "PelvisTranslation_X",
+    "PelvisTranslation_Y",
+    "PelvisTranslation_Z",
+    "Pelvis_X",
+    "Pelvis_Y",
+    "Pelvis_Z",
+    "Thorax_X",
+    "Thorax_Y",
+    "Thorax_Z",
+    "Tete_X",
+    "Tete_Y",
+    "Tete_Z",
+    "EpauleD_Y",
+    "EpauleD_Z",
+    "BrasD_X",
+    "BrasD_Y",
+    "BrasD_Z",
+    "AvBrasD_X",
+    "AvBrasD_Z",
+    "MainD_X",
+    "MainD_Y",
+    "EpauleG_Y",
+    "EpauleG_Z",
+    "BrasG_X",
+    "BrasG_Y",
+    "BrasG_Z",
+    "AvBrasG_X",
+    "AvBrasG_Z",
+    "MainG_X",
+    "MainG_Y",
+    "CuisseD_X",
+    "CuisseD_Y",
+    "CuisseD_Z",
     "JambeD_X",
-    "PiedD_X", "PiedD_Z",
-    "CuisseG_X", "CuisseG_Y", "CuisseG_Z",
+    "PiedD_X",
+    "PiedD_Z",
+    "CuisseG_X",
+    "CuisseG_Y",
+    "CuisseG_Z",
     "JambeG_X",
-    "PiedG_X", "PiedG_Z"
+    "PiedG_X",
+    "PiedG_Z",
 ]
 
 
 graph_images_info = {
-    'Thorax_all_axes_graph.png': (623, -10),
-    'Tete_all_axes_graph.png': (960, -10),
-    'CuisseG_all_axes_graph.png': (1211, 558),
-    'CuisseD_all_axes_graph.png': (358, 558),
-    'EpauleG_all_axes_graph.png': (1298, -10),
-    'EpauleD_all_axes_graph.png': (285, -10),
-    'BrasG_all_axes_graph.png': (1554, 186),
-    'BrasD_all_axes_graph.png': (16, 186),
-    'AvBrasG_all_axes_graph.png': (1212, 340),
-    'AvBrasD_all_axes_graph.png': (358, 340),
-    'MainG_all_axes_graph.png': (1554, 443),
-    'MainD_all_axes_graph.png': (16, 443),
-    'JambeG_all_axes_graph.png': (1544, 804),
-    'JambeD_all_axes_graph.png': (53, 804),
-    'PiedG_all_axes_graph.png': (1153, 865),
-    'PiedD_all_axes_graph.png': (443, 865),
-    'Pelvis_all_axes_graph.png': (793, 865),
+    "Thorax_all_axes_graph.png": (623, -10),
+    "Tete_all_axes_graph.png": (960, -10),
+    "CuisseG_all_axes_graph.png": (1211, 558),
+    "CuisseD_all_axes_graph.png": (358, 558),
+    "EpauleG_all_axes_graph.png": (1298, -10),
+    "EpauleD_all_axes_graph.png": (285, -10),
+    "BrasG_all_axes_graph.png": (1554, 186),
+    "BrasD_all_axes_graph.png": (16, 186),
+    "AvBrasG_all_axes_graph.png": (1212, 340),
+    "AvBrasD_all_axes_graph.png": (358, 340),
+    "MainG_all_axes_graph.png": (1554, 443),
+    "MainD_all_axes_graph.png": (16, 443),
+    "JambeG_all_axes_graph.png": (1544, 804),
+    "JambeD_all_axes_graph.png": (53, 804),
+    "PiedG_all_axes_graph.png": (1153, 865),
+    "PiedD_all_axes_graph.png": (443, 865),
+    "Pelvis_all_axes_graph.png": (793, 865),
 }
 
 
 lines_info = {
-    'line1': ((952, 400), (1130, 210)),  # Replace with actual coordinates
-    'line2': ((952, 450), (794, 210)),  # Replace with actual coordinates
-    'line3': ((935, 411), (570, 190)),  # Replace with actual coordinates
-    'line4': ((903, 424), (370, 250)),  # Replace with actual coordinates
-    'line5': ((898, 496), (720, 436)),  # Replace with actual coordinates
-    'line6': ((879, 557), (360, 553)),  # Replace with actual coordinates
-    'line7': ((929, 546), (720, 667)),  # Replace with actual coordinates
-    'line8': ((929, 649), (400, 890)),  # Replace with actual coordinates
-    'line9': ((930, 762), (609, 880)),  # Replace with actual coordinates
-    'line10': ((953, 532), (960, 880)),  # Replace with actual coordinates
-    'line11': ((976, 762), (1319, 880)),  # Replace with actual coordinates
-    'line12': ((976, 649), (1543, 890)),  # Replace with actual coordinates
-    'line13': ((976, 546), (1221, 667)),  # Replace with actual coordinates
-    'line14': ((1024, 557), (1551, 553)),  # Replace with actual coordinates
-    'line15': ((1008, 496), (1222, 436)),  # Replace with actual coordinates
-    'line16': ((1000, 424), (1543, 250)),  # Replace with actual coordinates
-    'line17': ((971, 411), (1410, 190)),  # Replace with actual coordinates
+    "line1": ((952, 400), (1130, 210)),  # Replace with actual coordinates
+    "line2": ((952, 450), (794, 210)),  # Replace with actual coordinates
+    "line3": ((935, 411), (570, 190)),  # Replace with actual coordinates
+    "line4": ((903, 424), (370, 250)),  # Replace with actual coordinates
+    "line5": ((898, 496), (720, 436)),  # Replace with actual coordinates
+    "line6": ((879, 557), (360, 553)),  # Replace with actual coordinates
+    "line7": ((929, 546), (720, 667)),  # Replace with actual coordinates
+    "line8": ((929, 649), (400, 890)),  # Replace with actual coordinates
+    "line9": ((930, 762), (609, 880)),  # Replace with actual coordinates
+    "line10": ((953, 532), (960, 880)),  # Replace with actual coordinates
+    "line11": ((976, 762), (1319, 880)),  # Replace with actual coordinates
+    "line12": ((976, 649), (1543, 890)),  # Replace with actual coordinates
+    "line13": ((976, 546), (1221, 667)),  # Replace with actual coordinates
+    "line14": ((1024, 557), (1551, 553)),  # Replace with actual coordinates
+    "line15": ((1008, 496), (1222, 436)),  # Replace with actual coordinates
+    "line16": ((1000, 424), (1543, 250)),  # Replace with actual coordinates
+    "line17": ((971, 411), (1410, 190)),  # Replace with actual coordinates
 }
 
 
@@ -81,12 +105,11 @@ class OrderMatData:
     A class for organize and access easily to the data of a dataframe, especially those from .mat
     files in biomechanical contexts
     """
+
     def __init__(self, dataframe):
         self.dataframe = dataframe
         # Mapping des indices aux suffixes attendus
-        self.index_suffix_map = {
-            0: 'X', 1: 'Y', 2: 'Z'
-        }
+        self.index_suffix_map = {0: "X", 1: "Y", 2: "Z"}
 
     def __getitem__(self, key):
         matching_columns = [col for col in self.dataframe.columns if col.startswith(key)]
@@ -122,15 +145,17 @@ def load_and_interpolate(file, interval, num_points=100):
     """
     # Load data with the DoF
     data = scipy.io.loadmat(file)
-    df = pd.DataFrame(data['Q2']).T
+    df = pd.DataFrame(data["Q2"]).T
 
     df.columns = column_names
 
     # Select data in specify interval
-    df_selected = df.iloc[interval[0]:interval[1]]
+    df_selected = df.iloc[interval[0] : interval[1]]
 
     # Interpolate each column to have a uniform number of points
-    df_interpolated = df_selected.apply(lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x))
+    df_interpolated = df_selected.apply(
+        lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
+    )
     print(df_interpolated.shape)
 
     # Create OrderMatData instance and apply it to df_interpolated
@@ -156,46 +181,44 @@ def get_q(Xsens_orientation_per_move):
     I am not sure if I would use this for kinematics analysis, but for visualisation it is not that bad.
     """
 
-    parent_idx_list = {"Pelvis": None,  # 0
-                       "L5": [0, "Pelvis"],  # 1
-                       "L3": [1, "L5"],  # 2
-                       "T12": [2, "L3"],  # 3
-                       "T8": [3, "T12"],  # 4
-                       "Neck": [4, "T8"],  # 5
-                       "Head": [5, "Neck"],  # 6
-                       "ShoulderR": [4, "T8"],  # 7
-                       "UpperArmR": [7, "ShoulderR"],  # 8
-                       "LowerArmR": [8, "UpperArmR"],  # 9
-                       "HandR": [9, "LowerArmR"],  # 10
-                       "ShoulderL": [4, "T8"],  # 11
-                       "UpperArmL": [11, "ShoulderR"],  # 12
-                       "LowerArmL": [12, "UpperArmR"],  # 13
-                       "HandL": [13, "LowerArmR"],  # 14
-                       "UpperLegR": [0, "Pelvis"],  # 15
-                       "LowerLegR": [15, "UpperLegR"],  # 16
-                       "FootR": [16, "LowerLegR"],  # 17
-                       "ToesR": [17, "FootR"],  # 18
-                       "UpperLegL": [0, "Pelvis"],  # 19
-                       "LowerLegL": [19, "UpperLegL"],  # 20
-                       "FootL": [20, "LowerLegL"],  # 21
-                       "ToesL": [21, "FootL"],  # 22
-                       }
+    parent_idx_list = {
+        "Pelvis": None,  # 0
+        "L5": [0, "Pelvis"],  # 1
+        "L3": [1, "L5"],  # 2
+        "T12": [2, "L3"],  # 3
+        "T8": [3, "T12"],  # 4
+        "Neck": [4, "T8"],  # 5
+        "Head": [5, "Neck"],  # 6
+        "ShoulderR": [4, "T8"],  # 7
+        "UpperArmR": [7, "ShoulderR"],  # 8
+        "LowerArmR": [8, "UpperArmR"],  # 9
+        "HandR": [9, "LowerArmR"],  # 10
+        "ShoulderL": [4, "T8"],  # 11
+        "UpperArmL": [11, "ShoulderR"],  # 12
+        "LowerArmL": [12, "UpperArmR"],  # 13
+        "HandL": [13, "LowerArmR"],  # 14
+        "UpperLegR": [0, "Pelvis"],  # 15
+        "LowerLegR": [15, "UpperLegR"],  # 16
+        "FootR": [16, "LowerLegR"],  # 17
+        "ToesR": [17, "FootR"],  # 18
+        "UpperLegL": [0, "Pelvis"],  # 19
+        "LowerLegL": [19, "UpperLegL"],  # 20
+        "FootL": [20, "LowerLegL"],  # 21
+        "ToesL": [21, "FootL"],  # 22
+    }
 
     nb_frames = Xsens_orientation_per_move.shape[0]
-    Q = np.zeros((23*3, nb_frames))
+    Q = np.zeros((23 * 3, nb_frames))
     rotation_matrices = np.zeros((23, nb_frames, 3, 3))
     for i_segment, key in enumerate(parent_idx_list):
         for i_frame in range(nb_frames):
-            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4] / np.linalg.norm(
-                Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4]
+            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
+                Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4]
             )
-            Quat = biorbd.Quaternion(Quat_normalized[0],
-                                     Quat_normalized[1],
-                                     Quat_normalized[2],
-                                     Quat_normalized[3])
+            Quat = biorbd.Quaternion(Quat_normalized[0], Quat_normalized[1], Quat_normalized[2], Quat_normalized[3])
 
             RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi/2]), 'z').to_array()
+            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
             RotMat_current = z_rotation @ RotMat_current
 
             if parent_idx_list[key] is None:
@@ -204,21 +227,38 @@ def get_q(Xsens_orientation_per_move):
                 RotMat = rotation_matrices[parent_idx_list[key][0], i_frame, :, :]
 
             RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
-            RotMat_between = biorbd.Rotation(RotMat_between[0, 0], RotMat_between[0, 1], RotMat_between[0, 2],
-                            RotMat_between[1, 0], RotMat_between[1, 1], RotMat_between[1, 2],
-                            RotMat_between[2, 0], RotMat_between[2, 1], RotMat_between[2, 2])
-            Q[i_segment*3:(i_segment+1)*3, i_frame] = biorbd.Rotation.toEulerAngles(RotMat_between, 'xyz').to_array()
+            RotMat_between = biorbd.Rotation(
+                RotMat_between[0, 0],
+                RotMat_between[0, 1],
+                RotMat_between[0, 2],
+                RotMat_between[1, 0],
+                RotMat_between[1, 1],
+                RotMat_between[1, 2],
+                RotMat_between[2, 0],
+                RotMat_between[2, 1],
+                RotMat_between[2, 2],
+            )
+            Q[i_segment * 3 : (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                RotMat_between, "xyz"
+            ).to_array()
 
             rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
     return Q
 
 
-def create_composite_image(graph_images_info, base_graph_path, save_path, bg_size=(1920, 1082), body_size=(383, 669),
-                           body_position=(761, 228), graph_size=(366, 220),
-                           border_thickness=0):
-    background = Image.new('RGB', bg_size, color='white')
+def create_composite_image(
+    graph_images_info,
+    base_graph_path,
+    save_path,
+    bg_size=(1920, 1082),
+    body_size=(383, 669),
+    body_position=(761, 228),
+    graph_size=(366, 220),
+    border_thickness=0,
+):
+    background = Image.new("RGB", bg_size, color="white")
 
-    body_image_path = '/home/lim/Documents/StageMathieu/Graph_from_mot/DALL_E_Body.png'
+    body_image_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/DALL_E_Body.png"
     try:
         body_image = Image.open(body_image_path)
         body_image = body_image.resize(body_size, Image.Resampling.LANCZOS)
@@ -235,12 +275,10 @@ def create_composite_image(graph_images_info, base_graph_path, save_path, bg_siz
             graph_image = graph_image.resize(graph_size, Image.Resampling.LANCZOS)
 
             if border_thickness > 0:
-                border_image = Image.new('RGB',
-                                         (graph_size[0] + 2 * border_thickness,
-                                          graph_size[1] + 2 * border_thickness),
-                                         color='black')
-                border_position = (graph_position[0] - border_thickness,
-                                   graph_position[1] - border_thickness)
+                border_image = Image.new(
+                    "RGB", (graph_size[0] + 2 * border_thickness, graph_size[1] + 2 * border_thickness), color="black"
+                )
+                border_position = (graph_position[0] - border_thickness, graph_position[1] - border_thickness)
                 background.paste(border_image, border_position)
                 background.paste(graph_image, graph_position, graph_image)
             else:
@@ -261,8 +299,9 @@ def create_composite_image(graph_images_info, base_graph_path, save_path, bg_siz
     return save_path
 
 
-def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_size=15,
-                                    circle_radius=5, scale_factor=4):
+def add_lines_with_arrow_and_circle(
+    image_path, lines_info, line_width=2, arrow_size=15, circle_radius=5, scale_factor=4
+):
     """
     Draw smooth lines with arrows on one end and circles on the other on the image using a scaling technique for
     anti-aliasing.
@@ -299,19 +338,26 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
 
             # Calculate arrow points
             arrow_tip = end_scaled
-            arrow_left = (end_scaled[0] - arrow_size_scaled * math.cos(angle - math.pi/6), end_scaled[1] -
-                          arrow_size_scaled * math.sin(angle - math.pi/6))
-            arrow_right = (end_scaled[0] - arrow_size_scaled * math.cos(angle + math.pi/6), end_scaled[1] -
-                           arrow_size_scaled * math.sin(angle + math.pi/6))
+            arrow_left = (
+                end_scaled[0] - arrow_size_scaled * math.cos(angle - math.pi / 6),
+                end_scaled[1] - arrow_size_scaled * math.sin(angle - math.pi / 6),
+            )
+            arrow_right = (
+                end_scaled[0] - arrow_size_scaled * math.cos(angle + math.pi / 6),
+                end_scaled[1] - arrow_size_scaled * math.sin(angle + math.pi / 6),
+            )
 
             # Draw the arrow
             draw.polygon([arrow_tip, arrow_left, arrow_right], fill="black")
 
             # Draw a filled circle
-            draw.ellipse([
-                (start_scaled[0] - circle_radius_scaled, start_scaled[1] - circle_radius_scaled),
-                (start_scaled[0] + circle_radius_scaled, start_scaled[1] + circle_radius_scaled)
-            ], fill="black")
+            draw.ellipse(
+                [
+                    (start_scaled[0] - circle_radius_scaled, start_scaled[1] - circle_radius_scaled),
+                    (start_scaled[0] + circle_radius_scaled, start_scaled[1] + circle_radius_scaled),
+                ],
+                fill="black",
+            )
 
         # Resize the image back down with anti-aliasing
         smooth_img = large_img.resize(img.size, Image.Resampling.LANCZOS)
@@ -323,7 +369,7 @@ def add_lines_with_arrow_and_circle(image_path, lines_info, line_width=2, arrow_
     return output_path
 
 
-def recons_kalman(n_frames, num_markers, markers_xsens, model,initial_guess):
+def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
     markersOverFrames = []
     for i in range(n_frames):
         node_segment = []

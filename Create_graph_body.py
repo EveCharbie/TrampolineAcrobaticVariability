@@ -1,5 +1,6 @@
 from Function_Class_Graph import create_composite_image, add_lines_with_arrow_and_circle, graph_images_info, lines_info
 from PIL import Image
+
 # https://www.shutterstock.com/fr/search/corps-humain-de-dos
 
 
