@@ -17,10 +17,10 @@ import pandas as pd
 model = biorbd.Model("/home/lim/Documents/StageMathieu/Data_propre/SaMi/SaMi.bioMod")
 
 # Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Mvt_c3d/"
+file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/QBis/"
+folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Q/"
 
 
 # Liste des tuples (chemin du fichier, intervalle)
@@ -88,11 +88,10 @@ for file_path, interval in file_intervals:
 
     desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
-    ## Deuxieme methode pour remettre les marqueurs dans l'ordre
     n_markers_desired = len(desired_order)
     reordered_point_data = np.full(
         (4, n_markers_desired, typical_dimensions), np.nan
-    )  # 4 pour x, y, z, et la confidence
+    )
 
     # Remplir le tableau avec les données existantes ou NaN
     for i, marker in enumerate(desired_order):
@@ -100,11 +99,11 @@ for file_path, interval in file_intervals:
             original_index = find_index(marker, point_labels["value"])
             reordered_point_data[:, i, :] = point_data[:, original_index, :]
         else:
-            # Si le marqueur n'est pas trouvé, imprimer un message indiquant que le marqueur est manquant
             print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
-    ##
+
     n_markers_reordered = reordered_point_data.shape[1]
 
+    # Ne prendre que les 3 premiere colonnes et divise par 1000
     markers = np.zeros((3, n_markers_reordered, nf_mocap))
     for i in range(nf_mocap):
         for j in range(n_markers_reordered):
@@ -112,12 +111,11 @@ for file_path, interval in file_intervals:
     markers = markers / 1000
 
     frame_index = 0
-    start_frame = markers[:, :, frame_index : frame_index + 1]
-
+    start_frame = markers[:, :, frame_index: frame_index + 1]
     if start_frame.shape != (3, n_markers_reordered, 1):
         raise ValueError(
-            f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: {start_frame.shape}"
-        )
+            f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: "
+            f"{start_frame.shape}")
 
     ik = biorbd.InverseKinematics(model, start_frame)
     ik.solve("only_lm")
