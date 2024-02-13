@@ -108,9 +108,11 @@ for file_path, interval in file_intervals:
     for i in range(nf_mocap):
         for j in range(n_markers_reordered):
             markers[:, j, i] = reordered_point_data[:3, j, i]
+            # markers[:, j, nf_mocap-1-i] = reordered_point_data[:3, j, i]
     markers = markers / 1000
 
     frame_index = 0
+    # frame_index = nf_mocap-1
     start_frame = markers[:, :, frame_index: frame_index + 1]
     if start_frame.shape != (3, n_markers_reordered, 1):
         raise ValueError(

@@ -18,10 +18,10 @@ from Function_Class_Graph import (
 )
 
 # Chemin du dossier contenant les fichiers .mat
-file_path_mat = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/"
+file_path_mat = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Q/"
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMiBis/822_contact/"
+folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Graphique/821_seul/"
 
 # Créer le dossier de sortie s'il n'existe pas
 if not os.path.exists(folder_path):
@@ -30,11 +30,11 @@ if not os.path.exists(folder_path):
 
 # Liste des tuples (chemin du fichier, intervalle)
 file_intervals = [
-    (file_path_mat + "Sa_822_contact_1.mat", (0, 292)),
-    (file_path_mat + "Sa_822_contact_2.mat", (0, 292)),
-    (file_path_mat + "Sa_822_contact_3.mat", (0, 278)),
-    # (file_path_mat + 'Sa_831_831_5.mat', (0, 296)),
-    # (file_path_mat + 'Sa_831_831_6.mat', (0, 299)),
+    (file_path_mat + "Sa_821_seul_1.mat", (0, 308)),
+    (file_path_mat + "Sa_821_seul_2.mat", (0, 305)),
+    (file_path_mat + "Sa_821_seul_3.mat", (0, 307)),
+    (file_path_mat + "Sa_821_seul_4.mat", (0, 309)),
+    (file_path_mat + "Sa_821_seul_5.mat", (0, 304)),
 ]
 
 for file_path, interval in file_intervals:
