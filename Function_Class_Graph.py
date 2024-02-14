@@ -392,3 +392,7 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
         q_recons[:, i] = Q.to_array()
         qdot_recons[:, i] = Qdot.to_array()
     return q_recons, qdot_recons
+
+
+def find_index(name, list):
+    return list.index(name)

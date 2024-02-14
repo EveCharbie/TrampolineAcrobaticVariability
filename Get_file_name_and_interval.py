@@ -1,23 +1,24 @@
 import numpy as np
 import os
 import pandas as pd
+import biorbd
 
 csv_path = "/home/lim/Documents/StageMathieu/DataTrampo/Labelling_trampo.csv"
-df = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
+interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
 valide = ['O']
-df = df[df["Analyse"] == 'O']
-df['Essai'] = df['Essai'] + '.c3d'
+interval_name_tab = interval_name_tab[interval_name_tab["Analyse"] == 'O']
+interval_name_tab['Essai'] = interval_name_tab['Essai'] + '.c3d'
 
-# Obtenir la liste unique des participants
-participant_name = df['Participant'].unique()
-
-# Afficher la liste
-print(participant_name)
+# Obtenir la liste des participants
+participant_name = interval_name_tab['Participant'].unique()
 
 for name in participant_name:
-    essai_by_name = df[df["Participant"] == name].copy()  # Modifier ici
+    essai_by_name = interval_name_tab[interval_name_tab["Participant"] == name].copy()  # Modifier ici
     essai_by_name.loc[:, 'Interval'] = essai_by_name.apply(lambda row: (row['Debut'], row['Fin']), axis=1)
     folder_path = f"/home/lim/Documents/StageMathieu/DataTrampo/{name}/Q/"
+    model_path = f"/home/lim/Documents/StageMathieu/DataTrampo/{name}/{name}.s2mMod"
+    model = biorbd.Model(model_path)
+
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
