@@ -64,13 +64,18 @@ for name in participant_name:
             (4, n_markers_desired, typical_dimensions), np.nan
         )
 
-        # Remplir le tableau avec les données existantes ou NaN
         for i, marker in enumerate(desired_order):
-            if marker in useful_labels:
-                original_index = find_index(marker, point_labels["value"])
-                reordered_point_data[:, i, :] = point_data[:, original_index, :]
-            else:
+            marker_found = False
+            for label in useful_labels:
+                if marker in label:  # Vérifie si marker est une sous-chaîne de label.
+                    original_index = find_index(label, point_labels["value"])
+                    reordered_point_data[:, i, :] = point_data[:, original_index, :]
+                    marker_found = True
+                    break
+
+            if not marker_found:
                 print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
+                pass
 
         n_markers_reordered = reordered_point_data.shape[1]
 

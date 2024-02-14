@@ -59,16 +59,14 @@ for file_path, interval in file_intervals:
     #         print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
 
     for i, marker in enumerate(desired_order):
-        # Initialiser une variable pour indiquer si le marker a été trouvé.
         marker_found = False
         for label in useful_labels:
             if marker in label:  # Vérifie si marker est une sous-chaîne de label.
                 original_index = find_index(label, point_labels["value"])
                 reordered_point_data[:, i, :] = point_data[:, original_index, :]
-                marker_found = True  # Mettre à jour le marqueur trouvé à vrai.
-                break  # Sortir de la boucle une fois le marker trouvé.
+                marker_found = True
+                break
 
-        # Si marker n'est pas trouvé dans useful_labels, ajouter votre logique d'alternative ici.
         if not marker_found:
             print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
             pass
