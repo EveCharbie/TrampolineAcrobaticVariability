@@ -150,13 +150,13 @@ def load_and_interpolate(file, interval, num_points=100):
     df.columns = column_names
 
     # Select data in specify interval
-    df_selected = df.iloc[interval[0] : interval[1]]
+    df_selected = df.iloc[interval[0]: interval[1]]
 
     # Interpolate each column to have a uniform number of points
     df_interpolated = df_selected.apply(
         lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
     )
-    print(df_interpolated.shape)
+    # print(df_interpolated.shape)
 
     # Create OrderMatData instance and apply it to df_interpolated
     my_data_instance = OrderMatData(df_interpolated)
