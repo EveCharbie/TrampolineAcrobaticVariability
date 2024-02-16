@@ -17,19 +17,18 @@ file_intervals = [
 my_data_instances = [load_and_interpolate(file, interval) for file, interval in file_intervals]
 
 
-data_arrays = [instance.get_column_by_index("BrasD", 1) for instance in my_data_instances]
-data_arrays = np.degrees(data_arrays)
+data_arrays = [instance.get_column_by_index("PiedD", 0) for instance in my_data_instances]
 plt.figure(figsize=(10, 6))
 for i in range(0, len(data_arrays)):
-    if data_arrays[i][0] > 340:
-        data_arrays[i] -= 360
-    elif data_arrays[i][0] < -340:
-        data_arrays[i] += 360
+    if data_arrays[i][0] > 2*np.pi:
+        data_arrays[i] -= 2*np.pi
+    elif data_arrays[i][0] < -2*np.pi:
+        data_arrays[i] += 2*np.pi
 
-    if 140 < data_arrays[i][0] <= 360:
-        data_arrays[i] -= 180
-    elif -360 <= data_arrays[i][0] < -140:
-        data_arrays[i] += 180
+    if np.pi < data_arrays[i][0] <= 2*np.pi:
+        data_arrays[i] -= np.pi
+    elif -2*np.pi <= data_arrays[i][0] < -np.pi:
+        data_arrays[i] += np.pi
     plt.plot(data_arrays[i], label=f"Essai{i}")
 plt.xlabel("Time (%)")
 plt.ylabel("Value")

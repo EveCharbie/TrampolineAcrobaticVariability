@@ -13,8 +13,8 @@ import bioviz
 from Function_Class_Graph import column_names, recons_kalman, find_index
 import pandas as pd
 
-
-csv_path = "/home/lim/Documents/StageMathieu/DataTrampo/Labelling_trampo.csv"
+repertory_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+csv_path = f"{repertory_path}Labelling_trampo.csv"
 interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
 valide = ['O']
 interval_name_tab = interval_name_tab[interval_name_tab["Analyse"] == 'O']
@@ -26,14 +26,14 @@ participant_name = interval_name_tab['Participant'].unique()
 for name in participant_name:
     essai_by_name = interval_name_tab[interval_name_tab["Participant"] == name].copy()  # Modifier ici
     essai_by_name.loc[:, 'Interval'] = essai_by_name.apply(lambda row: (row['Debut'], row['Fin']), axis=1)
-    folder_path = f"/home/lim/Documents/StageMathieu/DataTrampo/{name}/Q/"
-    model_path = f"/home/lim/Documents/StageMathieu/DataTrampo/{name}/{name}.s2mMod"
+    folder_path = f"{repertory_path}{name}/Q/"
+    model_path = f"{repertory_path}{name}/{name}.s2mMod"
     model = biorbd.Model(model_path)
 
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    file_path = f"/home/lim/Documents/StageMathieu/DataTrampo/{name}/Tests/"
+    file_path = f"{repertory_path}{name}/Tests/"
     file_intervals = []
 
     for index, row in essai_by_name.iterrows():
@@ -83,12 +83,12 @@ for name in participant_name:
         markers = np.zeros((3, n_markers_reordered, nf_mocap))
         for i in range(nf_mocap):
             for j in range(n_markers_reordered):
-                markers[:, j, i] = reordered_point_data[:3, j, i]
-                # markers[:, j, nf_mocap-1-i] = reordered_point_data[:3, j, i]
+                # markers[:, j, i] = reordered_point_data[:3, j, i]
+                markers[:, j, nf_mocap-1-i] = reordered_point_data[:3, j, i]
         markers = markers / 1000
 
-        frame_index = 0
-        # frame_index = nf_mocap-1
+        # frame_index = 0
+        frame_index = nf_mocap-1
         start_frame = markers[:, :, frame_index: frame_index + 1]
         if start_frame.shape != (3, n_markers_reordered, 1):
             raise ValueError(
