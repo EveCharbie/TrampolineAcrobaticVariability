@@ -396,3 +396,23 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
 
 def find_index(name, list):
     return list.index(name)
+
+
+def calculate_rmsd(markers, pos_recons):
+    # Vérifier que les formes des tableaux sont identiques
+    assert markers.shape == pos_recons.shape, "Les tableaux doivent avoir la même forme."
+
+    n_frames = markers.shape[2]
+    rmsd_per_frame = np.zeros(n_frames)
+
+    for i in range(n_frames):
+        # Calculer la différence entre les ensembles de marqueurs pour le cadre i
+        diff = markers[:, :, i] - pos_recons[:, :, i]
+        # Calculer la norme au carré de la différence pour chaque marqueur
+        squared_diff = np.nansum(diff ** 2, axis=0)
+        # Calculer la moyenne des différences au carré
+        mean_squared_diff = np.mean(squared_diff)
+        # Calculer la racine carrée de la moyenne des différences au carré pour obtenir la RMSD
+        rmsd_per_frame[i] = np.sqrt(mean_squared_diff)
+
+    return rmsd_per_frame
