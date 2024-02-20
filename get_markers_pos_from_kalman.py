@@ -6,6 +6,7 @@ import ezc3d
 import bioviz
 from Function_Class_Graph import find_index, calculate_rmsd
 import pandas as pd
+from matplotlib.animation import FuncAnimation
 
 
 def recons_kalman_v2(n_frames, num_markers, markers_xsens, model, initial_guess):
@@ -37,8 +38,8 @@ def recons_kalman_v2(n_frames, num_markers, markers_xsens, model, initial_guess)
 
         # Nouveau : Calculer et stocker les positions reconstruites des marqueurs pour ce cadre
         markers_reconstructed = model.markers(Q)
-        for m, marker in enumerate(markers_reconstructed):
-            markers_recons[:, m, i] = marker.to_array()
+        for m, marker_recons in enumerate(markers_reconstructed):
+            markers_recons[:, m, i] = marker_recons.to_array()
 
     return q_recons, qdot_recons, markers_recons
 
@@ -129,24 +130,73 @@ for file_path, interval in file_intervals:
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
-    markers_by_segment = {}
+    condintg_index = find_index("CONDINTG", desired_order)
+    conextg_index = find_index("CONEXTG", desired_order)
+    malintg_index = find_index("MALINTG", desired_order)
+    malextg_index = find_index("MALEXTG", desired_order)
 
-    for i in range(model.nbMarkers()):
-        marker_name = model.markerNames()[i].to_string()
-        marker_indice = model.marker(i)
-        parent_index = marker_indice.parentId()
+    axe_x_knee = (pos_recons[:, conextg_index, :]).T-(pos_recons[:, condintg_index, :]).T
+    axe_x_knee = axe_x_knee / np.linalg.norm(axe_x_knee, axis=1)[:, np.newaxis]
 
-        # Vérifier que l'indice du parent est valide
-        if 0 <= parent_index < model.nbSegment():
-            segment_name = model.segment(parent_index).name().to_string()
-            if segment_name not in markers_by_segment:
-                markers_by_segment[segment_name] = []
+    mid_cond = ((pos_recons[:, conextg_index, :]).T + (pos_recons[:, condintg_index, :]).T)/2
+    mid_mal = ((pos_recons[:, malextg_index, :]).T + (pos_recons[:, malintg_index, :]).T)/2
 
-            markers_by_segment[segment_name].append(marker_name)
-        else:
-            print(f"Indice de segment invalide pour le marqueur {marker_name}: {parent_index}")
+    axe_y_knee = mid_cond-mid_mal
+    axe_y_knee = axe_y_knee / np.linalg.norm(axe_y_knee, axis=1)[:, np.newaxis]
 
-    # Afficher les marqueurs regroupés par segment
-    for segment, markers in markers_by_segment.items():
-        print(f"Segment: {segment}, Marqueurs: {markers}")
+    axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
+    axe_z_knee = axe_z_knee / np.linalg.norm(axe_z_knee, axis=1)[:, np.newaxis]
+
+    # Création de la figure et de l'axe 3D
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+    # Limites de l'axe pour une bonne visualisation
+    # Ajustez ces limites en fonction de vos données spécifiques
+    ax.set_xlim([-2, 2])
+    ax.set_ylim([-2, 2])
+    ax.set_zlim([-2, 2])
+
+
+    # Initialisation de l'animation en nettoyant les axes
+    def init():
+        ax.clear()
+        ax.set_xlim([-2, 2])
+        ax.set_ylim([-2, 2])
+        ax.set_zlim([-2, 2])
+
+
+    # Mise à jour de l'animation pour chaque frame
+    def update(frame):
+        ax.clear()
+        origin = mid_cond[frame]  # Utilisez mid_cond comme origine pour cette frame
+        # Dessinez chaque vecteur avec l'origine définie par mid_cond pour cette frame
+        ax.quiver(origin[0], origin[1], origin[2], axe_x_knee[frame, 0], axe_x_knee[frame, 1], axe_x_knee[frame, 2],
+                  color='r', length=0.5, normalize=True)
+        ax.quiver(origin[0], origin[1], origin[2], axe_y_knee[frame, 0], axe_y_knee[frame, 1], axe_y_knee[frame, 2],
+                  color='g', length=0.5, normalize=True)
+        ax.quiver(origin[0], origin[1], origin[2], axe_z_knee[frame, 0], axe_z_knee[frame, 1], axe_z_knee[frame, 2],
+                  color='b', length=0.5, normalize=True)
+
+
+    # Création de l'animation
+    ani = FuncAnimation(fig, update, frames=range(axe_x_knee.shape[0]), init_func=init, blit=False)
+
+    plt.show()
+
+    # markers_by_segment = {}
+    # for i in range(model.nbMarkers()):
+    #     marker_name = model.markerNames()[i].to_string()
+    #     marker_indice = model.marker(i)
+    #     parent_index = marker_indice.parentId()
+    #     # Vérifier que l'indice du parent est valide
+    #     if 0 <= parent_index < model.nbSegment():
+    #         segment_name = model.segment(parent_index).name().to_string()
+    #         if segment_name not in markers_by_segment:
+    #             markers_by_segment[segment_name] = []
+    #         markers_by_segment[segment_name].append(marker_name)
+    #     else:
+    #         print(f"Indice de segment invalide pour le marqueur {marker_name}: {parent_index}")
+    # # Afficher les marqueurs regroupés par segment
+    # for segment, markers in markers_by_segment.items():
+    #     print(f"Segment: {segment}, Marqueurs: {markers}")
 
