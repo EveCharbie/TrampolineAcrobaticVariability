@@ -416,3 +416,67 @@ def calculate_rmsd(markers, pos_recons):
         rmsd_per_frame[i] = np.sqrt(mean_squared_diff)
 
     return rmsd_per_frame
+
+
+def normalise_vecteurs(vecteurs):
+    normes = np.linalg.norm(vecteurs, axis=1)[:, np.newaxis]
+    vecteurs_normalises = vecteurs / normes
+    return vecteurs_normalises
+
+
+def dessiner_vecteurs(ax, origine, vecteur_x, vecteur_y, vecteur_z, longueur=0.1):
+    ax.quiver(origine[0], origine[1], origine[2], vecteur_x[0], vecteur_x[1], vecteur_x[2], color="r",
+              length=longueur, normalize=True)
+    ax.quiver(origine[0], origine[1], origine[2], vecteur_y[0], vecteur_y[1], vecteur_y[2], color="g",
+              length=longueur, normalize=True)
+    ax.quiver(origine[0], origine[1], origine[2], vecteur_z[0], vecteur_z[1], vecteur_z[2], color="b",
+              length=longueur, normalize=True)
+
+
+def get_orientation_knee_left(pos_marker, marker_name_list):
+    condintg_index = find_index("CONDINTG", marker_name_list)
+    conextg_index = find_index("CONEXTG", marker_name_list)
+    malintg_index = find_index("MALINTG", marker_name_list)
+    malextg_index = find_index("MALEXTG", marker_name_list)
+
+    axe_x_knee = (pos_marker[:, condintg_index, :]).T - (pos_marker[:, conextg_index, :]).T
+    axe_x_knee = normalise_vecteurs(axe_x_knee)
+
+    mid_cond = ((pos_marker[:, conextg_index, :]).T + (pos_marker[:, condintg_index, :]).T) / 2
+    mid_mal = ((pos_marker[:, malextg_index, :]).T + (pos_marker[:, malintg_index, :]).T) / 2
+
+    axe_y_knee = mid_cond - mid_mal
+    axe_y_knee = normalise_vecteurs(axe_y_knee)
+
+    axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
+    axe_z_knee = normalise_vecteurs(axe_z_knee)
+
+    axe_x_knee = np.cross(axe_z_knee, axe_y_knee)
+    axe_x_knee = normalise_vecteurs(axe_x_knee)
+
+    return axe_x_knee, axe_y_knee, axe_z_knee, mid_cond
+
+
+def get_orientation_knee_right(pos_marker, marker_name_list):
+    condintd_index = find_index("CONDINTD", marker_name_list)
+    condextd_index = find_index("CONDEXTD", marker_name_list)
+    malintd_index = find_index("MALINTD", marker_name_list)
+    malextd_index = find_index("MALEXTD", marker_name_list)
+
+    axe_x_knee = (pos_marker[:, condextd_index, :]).T - (pos_marker[:, condintd_index, :]).T
+    axe_x_knee = normalise_vecteurs(axe_x_knee)
+
+    mid_cond = ((pos_marker[:, condextd_index, :]).T + (pos_marker[:, condintd_index, :]).T) / 2
+    mid_mal = ((pos_marker[:, malextd_index, :]).T + (pos_marker[:, malintd_index, :]).T) / 2
+
+    axe_y_knee = mid_cond - mid_mal
+    axe_y_knee = normalise_vecteurs(axe_y_knee)
+
+    axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
+    axe_z_knee = normalise_vecteurs(axe_z_knee)
+
+    axe_x_knee = np.cross(axe_z_knee, axe_y_knee)
+    axe_x_knee = normalise_vecteurs(axe_x_knee)
+
+    return axe_x_knee, axe_y_knee, axe_z_knee, mid_cond
+

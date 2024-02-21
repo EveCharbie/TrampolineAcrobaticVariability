@@ -4,8 +4,10 @@ import os
 import biorbd
 import ezc3d
 import bioviz
-from Function_Class_Graph import find_index, calculate_rmsd
 import pandas as pd
+
+from Function_Class_Graph import (find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
+                                  dessiner_vecteurs)
 from matplotlib.animation import FuncAnimation
 
 
@@ -123,29 +125,15 @@ for file_path, interval in file_intervals:
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
     q_recons, qdot_recons, pos_recons = recons_kalman_v2(nf_mocap, n_markers_reordered, markers, model, initial_guess)
-    # b = bioviz.Viz(loaded_model=model)
-    # b.load_movement(q_recons)
-    # b.load_experimental_markers(markers[:, :, :])
-    # b.exec()
+    b = bioviz.Viz(loaded_model=model)
+    b.load_movement(q_recons)
+    b.load_experimental_markers(markers[:, :, :])
+    b.exec()
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
-    condintg_index = find_index("CONDINTG", desired_order)
-    conextg_index = find_index("CONEXTG", desired_order)
-    malintg_index = find_index("MALINTG", desired_order)
-    malextg_index = find_index("MALEXTG", desired_order)
-
-    axe_x_knee = (pos_recons[:, conextg_index, :]).T-(pos_recons[:, condintg_index, :]).T
-    axe_x_knee = axe_x_knee / np.linalg.norm(axe_x_knee, axis=1)[:, np.newaxis]
-
-    mid_cond = ((pos_recons[:, conextg_index, :]).T + (pos_recons[:, condintg_index, :]).T)/2
-    mid_mal = ((pos_recons[:, malextg_index, :]).T + (pos_recons[:, malintg_index, :]).T)/2
-
-    axe_y_knee = mid_cond-mid_mal
-    axe_y_knee = axe_y_knee / np.linalg.norm(axe_y_knee, axis=1)[:, np.newaxis]
-
-    axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
-    axe_z_knee = axe_z_knee / np.linalg.norm(axe_z_knee, axis=1)[:, np.newaxis]
+    axe_x_knee_left, axe_y_knee_left, axe_z_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+    axe_x_knee_right, axe_y_knee_right, axe_z_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -164,22 +152,24 @@ for file_path, interval in file_intervals:
         ax.set_ylim([-2, 2])
         ax.set_zlim([-2, 2])
 
-
     # Mise à jour de l'animation pour chaque frame
     def update(frame):
         ax.clear()
-        origin = mid_cond[frame]  # Utilisez mid_cond comme origine pour cette frame
-        # Dessinez chaque vecteur avec l'origine définie par mid_cond pour cette frame
-        ax.quiver(origin[0], origin[1], origin[2], axe_x_knee[frame, 0], axe_x_knee[frame, 1], axe_x_knee[frame, 2],
-                  color='r', length=0.5, normalize=True)
-        ax.quiver(origin[0], origin[1], origin[2], axe_y_knee[frame, 0], axe_y_knee[frame, 1], axe_y_knee[frame, 2],
-                  color='g', length=0.5, normalize=True)
-        ax.quiver(origin[0], origin[1], origin[2], axe_z_knee[frame, 0], axe_z_knee[frame, 1], axe_z_knee[frame, 2],
-                  color='b', length=0.5, normalize=True)
+        # Origines pour les genoux gauche et droit
+        origin_left = mid_cond_left[frame]
+        origin_right = mid_cond_right[frame]
 
+        dessiner_vecteurs(ax, origin_left, axe_x_knee_left[frame], axe_y_knee_left[frame], axe_z_knee_left[frame])
 
-    # Création de l'animation
-    ani = FuncAnimation(fig, update, frames=range(axe_x_knee.shape[0]), init_func=init, blit=False)
+        dessiner_vecteurs(ax, origin_right, axe_x_knee_right[frame], axe_y_knee_right[frame], axe_z_knee_right[frame])
+
+        # Affichage des points pour tous les marqueurs
+        for m in range(pos_recons.shape[1]):
+            x, y, z = pos_recons[:, m, frame]
+            ax.scatter(x, y, z, s=10)  # Vous pouvez ajuster la couleur si nécessaire
+
+        # Création de l'animation
+    ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)
 
     plt.show()
 
