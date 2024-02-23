@@ -7,7 +7,7 @@ import bioviz
 import pandas as pd
 
 from Function_Class_Graph import (find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
-                                  dessiner_vecteurs)
+                                  dessiner_vecteurs, predictive_hip_joint_center_location)
 from matplotlib.animation import FuncAnimation
 
 
@@ -125,15 +125,16 @@ for file_path, interval in file_intervals:
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
     q_recons, qdot_recons, pos_recons = recons_kalman_v2(nf_mocap, n_markers_reordered, markers, model, initial_guess)
-    b = bioviz.Viz(loaded_model=model)
-    b.load_movement(q_recons)
-    b.load_experimental_markers(markers[:, :, :])
-    b.exec()
+    # b = bioviz.Viz(loaded_model=model)
+    # b.load_movement(q_recons)
+    # b.load_experimental_markers(markers[:, :, :])
+    # b.exec()
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
-    axe_x_knee_left, axe_y_knee_left, axe_z_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
-    axe_x_knee_right, axe_y_knee_right, axe_z_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
+    matrices_rotation_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+    matrices_rotation_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
+    hjc, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(pos_recons, desired_order)
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -158,15 +159,29 @@ for file_path, interval in file_intervals:
         # Origines pour les genoux gauche et droit
         origin_left = mid_cond_left[frame]
         origin_right = mid_cond_right[frame]
+        origin_pelvic = pelvic_origin[frame]
+        origin_hjc = hjc[frame]
 
-        dessiner_vecteurs(ax, origin_left, axe_x_knee_left[frame], axe_y_knee_left[frame], axe_z_knee_left[frame])
+        dessiner_vecteurs(ax, origin_left, matrices_rotation_left[frame][:, 0], matrices_rotation_left[frame][:, 1],
+                          matrices_rotation_left[frame][:, 2])
 
-        dessiner_vecteurs(ax, origin_right, axe_x_knee_right[frame], axe_y_knee_right[frame], axe_z_knee_right[frame])
+        dessiner_vecteurs(ax, origin_right, matrices_rotation_right[frame][:, 0], matrices_rotation_right[frame][:, 1],
+                          matrices_rotation_right[frame][:, 2])
 
-        # Affichage des points pour tous les marqueurs
+        dessiner_vecteurs(ax, origin_pelvic, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
+                          matrices_rotation_pelvic[frame][:, 2])
+
+        dessiner_vecteurs(ax, origin_hjc, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
+                          matrices_rotation_pelvic[frame][:, 2])
+
+        # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
         for m in range(pos_recons.shape[1]):
             x, y, z = pos_recons[:, m, frame]
-            ax.scatter(x, y, z, s=10)  # Vous pouvez ajuster la couleur si nécessaire
+            ax.scatter(x, y, z, s=10, c='b')  # Utiliser 'c' pour spécifier la couleur
+
+        # Ajouter une légende seulement pour le premier frame pour éviter les répétitions
+        if frame == 0:
+            ax.legend()
 
         # Création de l'animation
     ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)

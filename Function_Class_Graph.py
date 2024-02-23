@@ -433,6 +433,19 @@ def dessiner_vecteurs(ax, origine, vecteur_x, vecteur_y, vecteur_z, longueur=0.1
               length=longueur, normalize=True)
 
 
+def transform_point(local_point, rotation_matrix, origin):
+    local_point_np = np.array(local_point).T
+    local_point_np_reshaped = local_point_np[:, :, np.newaxis]
+    rotated_points = rotation_matrix @ local_point_np_reshaped
+    rotated_points = rotated_points.squeeze(-1)
+
+    origin_np = np.array(origin)
+
+    global_point = rotated_points + origin_np
+
+    return global_point
+
+
 def get_orientation_knee_left(pos_marker, marker_name_list):
     condintg_index = find_index("CONDINTG", marker_name_list)
     conextg_index = find_index("CONEXTG", marker_name_list)
@@ -454,7 +467,9 @@ def get_orientation_knee_left(pos_marker, marker_name_list):
     axe_x_knee = np.cross(axe_z_knee, axe_y_knee)
     axe_x_knee = normalise_vecteurs(axe_x_knee)
 
-    return axe_x_knee, axe_y_knee, axe_z_knee, mid_cond
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)])
+
+    return matrices_rotation, mid_cond
 
 
 def get_orientation_knee_right(pos_marker, marker_name_list):
@@ -478,5 +493,59 @@ def get_orientation_knee_right(pos_marker, marker_name_list):
     axe_x_knee = np.cross(axe_z_knee, axe_y_knee)
     axe_x_knee = normalise_vecteurs(axe_x_knee)
 
-    return axe_x_knee, axe_y_knee, axe_z_knee, mid_cond
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)])
+
+    return matrices_rotation, mid_cond
+
+
+def predictive_hip_joint_center_location(pos_marker, marker_name_list):
+    EIPSD_index = find_index("EIPSD", marker_name_list)
+    EIPSG_index = find_index("EIPSG", marker_name_list)
+    EIASD_index = find_index("EIASD", marker_name_list)
+    EIASG_index = find_index("EIASG", marker_name_list)
+    condintd_index = find_index("CONDINTD", marker_name_list)
+    condintg_index = find_index("CONDINTG", marker_name_list)
+    malintd_index = find_index("MALINTD", marker_name_list)
+    malintg_index = find_index("MALINTG", marker_name_list)
+
+    mid_EIAS = ((pos_marker[:, EIASD_index, :]).T + (pos_marker[:, EIASG_index, :]).T) / 2
+    mid_EIPS = ((pos_marker[:, EIPSD_index, :]).T + (pos_marker[:, EIPSG_index, :]).T) / 2
+
+    axe_z_pelvic = (pos_marker[:, EIASD_index, :]).T - (pos_marker[:, EIASG_index, :]).T
+    axe_z_pelvic = normalise_vecteurs(axe_z_pelvic)
+
+    axe_x_pelvic = mid_EIAS - mid_EIPS
+    axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
+
+    axe_y_pelvic = np.cross(axe_z_pelvic, axe_x_pelvic)
+    axe_y_pelvic = normalise_vecteurs(axe_y_pelvic)
+
+    axe_x_pelvic = np.cross(axe_z_pelvic, axe_y_pelvic)
+    axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
+
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_pelvic, axe_y_pelvic, axe_z_pelvic)])
+
+    diffs_pelvic_depth = mid_EIAS + mid_EIPS
+    pelvic_depth = np.linalg.norm(diffs_pelvic_depth, axis=1)
+
+    diffs_ASIS = (pos_marker[:, EIASD_index, :].T - pos_marker[:, EIASG_index, :].T)
+    inter_ASIS_distance = np.linalg.norm(diffs_ASIS, axis=1)
+
+    diffs_length_leg_right = (pos_marker[:, EIASD_index, :].T - pos_marker[:, condintd_index, :].T)
+    leg_length_right = np.linalg.norm(diffs_length_leg_right, axis=1)
+
+    diffs_length_leg_right_bis = (pos_marker[:, condintd_index, :].T - pos_marker[:, malintd_index, :].T)
+    leg_length_right_bis = np.linalg.norm(diffs_length_leg_right_bis, axis=1)
+
+    leg_length_right_total = leg_length_right_bis + leg_length_right
+
+    hip_joint_center_x = (11 - 0.063 * (leg_length_right_total*1000))/1000
+    hip_joint_center_y = (8 + 0.086 * (leg_length_right_total*1000))/1000
+    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_right_total*1000))/1000
+    hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
+
+    hip_joint_center = transform_point(hip_joint_center_local, matrices_rotation, mid_EIAS)
+
+    return hip_joint_center, mid_EIAS, matrices_rotation
+
 
