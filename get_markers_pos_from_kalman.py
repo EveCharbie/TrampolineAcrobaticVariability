@@ -145,7 +145,6 @@ for file_path, interval in file_intervals:
     ax.set_ylim([-2, 2])
     ax.set_zlim([-2, 2])
 
-
     # Initialisation de l'animation en nettoyant les axes
     def init():
         ax.clear()
@@ -181,7 +180,7 @@ for file_path, interval in file_intervals:
         # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
         for m in range(pos_recons.shape[1]):
             x, y, z = pos_recons[:, m, frame]
-            ax.scatter(x, y, z, s=10, c='b')  # Utiliser 'c' pour spécifier la couleur
+            ax.scatter(x, y, z, s=10, c='b')
 
         # Création de l'animation
     ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)

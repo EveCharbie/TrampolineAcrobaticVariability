@@ -470,9 +470,9 @@ def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg
     leg_length_total = upper_leg_length + lower_leg_length
 
     hip_joint_center_x = (11 - 0.063 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side \
-        else - (8 + 0.086 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000 if is_right_side\
+        else - ((-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000)
 
     # Création du tableau numpy pour les coordonnées HJC
     hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
