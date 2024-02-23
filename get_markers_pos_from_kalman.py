@@ -134,7 +134,7 @@ for file_path, interval in file_intervals:
 
     matrices_rotation_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
     matrices_rotation_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
-    hjc, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(pos_recons, desired_order)
+    hip_right_joint_center, hip_left_joint_center, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(pos_recons, desired_order)
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -160,7 +160,8 @@ for file_path, interval in file_intervals:
         origin_left = mid_cond_left[frame]
         origin_right = mid_cond_right[frame]
         origin_pelvic = pelvic_origin[frame]
-        origin_hjc = hjc[frame]
+        origin_hjc_right = hip_right_joint_center[frame]
+        origin_hjc_left = hip_left_joint_center[frame]
 
         dessiner_vecteurs(ax, origin_left, matrices_rotation_left[frame][:, 0], matrices_rotation_left[frame][:, 1],
                           matrices_rotation_left[frame][:, 2])
@@ -171,17 +172,16 @@ for file_path, interval in file_intervals:
         dessiner_vecteurs(ax, origin_pelvic, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
                           matrices_rotation_pelvic[frame][:, 2])
 
-        dessiner_vecteurs(ax, origin_hjc, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
+        dessiner_vecteurs(ax, origin_hjc_right, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
+                          matrices_rotation_pelvic[frame][:, 2])
+
+        dessiner_vecteurs(ax, origin_hjc_left, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
                           matrices_rotation_pelvic[frame][:, 2])
 
         # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
         for m in range(pos_recons.shape[1]):
             x, y, z = pos_recons[:, m, frame]
             ax.scatter(x, y, z, s=10, c='b')  # Utiliser 'c' pour spécifier la couleur
-
-        # Ajouter une légende seulement pour le premier frame pour éviter les répétitions
-        if frame == 0:
-            ax.legend()
 
         # Création de l'animation
     ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)

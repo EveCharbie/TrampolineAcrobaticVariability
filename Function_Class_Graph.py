@@ -446,6 +446,40 @@ def transform_point(local_point, rotation_matrix, origin):
     return global_point
 
 
+def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index, malintd_index,
+                  malintg_index, is_right_side):
+    if is_right_side:
+        # Utilisation des indices pour le côté droit
+        condint_index = condintd_index
+        malint_index = malintd_index
+    else:
+        # Utilisation des indices pour le côté gauche
+        condint_index = condintg_index
+        malint_index = malintg_index
+
+    diffs_ASIS = (pos_marker[:, EIASD_index, :].T - pos_marker[:, EIASG_index, :].T)
+    inter_ASIS_distance = np.linalg.norm(diffs_ASIS, axis=1)
+
+    diffs_length_lower_leg = (pos_marker[:, EIASD_index, :].T - pos_marker[:, condint_index, :].T) if is_right_side \
+        else (pos_marker[:, EIASG_index, :].T - pos_marker[:, condint_index, :].T)
+
+    lower_leg_length = np.linalg.norm(diffs_length_lower_leg, axis=1)
+    diffs_length_upper_leg = (pos_marker[:, condint_index, :].T - pos_marker[:, malint_index, :].T)
+    upper_leg_length = np.linalg.norm(diffs_length_upper_leg, axis=1)
+
+    leg_length_total = upper_leg_length + lower_leg_length
+
+    hip_joint_center_x = (11 - 0.063 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side \
+        else - (8 + 0.086 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000
+
+    # Création du tableau numpy pour les coordonnées HJC
+    hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
+
+    return hip_joint_center_local
+
+
 def get_orientation_knee_left(pos_marker, marker_name_list):
     condintg_index = find_index("CONDINTG", marker_name_list)
     conextg_index = find_index("CONEXTG", marker_name_list)
@@ -528,24 +562,15 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     diffs_pelvic_depth = mid_EIAS + mid_EIPS
     pelvic_depth = np.linalg.norm(diffs_pelvic_depth, axis=1)
 
-    diffs_ASIS = (pos_marker[:, EIASD_index, :].T - pos_marker[:, EIASG_index, :].T)
-    inter_ASIS_distance = np.linalg.norm(diffs_ASIS, axis=1)
+    hip_right_joint_center_local = calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index,
+                                           malintd_index, malintg_index, True)
 
-    diffs_length_leg_right = (pos_marker[:, EIASD_index, :].T - pos_marker[:, condintd_index, :].T)
-    leg_length_right = np.linalg.norm(diffs_length_leg_right, axis=1)
+    hip_left_joint_center_local = calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index,
+                                           malintd_index, malintg_index, False)
 
-    diffs_length_leg_right_bis = (pos_marker[:, condintd_index, :].T - pos_marker[:, malintd_index, :].T)
-    leg_length_right_bis = np.linalg.norm(diffs_length_leg_right_bis, axis=1)
+    hip_right_joint_center = transform_point(hip_right_joint_center_local, matrices_rotation, mid_EIAS)
+    hip_left_joint_center = transform_point(hip_left_joint_center_local, matrices_rotation, mid_EIAS)
 
-    leg_length_right_total = leg_length_right_bis + leg_length_right
-
-    hip_joint_center_x = (11 - 0.063 * (leg_length_right_total*1000))/1000
-    hip_joint_center_y = (8 + 0.086 * (leg_length_right_total*1000))/1000
-    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_right_total*1000))/1000
-    hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
-
-    hip_joint_center = transform_point(hip_joint_center_local, matrices_rotation, mid_EIAS)
-
-    return hip_joint_center, mid_EIAS, matrices_rotation
+    return hip_right_joint_center, hip_left_joint_center, mid_EIAS, matrices_rotation
 
 

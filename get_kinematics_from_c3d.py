@@ -1,7 +1,3 @@
-"""
-The goal of this program is to reconstruct the kinematics of the motion capture data using a Kalman filter.
-"""
-
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
@@ -15,17 +11,17 @@ import pandas as pd
 
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Guillaume.s2mMod")
-
+b = bioviz.Viz(loaded_model=model)
+b.exec()
 # Chemin du dossier contenant les fichiers .c3d
 file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Tests/"
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Q/"
+folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/"
 
 file_intervals = [
-    (file_path_c3d + "Gui_822_contact_2.c3d", (3207, 3479)),
+    (file_path_c3d + "Gui_822_mvtPrep_1.c3d", (3164, 3451)),
 ]
-##
 
 ##
 for file_path, interval in file_intervals:
