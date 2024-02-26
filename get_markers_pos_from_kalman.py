@@ -9,7 +9,7 @@ import pandas as pd
 from Function_Class_Graph import (find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
                                   dessiner_vecteurs, predictive_hip_joint_center_location, get_orientation_ankle,
                                   get_orientation_hip, get_orientation_thorax, get_orientation_elbow,
-                                  get_orientation_wrist)
+                                  get_orientation_wrist, get_orientation_head, get_orientation_shoulder)
 from matplotlib.animation import FuncAnimation
 
 
@@ -134,8 +134,8 @@ for file_path, interval in file_intervals:
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
-    origine = np.zeros((296, 3))
-    matrice_origin = np.array([np.eye(3) for _ in range(296)])  # Créer 296 matrices identité
+    # origine = np.zeros((296, 3))
+    # matrice_origin = np.array([np.eye(3) for _ in range(296)])
 
     matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
     matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
@@ -149,7 +149,9 @@ for file_path, interval in file_intervals:
     matrices_rotation_wrist_left, mid_epi_left = get_orientation_wrist(pos_recons, desired_order, False)
     matrices_rotation_elbow_left, mid_ul_rad_left = get_orientation_elbow(pos_recons, desired_order, False)
     matrices_rotation_elbow_right, mid_ul_rad_right = get_orientation_elbow(pos_recons, desired_order, True)
-
+    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
+    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
+    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -170,7 +172,6 @@ for file_path, interval in file_intervals:
     # Mise à jour de l'animation pour chaque frame
     def update(frame):
         ax.clear()
-        # Origines pour les genoux gauche et droit
         origin_left = mid_cond_left[frame]
         origin_right = mid_cond_right[frame]
         origin_pelvic = pelvic_origin[frame]
@@ -179,11 +180,14 @@ for file_path, interval in file_intervals:
         origin_ankle_right = mid_mal_right[frame]
         origin_ankle_left = mid_mal_left[frame]
         origin_thorax = manu[frame]
-        origin = origine[frame]
+        # origin = origine[frame]
         origin_ul_rad_right = mid_ul_rad_right[frame]
         origin_ul_rad_left = mid_ul_rad_left[frame]
         origin_epi_right = mid_epi_right[frame]
         origin_epi_left = mid_epi_left[frame]
+        origin_head = head_joint_center[frame]
+        origin_acr_left = mid_acr_left[frame]
+        origin_acr_right = mid_acr_right[frame]
 
         # dessiner_vecteurs(ax, origin, matrice_origin[frame][:, 0], matrice_origin[frame][:, 1],
         #                   matrice_origin[frame][:, 2])
@@ -219,6 +223,14 @@ for file_path, interval in file_intervals:
         dessiner_vecteurs(ax, origin_epi_left, matrices_rotation_elbow_left[frame][:, 0], matrices_rotation_elbow_left[frame][:, 1],
                           matrices_rotation_elbow_left[frame][:, 2])
 
+        dessiner_vecteurs(ax, origin_acr_right, matrices_rotation_shoulder_right[frame][:, 0], matrices_rotation_shoulder_right[frame][:, 1],
+                          matrices_rotation_shoulder_right[frame][:, 2])
+        dessiner_vecteurs(ax, origin_acr_left, matrices_rotation_shoulder_left[frame][:, 0], matrices_rotation_shoulder_left[frame][:, 1],
+                          matrices_rotation_shoulder_left[frame][:, 2])
+
+        dessiner_vecteurs(ax, origin_head, matrices_rotation_head[frame][:, 0], matrices_rotation_head[frame][:, 1],
+                          matrices_rotation_head[frame][:, 2])
+
         # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
         for m in range(pos_recons.shape[1]):
             x, y, z = pos_recons[:, m, frame]
@@ -246,3 +258,80 @@ for file_path, interval in file_intervals:
     # for segment, markers in markers_by_segment.items():
     #     print(f"Segment: {segment}, Marqueurs: {markers}")
 
+# Sélectionnez la frame que vous voulez visualiser
+frame = 0
+
+# Création de la figure et de l'axe 3D
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+# Définissez les limites de l'axe pour une bonne visualisation
+ax.set_xlim([-2, 2])
+ax.set_ylim([-2, 2])
+ax.set_zlim([-2, 2])
+
+# Extraire et afficher les éléments pour la frame sélectionnée
+origin_left = mid_cond_left[frame]
+origin_right = mid_cond_right[frame]
+origin_pelvic = pelvic_origin[frame]
+origin_hjc_right = hip_right_joint_center[frame]
+origin_hjc_left = hip_left_joint_center[frame]
+origin_ankle_right = mid_mal_right[frame]
+origin_ankle_left = mid_mal_left[frame]
+origin_thorax = manu[frame]
+# origin = origine[frame]
+origin_ul_rad_right = mid_ul_rad_right[frame]
+origin_ul_rad_left = mid_ul_rad_left[frame]
+origin_epi_right = mid_epi_right[frame]
+origin_epi_left = mid_epi_left[frame]
+origin_head = head_joint_center[frame]
+origin_acr_left = mid_acr_left[frame]
+origin_acr_right = mid_acr_right[frame]
+
+# Ici, vous devez définir ou adapter la fonction dessiner_vecteurs pour afficher les vecteurs
+# Exemple (vous devez adapter cette partie selon votre fonction dessiner_vecteurs):
+dessiner_vecteurs(ax, origin_left, matrices_rotation_knee_left[frame][:, 0], matrices_rotation_knee_left[frame][:, 1],
+                          matrices_rotation_knee_left[frame][:, 2])
+dessiner_vecteurs(ax, origin_right, matrices_rotation_knee_right[frame][:, 0], matrices_rotation_knee_right[frame][:, 1],
+                  matrices_rotation_knee_right[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_pelvic, matrices_rotation_pelvic[frame][:, 0], matrices_rotation_pelvic[frame][:, 1],
+                  matrices_rotation_pelvic[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_hjc_right, matrices_rotation_hip_right[frame][:, 0], matrices_rotation_hip_right[frame][:, 1],
+                  matrices_rotation_hip_right[frame][:, 2])
+dessiner_vecteurs(ax, origin_hjc_left, matrices_rotation_hip_left[frame][:, 0], matrices_rotation_hip_left[frame][:, 1],
+                  matrices_rotation_hip_left[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_ankle_right, matrices_rotation_ankle_right[frame][:, 0], matrices_rotation_ankle_right[frame][:, 1],
+                  matrices_rotation_ankle_right[frame][:, 2])
+dessiner_vecteurs(ax, origin_ankle_left, matrices_rotation_ankle_left[frame][:, 0], matrices_rotation_ankle_left[frame][:, 1],
+                  matrices_rotation_ankle_left[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_thorax, matrices_rotation_thorax[frame][:, 0], matrices_rotation_thorax[frame][:, 1],
+                  matrices_rotation_thorax[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_ul_rad_right, matrices_rotation_wrist_right[frame][:, 0], matrices_rotation_wrist_right[frame][:, 1],
+                  matrices_rotation_wrist_right[frame][:, 2])
+dessiner_vecteurs(ax, origin_ul_rad_left, matrices_rotation_wrist_left[frame][:, 0], matrices_rotation_wrist_left[frame][:, 1],
+                  matrices_rotation_wrist_left[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_epi_right, matrices_rotation_elbow_right[frame][:, 0], matrices_rotation_elbow_right[frame][:, 1],
+                  matrices_rotation_elbow_right[frame][:, 2])
+dessiner_vecteurs(ax, origin_epi_left, matrices_rotation_elbow_left[frame][:, 0], matrices_rotation_elbow_left[frame][:, 1],
+                  matrices_rotation_elbow_left[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_acr_right, matrices_rotation_shoulder_right[frame][:, 0], matrices_rotation_shoulder_right[frame][:, 1],
+                  matrices_rotation_shoulder_right[frame][:, 2])
+dessiner_vecteurs(ax, origin_acr_left, matrices_rotation_shoulder_left[frame][:, 0], matrices_rotation_shoulder_left[frame][:, 1],
+                  matrices_rotation_shoulder_left[frame][:, 2])
+
+dessiner_vecteurs(ax, origin_head, matrices_rotation_head[frame][:, 0], matrices_rotation_head[frame][:, 1],
+                  matrices_rotation_head[frame][:, 2])
+
+# Pour l'exemple, nous allons simplement afficher les points de marqueurs
+for m in range(pos_recons.shape[1]):
+    x, y, z = pos_recons[:, m, frame]
+    ax.scatter(x, y, z, s=10, c='b')  # Affiche les points de marqueurs
+
+
+plt.show()

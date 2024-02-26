@@ -486,7 +486,6 @@ def get_orientation_knee_left(pos_marker, marker_name_list):
     malintg_index = find_index("MALINTG", marker_name_list)
     malextg_index = find_index("MALEXTG", marker_name_list)
 
-
     axe_z_knee = (pos_marker[:, conextg_index, :]).T - (pos_marker[:, condintg_index, :]).T
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
@@ -588,6 +587,8 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
 
     axe_y_hip = mid_cond - hjc_center
     axe_y_hip = normalise_vecteurs(axe_y_hip)
+    axe_y_hip = [-i for i in axe_y_hip]
+
 
     V1 = hjc_center - (pos_marker[:, condext_index, :]).T
     V2 = hjc_center - (pos_marker[:, condint_index, :]).T
@@ -595,10 +596,11 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
     plan_center_cond = np.cross(V1, V2)
     axe_z_hip = np.cross(axe_y_hip, plan_center_cond)
     axe_z_hip = normalise_vecteurs(axe_z_hip)
-    axe_z_hip = axe_z_hip if is_right_side else [-i for i in axe_z_hip]
+    axe_z_hip = [-i for i in axe_z_hip] if is_right_side else axe_z_hip
 
-    axe_x_hip = np.cross(axe_y_hip, axe_z_hip)
+    axe_x_hip = np.cross(axe_z_hip, axe_y_hip)
     axe_x_hip = normalise_vecteurs(axe_x_hip)
+    axe_x_hip = [-i for i in axe_x_hip]
 
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_hip, axe_y_hip, axe_z_hip)])
 
@@ -633,9 +635,11 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
 
     axe_y_ankle = np.cross(axe_x_ankle, axe_z_ankle)
     axe_y_ankle = normalise_vecteurs(axe_y_ankle)
+    axe_y_ankle = [-i for i in axe_y_ankle]
 
     axe_x_ankle = np.cross(axe_z_ankle, axe_y_ankle)
     axe_x_ankle = normalise_vecteurs(axe_x_ankle)
+    axe_x_ankle = [-i for i in axe_x_ankle]
 
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_ankle, axe_y_ankle, axe_z_ankle)])
 
@@ -664,6 +668,8 @@ def get_orientation_thorax(pos_marker, marker_name_list):
 
     axe_x_stern = np.cross(axe_z_stern, axe_y_stern)
     axe_x_stern = normalise_vecteurs(axe_x_stern)
+    axe_x_stern = [-i for i in axe_x_stern]
+
 
     axe_y_stern = np.cross(axe_z_stern, axe_x_stern)
     axe_y_stern = normalise_vecteurs(axe_y_stern)
@@ -694,7 +700,8 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
         else (pos_marker[:, epicon_index, :].T - pos_marker[:, epitro_index, :].T)
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
 
-    axe_y_elbow = mid_epi - mid_ul_rad
+    axe_y_elbow = mid_epi - mid_ul_rad if is_right_side \
+        else mid_ul_rad - mid_epi
     axe_y_elbow = normalise_vecteurs(axe_y_elbow)
 
     axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
@@ -738,4 +745,73 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)])
 
     return matrices_rotation, mid_ul_rad
+
+
+def get_orientation_head(pos_marker, marker_name_list):
+
+    glabelle_index = find_index("GLABELLE", marker_name_list)
+    tempd_index = find_index("TEMPD", marker_name_list)
+    tempg_index = find_index("TEMPG", marker_name_list)
+    c7_index = find_index("C7", marker_name_list)
+    zygd_index = find_index("ZYGD", marker_name_list)
+    zygg_index = find_index("ZYGG", marker_name_list)
+
+    jc_head = ((pos_marker[:, c7_index, :]).T + (pos_marker[:, glabelle_index, :]).T) / 2
+    mid_zyg = ((pos_marker[:, zygd_index, :]).T + (pos_marker[:, zygg_index, :]).T) / 2
+    mid_temp = ((pos_marker[:, tempd_index, :]).T + (pos_marker[:, tempg_index, :]).T) / 2
+
+    axe_z_head = (pos_marker[:, tempd_index, :]).T - (pos_marker[:, tempg_index, :]).T
+    axe_z_head = normalise_vecteurs(axe_z_head)
+
+    axe_y_head = mid_zyg - mid_temp
+    axe_y_head = normalise_vecteurs(axe_y_head)
+
+    axe_x_head = np.cross(axe_y_head, axe_z_head)
+    axe_x_head = normalise_vecteurs(axe_x_head)
+
+    axe_y_head = np.cross(axe_x_head, axe_z_head)
+    axe_y_head = normalise_vecteurs(axe_y_head)
+
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_head, axe_y_head, axe_z_head)])
+
+    return matrices_rotation, jc_head
+
+
+def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
+
+    if is_right_side:
+        epicon_index = find_index("EPICOND", marker_name_list)
+        epitro_index = find_index("EPITROD", marker_name_list)
+        acrant_index = find_index("ACRANTD", marker_name_list)
+        acrpost_index = find_index("ACRPOSTD", marker_name_list)
+
+    else:
+        epicon_index = find_index("EPICONG", marker_name_list)
+        epitro_index = find_index("EPITROG", marker_name_list)
+        acrant_index = find_index("ACRANTG", marker_name_list)
+        acrpost_index = find_index("ACRPOSTG", marker_name_list)
+
+    mid_acr = ((pos_marker[:, acrant_index, :]).T + (pos_marker[:, acrpost_index, :]).T) / 2
+    mid_epi = ((pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T) / 2
+
+    axe_y_shoulder = mid_acr - mid_epi
+    axe_y_shoulder = normalise_vecteurs(axe_y_shoulder)
+
+    V1 = mid_acr - (pos_marker[:, epitro_index, :]).T
+    V2 = mid_acr - (pos_marker[:, epicon_index, :]).T
+
+    axe_x_shoulder = np.cross(V2, V1) if is_right_side \
+        else np.cross(V1, V2)
+    axe_x_shoulder = normalise_vecteurs(axe_x_shoulder)
+
+    axe_z_shoulder = np.cross(axe_x_shoulder, axe_y_shoulder)
+    axe_z_shoulder = normalise_vecteurs(axe_z_shoulder)
+
+    axe_x_shoulder = np.cross(axe_y_shoulder, axe_z_shoulder)
+    axe_x_shoulder = normalise_vecteurs(axe_x_shoulder)
+
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)])
+
+    return matrices_rotation, mid_acr
+
 
