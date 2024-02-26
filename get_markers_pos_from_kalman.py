@@ -8,7 +8,8 @@ import pandas as pd
 
 from Function_Class_Graph import (find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
                                   dessiner_vecteurs, predictive_hip_joint_center_location, get_orientation_ankle,
-                                  get_orientation_hip, get_orientation_thorax)
+                                  get_orientation_hip, get_orientation_thorax, get_orientation_elbow,
+                                  get_orientation_wrist)
 from matplotlib.animation import FuncAnimation
 
 
@@ -144,6 +145,11 @@ for file_path, interval in file_intervals:
     matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, False)
     matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, True)
     matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
+    matrices_rotation_wrist_right, mid_epi_right = get_orientation_wrist(pos_recons, desired_order, True)
+    matrices_rotation_wrist_left, mid_epi_left = get_orientation_wrist(pos_recons, desired_order, False)
+    matrices_rotation_elbow_left, mid_ul_rad_left = get_orientation_elbow(pos_recons, desired_order, False)
+    matrices_rotation_elbow_right, mid_ul_rad_right = get_orientation_elbow(pos_recons, desired_order, True)
+
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -174,13 +180,16 @@ for file_path, interval in file_intervals:
         origin_ankle_left = mid_mal_left[frame]
         origin_thorax = manu[frame]
         origin = origine[frame]
+        origin_ul_rad_right = mid_ul_rad_right[frame]
+        origin_ul_rad_left = mid_ul_rad_left[frame]
+        origin_epi_right = mid_epi_right[frame]
+        origin_epi_left = mid_epi_left[frame]
 
         # dessiner_vecteurs(ax, origin, matrice_origin[frame][:, 0], matrice_origin[frame][:, 1],
         #                   matrice_origin[frame][:, 2])
 
         dessiner_vecteurs(ax, origin_left, matrices_rotation_knee_left[frame][:, 0], matrices_rotation_knee_left[frame][:, 1],
                           matrices_rotation_knee_left[frame][:, 2])
-
         dessiner_vecteurs(ax, origin_right, matrices_rotation_knee_right[frame][:, 0], matrices_rotation_knee_right[frame][:, 1],
                           matrices_rotation_knee_right[frame][:, 2])
 
@@ -189,23 +198,31 @@ for file_path, interval in file_intervals:
 
         dessiner_vecteurs(ax, origin_hjc_right, matrices_rotation_hip_right[frame][:, 0], matrices_rotation_hip_right[frame][:, 1],
                           matrices_rotation_hip_right[frame][:, 2])
-
         dessiner_vecteurs(ax, origin_hjc_left, matrices_rotation_hip_left[frame][:, 0], matrices_rotation_hip_left[frame][:, 1],
                           matrices_rotation_hip_left[frame][:, 2])
 
         dessiner_vecteurs(ax, origin_ankle_right, matrices_rotation_ankle_right[frame][:, 0], matrices_rotation_ankle_right[frame][:, 1],
                           matrices_rotation_ankle_right[frame][:, 2])
-
         dessiner_vecteurs(ax, origin_ankle_left, matrices_rotation_ankle_left[frame][:, 0], matrices_rotation_ankle_left[frame][:, 1],
                           matrices_rotation_ankle_left[frame][:, 2])
 
         dessiner_vecteurs(ax, origin_thorax, matrices_rotation_thorax[frame][:, 0], matrices_rotation_thorax[frame][:, 1],
                           matrices_rotation_thorax[frame][:, 2])
 
+        dessiner_vecteurs(ax, origin_ul_rad_right, matrices_rotation_wrist_right[frame][:, 0], matrices_rotation_wrist_right[frame][:, 1],
+                          matrices_rotation_wrist_right[frame][:, 2])
+        dessiner_vecteurs(ax, origin_ul_rad_left, matrices_rotation_wrist_left[frame][:, 0], matrices_rotation_wrist_left[frame][:, 1],
+                          matrices_rotation_wrist_left[frame][:, 2])
+
+        dessiner_vecteurs(ax, origin_epi_right, matrices_rotation_elbow_right[frame][:, 0], matrices_rotation_elbow_right[frame][:, 1],
+                          matrices_rotation_elbow_right[frame][:, 2])
+        dessiner_vecteurs(ax, origin_epi_left, matrices_rotation_elbow_left[frame][:, 0], matrices_rotation_elbow_left[frame][:, 1],
+                          matrices_rotation_elbow_left[frame][:, 2])
+
         # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
-        # for m in range(pos_recons.shape[1]):
-        #     x, y, z = pos_recons[:, m, frame]
-        #     ax.scatter(x, y, z, s=10, c='b')
+        for m in range(pos_recons.shape[1]):
+            x, y, z = pos_recons[:, m, frame]
+            ax.scatter(x, y, z, s=10, c='b')
 
         # Création de l'animation
     ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)

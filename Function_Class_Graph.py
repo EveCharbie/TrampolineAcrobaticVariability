@@ -672,3 +672,70 @@ def get_orientation_thorax(pos_marker, marker_name_list):
 
     return matrices_rotation, manu
 
+
+def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
+
+    if is_right_side:
+        epicon_index = find_index("EPICOND", marker_name_list)
+        epitro_index = find_index("EPITROD", marker_name_list)
+        ulna_index = find_index("ULNAD", marker_name_list)
+        radius_index = find_index("RADIUSD", marker_name_list)
+
+    else:
+        epicon_index = find_index("EPICONG", marker_name_list)
+        epitro_index = find_index("EPITROG", marker_name_list)
+        ulna_index = find_index("ULNAG", marker_name_list)
+        radius_index = find_index("RADIUSG", marker_name_list)
+
+    mid_epi = ((pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T) / 2
+    mid_ul_rad = ((pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T) / 2
+
+    axe_z_elbow = (pos_marker[:, epitro_index, :]).T - (pos_marker[:, epicon_index, :]).T if is_right_side \
+        else (pos_marker[:, epicon_index, :].T - pos_marker[:, epitro_index, :].T)
+    axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+
+    axe_y_elbow = mid_epi - mid_ul_rad
+    axe_y_elbow = normalise_vecteurs(axe_y_elbow)
+
+    axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
+    axe_x_elbow = normalise_vecteurs(axe_x_elbow)
+
+    axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
+    axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_elbow, axe_y_elbow, axe_z_elbow)])
+
+    return matrices_rotation, mid_epi
+
+
+def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
+
+    if is_right_side:
+        ulna_index = find_index("ULNAD", marker_name_list)
+        radius_index = find_index("RADIUSD", marker_name_list)
+        midmetac3_index = find_index("MIDMETAC3D", marker_name_list)
+
+    else:
+        ulna_index = find_index("ULNAG", marker_name_list)
+        radius_index = find_index("RADIUSG", marker_name_list)
+        midmetac3_index = find_index("MIDMETAC3G", marker_name_list)
+
+    mid_ul_rad = ((pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T) / 2
+
+    axe_z_wrist = (pos_marker[:, radius_index, :]).T - (pos_marker[:, ulna_index, :]).T if is_right_side \
+        else (pos_marker[:, ulna_index, :].T - pos_marker[:, radius_index, :].T)
+    axe_z_wrist = normalise_vecteurs(axe_z_wrist)
+
+    axe_y_wrist = pos_marker[:, midmetac3_index, :].T - mid_ul_rad
+    axe_y_wrist = normalise_vecteurs(axe_y_wrist)
+
+    axe_x_wrist = np.cross(axe_y_wrist, axe_z_wrist)
+    axe_x_wrist = normalise_vecteurs(axe_x_wrist)
+
+    axe_z_wrist = np.cross(axe_x_wrist, axe_y_wrist)
+    axe_z_wrist = normalise_vecteurs(axe_z_wrist)
+
+    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)])
+
+    return matrices_rotation, mid_ul_rad
+
