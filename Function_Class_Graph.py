@@ -3,14 +3,14 @@ import glob
 import scipy.io
 from scipy.interpolate import interp1d
 import pickle
-import ezc3d
 import scipy.io
-import biorbd
-import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw
 import math
-
+import numpy as np
+import matplotlib.pyplot as plt
+import biorbd
+import ezc3d
 
 column_names = [
     "PelvisTranslation_X",
@@ -935,10 +935,6 @@ def get_all_matrice(file_path, interval, model):
 
     q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(nf_mocap, n_markers_reordered, markers, model,
                                                                   initial_guess)
-    # b = bioviz.Viz(loaded_model=model)
-    # b.load_movement(q_recons)
-    # b.load_experimental_markers(markers[:, :, :])
-    # b.exec()
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
