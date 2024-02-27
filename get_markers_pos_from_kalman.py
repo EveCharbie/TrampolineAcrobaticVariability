@@ -6,10 +6,22 @@ import ezc3d
 import bioviz
 import pandas as pd
 
-from Function_Class_Graph import (recons_kalman_with_marker, find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
-                                  dessiner_vecteurs, predictive_hip_joint_center_location, get_orientation_ankle,
-                                  get_orientation_hip, get_orientation_thorax, get_orientation_elbow,
-                                  get_orientation_wrist, get_orientation_head, get_orientation_shoulder)
+from Function_Class_Graph import (
+    recons_kalman_with_marker,
+    find_index,
+    calculate_rmsd,
+    get_orientation_knee_left,
+    get_orientation_knee_right,
+    dessiner_vecteurs,
+    predictive_hip_joint_center_location,
+    get_orientation_ankle,
+    get_orientation_hip,
+    get_orientation_thorax,
+    get_orientation_elbow,
+    get_orientation_wrist,
+    get_orientation_head,
+    get_orientation_shoulder,
+)
 from matplotlib.animation import FuncAnimation
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
@@ -34,17 +46,21 @@ for file_path, interval in file_intervals:
     f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]
     point_labels = c["parameters"]["POINT"]["LABELS"]
     # Extraire les noms de marqueurs utiles de 'point_labels'
-    useful_labels = [label for label in point_labels["value"] if not label.startswith("*")]
+    useful_labels = [
+        label for label in point_labels["value"] if not label.startswith("*")
+    ]
 
     sample_label = useful_labels[0]
-    typical_dimensions = point_data[0][find_index(sample_label, point_labels["value"])].shape[0]
+    typical_dimensions = point_data[0][
+        find_index(sample_label, point_labels["value"])
+    ].shape[0]
 
-    desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
+    desired_order = [
+        model.markerNames()[i].to_string() for i in range(model.nbMarkers())
+    ]
 
     n_markers_desired = len(desired_order)
-    reordered_point_data = np.full(
-        (4, n_markers_desired, typical_dimensions), np.nan
-    )
+    reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)
 
     for i, marker in enumerate(desired_order):
         marker_found = False
@@ -56,7 +72,9 @@ for file_path, interval in file_intervals:
                 break
 
         if not marker_found:
-            print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
+            print(
+                f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN."
+            )
             pass
 
     n_markers_reordered = reordered_point_data.shape[1]
@@ -71,11 +89,12 @@ for file_path, interval in file_intervals:
 
     frame_index = 0
     # frame_index = nf_mocap-1
-    start_frame = markers[:, :, frame_index: frame_index + 1]
+    start_frame = markers[:, :, frame_index : frame_index + 1]
     if start_frame.shape != (3, n_markers_reordered, 1):
         raise ValueError(
             f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: "
-            f"{start_frame.shape}")
+            f"{start_frame.shape}"
+        )
 
     ik = biorbd.InverseKinematics(model, start_frame)
     ik.solve("only_lm")
@@ -90,7 +109,9 @@ for file_path, interval in file_intervals:
     # Créer initial_guess avec ces vecteurs 1D
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
-    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(nf_mocap, n_markers_reordered, markers, model, initial_guess)
+    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(
+        nf_mocap, n_markers_reordered, markers, model, initial_guess
+    )
     # b = bioviz.Viz(loaded_model=model)
     # b.load_movement(q_recons)
     # b.load_experimental_markers(markers[:, :, :])
@@ -101,45 +122,81 @@ for file_path, interval in file_intervals:
     origine = np.zeros((q_recons.shape[1], 3))
     matrice_origin = np.array([np.eye(3) for _ in range(q_recons.shape[1])])
 
-    hip_right_joint_center, hip_left_joint_center, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(pos_recons, desired_order)
+    (
+        hip_right_joint_center,
+        hip_left_joint_center,
+        pelvic_origin,
+        matrices_rotation_pelvic,
+    ) = predictive_hip_joint_center_location(pos_recons, desired_order)
 
-    matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, True)
-    matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, False)
+    matrices_rotation_hip_right = get_orientation_hip(
+        pos_recons, desired_order, hip_right_joint_center, True
+    )
+    matrices_rotation_hip_left = get_orientation_hip(
+        pos_recons, desired_order, hip_left_joint_center, False
+    )
 
-    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
-    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(
+        pos_recons, desired_order
+    )
+    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(
+        pos_recons, desired_order
+    )
 
-    matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(pos_recons, desired_order, True)
-    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(pos_recons, desired_order, False)
+    matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(
+        pos_recons, desired_order, False
+    )
 
     matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
 
-    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
+    matrices_rotation_head, head_joint_center = get_orientation_head(
+        pos_recons, desired_order
+    )
 
-    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
-    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
+    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(
+        pos_recons, desired_order, False
+    )
 
-    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(pos_recons, desired_order, True)
-    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(pos_recons, desired_order, False)
+    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(
+        pos_recons, desired_order, False
+    )
 
-    matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(pos_recons, desired_order, True)
-    matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(pos_recons, desired_order, False)
+    matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(
+        pos_recons, desired_order, False
+    )
 
-    rot_mat = np.stack([matrices_rotation_pelvic,
-                        matrices_rotation_hip_right,
-                        matrices_rotation_hip_left,
-                        matrices_rotation_knee_right,
-                        matrices_rotation_knee_left,
-                        matrices_rotation_ankle_right,
-                        matrices_rotation_ankle_left,
-                        matrices_rotation_thorax,
-                        matrices_rotation_head,
-                        matrices_rotation_shoulder_right,
-                        matrices_rotation_shoulder_left,
-                        matrices_rotation_elbow_right,
-                        matrices_rotation_elbow_left,
-                        matrices_rotation_wrist_right,
-                        matrices_rotation_wrist_left], axis=0)
+    rot_mat = np.stack(
+        [
+            matrices_rotation_pelvic,
+            matrices_rotation_hip_right,
+            matrices_rotation_hip_left,
+            matrices_rotation_knee_right,
+            matrices_rotation_knee_left,
+            matrices_rotation_ankle_right,
+            matrices_rotation_ankle_left,
+            matrices_rotation_thorax,
+            matrices_rotation_head,
+            matrices_rotation_shoulder_right,
+            matrices_rotation_shoulder_left,
+            matrices_rotation_elbow_right,
+            matrices_rotation_elbow_left,
+            matrices_rotation_wrist_right,
+            matrices_rotation_wrist_left,
+        ],
+        axis=0,
+    )
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -177,67 +234,130 @@ for file_path, interval in file_intervals:
         origin_acr_left = mid_acr_left[frame]
         origin_acr_right = mid_acr_right[frame]
 
-        dessiner_vecteurs(ax, origin_left, matrices_rotation_knee_left[frame][:, 0],
-                          matrices_rotation_knee_left[frame][:, 1],
-                          matrices_rotation_knee_left[frame][:, 2])
-        dessiner_vecteurs(ax, origin_right, matrices_rotation_knee_right[frame][:, 0],
-                          matrices_rotation_knee_right[frame][:, 1],
-                          matrices_rotation_knee_right[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_left,
+            matrices_rotation_knee_left[frame][:, 0],
+            matrices_rotation_knee_left[frame][:, 1],
+            matrices_rotation_knee_left[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_right,
+            matrices_rotation_knee_right[frame][:, 0],
+            matrices_rotation_knee_right[frame][:, 1],
+            matrices_rotation_knee_right[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_pelvic, matrices_rotation_pelvic[frame][:, 0],
-                          matrices_rotation_pelvic[frame][:, 1],
-                          matrices_rotation_pelvic[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_pelvic,
+            matrices_rotation_pelvic[frame][:, 0],
+            matrices_rotation_pelvic[frame][:, 1],
+            matrices_rotation_pelvic[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_hjc_right, matrices_rotation_hip_right[frame][:, 0],
-                          matrices_rotation_hip_right[frame][:, 1],
-                          matrices_rotation_hip_right[frame][:, 2])
-        dessiner_vecteurs(ax, origin_hjc_left, matrices_rotation_hip_left[frame][:, 0],
-                          matrices_rotation_hip_left[frame][:, 1],
-                          matrices_rotation_hip_left[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_hjc_right,
+            matrices_rotation_hip_right[frame][:, 0],
+            matrices_rotation_hip_right[frame][:, 1],
+            matrices_rotation_hip_right[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_hjc_left,
+            matrices_rotation_hip_left[frame][:, 0],
+            matrices_rotation_hip_left[frame][:, 1],
+            matrices_rotation_hip_left[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_ankle_right, matrices_rotation_ankle_right[frame][:, 0],
-                          matrices_rotation_ankle_right[frame][:, 1],
-                          matrices_rotation_ankle_right[frame][:, 2])
-        dessiner_vecteurs(ax, origin_ankle_left, matrices_rotation_ankle_left[frame][:, 0],
-                          matrices_rotation_ankle_left[frame][:, 1],
-                          matrices_rotation_ankle_left[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_ankle_right,
+            matrices_rotation_ankle_right[frame][:, 0],
+            matrices_rotation_ankle_right[frame][:, 1],
+            matrices_rotation_ankle_right[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_ankle_left,
+            matrices_rotation_ankle_left[frame][:, 0],
+            matrices_rotation_ankle_left[frame][:, 1],
+            matrices_rotation_ankle_left[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_thorax, matrices_rotation_thorax[frame][:, 0],
-                          matrices_rotation_thorax[frame][:, 1],
-                          matrices_rotation_thorax[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_thorax,
+            matrices_rotation_thorax[frame][:, 0],
+            matrices_rotation_thorax[frame][:, 1],
+            matrices_rotation_thorax[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_ul_rad_right, matrices_rotation_wrist_right[frame][:, 0],
-                          matrices_rotation_wrist_right[frame][:, 1],
-                          matrices_rotation_wrist_right[frame][:, 2])
-        dessiner_vecteurs(ax, origin_ul_rad_left, matrices_rotation_wrist_left[frame][:, 0],
-                          matrices_rotation_wrist_left[frame][:, 1],
-                          matrices_rotation_wrist_left[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_ul_rad_right,
+            matrices_rotation_wrist_right[frame][:, 0],
+            matrices_rotation_wrist_right[frame][:, 1],
+            matrices_rotation_wrist_right[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_ul_rad_left,
+            matrices_rotation_wrist_left[frame][:, 0],
+            matrices_rotation_wrist_left[frame][:, 1],
+            matrices_rotation_wrist_left[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_epi_right, matrices_rotation_elbow_right[frame][:, 0],
-                          matrices_rotation_elbow_right[frame][:, 1],
-                          matrices_rotation_elbow_right[frame][:, 2])
-        dessiner_vecteurs(ax, origin_epi_left, matrices_rotation_elbow_left[frame][:, 0],
-                          matrices_rotation_elbow_left[frame][:, 1],
-                          matrices_rotation_elbow_left[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_epi_right,
+            matrices_rotation_elbow_right[frame][:, 0],
+            matrices_rotation_elbow_right[frame][:, 1],
+            matrices_rotation_elbow_right[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_epi_left,
+            matrices_rotation_elbow_left[frame][:, 0],
+            matrices_rotation_elbow_left[frame][:, 1],
+            matrices_rotation_elbow_left[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_acr_right, matrices_rotation_shoulder_right[frame][:, 0],
-                          matrices_rotation_shoulder_right[frame][:, 1],
-                          matrices_rotation_shoulder_right[frame][:, 2])
-        dessiner_vecteurs(ax, origin_acr_left, matrices_rotation_shoulder_left[frame][:, 0],
-                          matrices_rotation_shoulder_left[frame][:, 1],
-                          matrices_rotation_shoulder_left[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_acr_right,
+            matrices_rotation_shoulder_right[frame][:, 0],
+            matrices_rotation_shoulder_right[frame][:, 1],
+            matrices_rotation_shoulder_right[frame][:, 2],
+        )
+        dessiner_vecteurs(
+            ax,
+            origin_acr_left,
+            matrices_rotation_shoulder_left[frame][:, 0],
+            matrices_rotation_shoulder_left[frame][:, 1],
+            matrices_rotation_shoulder_left[frame][:, 2],
+        )
 
-        dessiner_vecteurs(ax, origin_head, matrices_rotation_head[frame][:, 0],
-                          matrices_rotation_head[frame][:, 1],
-                          matrices_rotation_head[frame][:, 2])
+        dessiner_vecteurs(
+            ax,
+            origin_head,
+            matrices_rotation_head[frame][:, 0],
+            matrices_rotation_head[frame][:, 1],
+            matrices_rotation_head[frame][:, 2],
+        )
 
         # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
         for m in range(pos_recons.shape[1]):
             x, y, z = pos_recons[:, m, frame]
-            ax.scatter(x, y, z, s=10, c='b')
+            ax.scatter(x, y, z, s=10, c="b")
 
         # Création de l'animation
-    ani = FuncAnimation(fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False)
+
+    ani = FuncAnimation(
+        fig, update, frames=range(pos_recons.shape[2]), init_func=init, blit=False
+    )
 
     plt.show()
 
@@ -287,64 +407,123 @@ for file_path, interval in file_intervals:
     origin_acr_left = mid_acr_left[frame]
     origin_acr_right = mid_acr_right[frame]
 
-    dessiner_vecteurs(ax, origin_left, matrices_rotation_knee_left[frame][:, 0],
-                      matrices_rotation_knee_left[frame][:, 1],
-                      matrices_rotation_knee_left[frame][:, 2])
-    dessiner_vecteurs(ax, origin_right, matrices_rotation_knee_right[frame][:, 0],
-                      matrices_rotation_knee_right[frame][:, 1],
-                      matrices_rotation_knee_right[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_left,
+        matrices_rotation_knee_left[frame][:, 0],
+        matrices_rotation_knee_left[frame][:, 1],
+        matrices_rotation_knee_left[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_right,
+        matrices_rotation_knee_right[frame][:, 0],
+        matrices_rotation_knee_right[frame][:, 1],
+        matrices_rotation_knee_right[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_pelvic, matrices_rotation_pelvic[frame][:, 0],
-                      matrices_rotation_pelvic[frame][:, 1],
-                      matrices_rotation_pelvic[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_pelvic,
+        matrices_rotation_pelvic[frame][:, 0],
+        matrices_rotation_pelvic[frame][:, 1],
+        matrices_rotation_pelvic[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_hjc_right, matrices_rotation_hip_right[frame][:, 0],
-                      matrices_rotation_hip_right[frame][:, 1],
-                      matrices_rotation_hip_right[frame][:, 2])
-    dessiner_vecteurs(ax, origin_hjc_left, matrices_rotation_hip_left[frame][:, 0],
-                      matrices_rotation_hip_left[frame][:, 1],
-                      matrices_rotation_hip_left[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_hjc_right,
+        matrices_rotation_hip_right[frame][:, 0],
+        matrices_rotation_hip_right[frame][:, 1],
+        matrices_rotation_hip_right[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_hjc_left,
+        matrices_rotation_hip_left[frame][:, 0],
+        matrices_rotation_hip_left[frame][:, 1],
+        matrices_rotation_hip_left[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_ankle_right, matrices_rotation_ankle_right[frame][:, 0],
-                      matrices_rotation_ankle_right[frame][:, 1],
-                      matrices_rotation_ankle_right[frame][:, 2])
-    dessiner_vecteurs(ax, origin_ankle_left, matrices_rotation_ankle_left[frame][:, 0],
-                      matrices_rotation_ankle_left[frame][:, 1],
-                      matrices_rotation_ankle_left[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_ankle_right,
+        matrices_rotation_ankle_right[frame][:, 0],
+        matrices_rotation_ankle_right[frame][:, 1],
+        matrices_rotation_ankle_right[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_ankle_left,
+        matrices_rotation_ankle_left[frame][:, 0],
+        matrices_rotation_ankle_left[frame][:, 1],
+        matrices_rotation_ankle_left[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_thorax, matrices_rotation_thorax[frame][:, 0],
-                      matrices_rotation_thorax[frame][:, 1],
-                      matrices_rotation_thorax[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_thorax,
+        matrices_rotation_thorax[frame][:, 0],
+        matrices_rotation_thorax[frame][:, 1],
+        matrices_rotation_thorax[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_ul_rad_right, matrices_rotation_wrist_right[frame][:, 0],
-                      matrices_rotation_wrist_right[frame][:, 1],
-                      matrices_rotation_wrist_right[frame][:, 2])
-    dessiner_vecteurs(ax, origin_ul_rad_left, matrices_rotation_wrist_left[frame][:, 0],
-                      matrices_rotation_wrist_left[frame][:, 1],
-                      matrices_rotation_wrist_left[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_ul_rad_right,
+        matrices_rotation_wrist_right[frame][:, 0],
+        matrices_rotation_wrist_right[frame][:, 1],
+        matrices_rotation_wrist_right[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_ul_rad_left,
+        matrices_rotation_wrist_left[frame][:, 0],
+        matrices_rotation_wrist_left[frame][:, 1],
+        matrices_rotation_wrist_left[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_epi_right, matrices_rotation_elbow_right[frame][:, 0],
-                      matrices_rotation_elbow_right[frame][:, 1],
-                      matrices_rotation_elbow_right[frame][:, 2])
-    dessiner_vecteurs(ax, origin_epi_left, matrices_rotation_elbow_left[frame][:, 0],
-                      matrices_rotation_elbow_left[frame][:, 1],
-                      matrices_rotation_elbow_left[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_epi_right,
+        matrices_rotation_elbow_right[frame][:, 0],
+        matrices_rotation_elbow_right[frame][:, 1],
+        matrices_rotation_elbow_right[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_epi_left,
+        matrices_rotation_elbow_left[frame][:, 0],
+        matrices_rotation_elbow_left[frame][:, 1],
+        matrices_rotation_elbow_left[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_acr_right, matrices_rotation_shoulder_right[frame][:, 0],
-                      matrices_rotation_shoulder_right[frame][:, 1],
-                      matrices_rotation_shoulder_right[frame][:, 2])
-    dessiner_vecteurs(ax, origin_acr_left, matrices_rotation_shoulder_left[frame][:, 0],
-                      matrices_rotation_shoulder_left[frame][:, 1],
-                      matrices_rotation_shoulder_left[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_acr_right,
+        matrices_rotation_shoulder_right[frame][:, 0],
+        matrices_rotation_shoulder_right[frame][:, 1],
+        matrices_rotation_shoulder_right[frame][:, 2],
+    )
+    dessiner_vecteurs(
+        ax,
+        origin_acr_left,
+        matrices_rotation_shoulder_left[frame][:, 0],
+        matrices_rotation_shoulder_left[frame][:, 1],
+        matrices_rotation_shoulder_left[frame][:, 2],
+    )
 
-    dessiner_vecteurs(ax, origin_head, matrices_rotation_head[frame][:, 0],
-                      matrices_rotation_head[frame][:, 1],
-                      matrices_rotation_head[frame][:, 2])
+    dessiner_vecteurs(
+        ax,
+        origin_head,
+        matrices_rotation_head[frame][:, 0],
+        matrices_rotation_head[frame][:, 1],
+        matrices_rotation_head[frame][:, 2],
+    )
 
     # Pour l'exemple, nous allons simplement afficher les points de marqueurs
     for m in range(pos_recons.shape[1]):
         x, y, z = pos_recons[:, m, frame]
-        ax.scatter(x, y, z, s=10, c='b')  # Affiche les points de marqueurs
+        ax.scatter(x, y, z, s=10, c="b")  # Affiche les points de marqueurs
 
     plt.show()
-

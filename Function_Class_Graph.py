@@ -112,7 +112,9 @@ class OrderMatData:
         self.index_suffix_map = {0: "X", 1: "Y", 2: "Z"}
 
     def __getitem__(self, key):
-        matching_columns = [col for col in self.dataframe.columns if col.startswith(key)]
+        matching_columns = [
+            col for col in self.dataframe.columns if col.startswith(key)
+        ]
         if not matching_columns:
             raise KeyError(f"Variable {key} not found.")
         return self.dataframe[matching_columns]
@@ -150,7 +152,7 @@ def load_and_interpolate(file, interval, num_points=100):
     df.columns = column_names
 
     # Select data in specify interval
-    df_selected = df.iloc[interval[0]: interval[1]]
+    df_selected = df.iloc[interval[0] : interval[1]]
 
     # Interpolate each column to have a uniform number of points
     df_interpolated = df_selected.apply(
@@ -167,7 +169,9 @@ def calculate_mean_std(data_instances, member, axis):
     """
     Calculates the mean and std for a given member and an axes on all data instances
     """
-    data_arrays = [instance.get_column_by_index(member, axis) for instance in data_instances]
+    data_arrays = [
+        instance.get_column_by_index(member, axis) for instance in data_instances
+    ]
     Mean_Data = np.mean(data_arrays, axis=0)
     Std_Dev_Data = np.std(data_arrays, axis=0)
     return Mean_Data, Std_Dev_Data
@@ -212,13 +216,22 @@ def get_q(Xsens_orientation_per_move):
     rotation_matrices = np.zeros((23, nb_frames, 3, 3))
     for i_segment, key in enumerate(parent_idx_list):
         for i_frame in range(nb_frames):
-            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
+            Quat_normalized = Xsens_orientation_per_move[
+                i_frame, i_segment * 4 : (i_segment + 1) * 4
+            ] / np.linalg.norm(
                 Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4]
             )
-            Quat = biorbd.Quaternion(Quat_normalized[0], Quat_normalized[1], Quat_normalized[2], Quat_normalized[3])
+            Quat = biorbd.Quaternion(
+                Quat_normalized[0],
+                Quat_normalized[1],
+                Quat_normalized[2],
+                Quat_normalized[3],
+            )
 
             RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
+            z_rotation = biorbd.Rotation.fromEulerAngles(
+                np.array([-np.pi / 2]), "z"
+            ).to_array()
             RotMat_current = z_rotation @ RotMat_current
 
             if parent_idx_list[key] is None:
@@ -238,9 +251,9 @@ def get_q(Xsens_orientation_per_move):
                 RotMat_between[2, 1],
                 RotMat_between[2, 2],
             )
-            Q[i_segment * 3 : (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "xyz"
-            ).to_array()
+            Q[
+                i_segment * 3 : (i_segment + 1) * 3, i_frame
+            ] = biorbd.Rotation.toEulerAngles(RotMat_between, "xyz").to_array()
 
             rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
     return Q
@@ -267,7 +280,10 @@ def create_composite_image(
         print("Body image file not found. Please upload the file and try again.")
         return None
 
-    full_graph_images_info = {base_graph_path + filename: position for filename, position in graph_images_info.items()}
+    full_graph_images_info = {
+        base_graph_path + filename: position
+        for filename, position in graph_images_info.items()
+    }
 
     for graph_image_filename, graph_position in full_graph_images_info.items():
         try:
@@ -276,9 +292,17 @@ def create_composite_image(
 
             if border_thickness > 0:
                 border_image = Image.new(
-                    "RGB", (graph_size[0] + 2 * border_thickness, graph_size[1] + 2 * border_thickness), color="black"
+                    "RGB",
+                    (
+                        graph_size[0] + 2 * border_thickness,
+                        graph_size[1] + 2 * border_thickness,
+                    ),
+                    color="black",
                 )
-                border_position = (graph_position[0] - border_thickness, graph_position[1] - border_thickness)
+                border_position = (
+                    graph_position[0] - border_thickness,
+                    graph_position[1] - border_thickness,
+                )
                 background.paste(border_image, border_position)
                 background.paste(graph_image, graph_position, graph_image)
             else:
@@ -317,7 +341,10 @@ def add_lines_with_arrow_and_circle(
     """
     # Load the image and scale it up
     with Image.open(image_path) as img:
-        large_img = img.resize((img.width * scale_factor, img.height * scale_factor), Image.Resampling.LANCZOS)
+        large_img = img.resize(
+            (img.width * scale_factor, img.height * scale_factor),
+            Image.Resampling.LANCZOS,
+        )
         draw = ImageDraw.Draw(large_img)
 
         for start, end in lines_info.values():
@@ -353,8 +380,14 @@ def add_lines_with_arrow_and_circle(
             # Draw a filled circle
             draw.ellipse(
                 [
-                    (start_scaled[0] - circle_radius_scaled, start_scaled[1] - circle_radius_scaled),
-                    (start_scaled[0] + circle_radius_scaled, start_scaled[1] + circle_radius_scaled),
+                    (
+                        start_scaled[0] - circle_radius_scaled,
+                        start_scaled[1] - circle_radius_scaled,
+                    ),
+                    (
+                        start_scaled[0] + circle_radius_scaled,
+                        start_scaled[1] + circle_radius_scaled,
+                    ),
                 ],
                 fill="black",
             )
@@ -394,7 +427,9 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
     return q_recons, qdot_recons
 
 
-def recons_kalman_with_marker(n_frames, num_markers, markers_xsens, model, initial_guess):
+def recons_kalman_with_marker(
+    n_frames, num_markers, markers_xsens, model, initial_guess
+):
     # Préparation comme avant
     markersOverFrames = []
     for i in range(n_frames):
@@ -414,7 +449,8 @@ def recons_kalman_with_marker(n_frames, num_markers, markers_xsens, model, initi
     q_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
     qdot_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
     markers_recons = np.ndarray(
-        (3, num_markers, len(markersOverFrames)))  # Pour stocker les positions reconstruites des marqueurs
+        (3, num_markers, len(markersOverFrames))
+    )  # Pour stocker les positions reconstruites des marqueurs
 
     for i, targetMarkers in enumerate(markersOverFrames):
         kalman.reconstructFrame(model, targetMarkers, Q, Qdot, Qddot)
@@ -435,7 +471,9 @@ def find_index(name, list):
 
 def calculate_rmsd(markers, pos_recons):
     # Vérifier que les formes des tableaux sont identiques
-    assert markers.shape == pos_recons.shape, "Les tableaux doivent avoir la même forme."
+    assert (
+        markers.shape == pos_recons.shape
+    ), "Les tableaux doivent avoir la même forme."
 
     n_frames = markers.shape[2]
     rmsd_per_frame = np.zeros(n_frames)
@@ -444,7 +482,7 @@ def calculate_rmsd(markers, pos_recons):
         # Calculer la différence entre les ensembles de marqueurs pour le cadre i
         diff = markers[:, :, i] - pos_recons[:, :, i]
         # Calculer la norme au carré de la différence pour chaque marqueur
-        squared_diff = np.nansum(diff ** 2, axis=0)
+        squared_diff = np.nansum(diff**2, axis=0)
         # Calculer la moyenne des différences au carré
         mean_squared_diff = np.mean(squared_diff)
         # Calculer la racine carrée de la moyenne des différences au carré pour obtenir la RMSD
@@ -460,12 +498,39 @@ def normalise_vecteurs(vecteurs):
 
 
 def dessiner_vecteurs(ax, origine, vecteur_x, vecteur_y, vecteur_z, longueur=0.1):
-    ax.quiver(origine[0], origine[1], origine[2], vecteur_x[0], vecteur_x[1], vecteur_x[2], color="r",
-              length=longueur, normalize=True)
-    ax.quiver(origine[0], origine[1], origine[2], vecteur_y[0], vecteur_y[1], vecteur_y[2], color="g",
-              length=longueur, normalize=True)
-    ax.quiver(origine[0], origine[1], origine[2], vecteur_z[0], vecteur_z[1], vecteur_z[2], color="b",
-              length=longueur, normalize=True)
+    ax.quiver(
+        origine[0],
+        origine[1],
+        origine[2],
+        vecteur_x[0],
+        vecteur_x[1],
+        vecteur_x[2],
+        color="r",
+        length=longueur,
+        normalize=True,
+    )
+    ax.quiver(
+        origine[0],
+        origine[1],
+        origine[2],
+        vecteur_y[0],
+        vecteur_y[1],
+        vecteur_y[2],
+        color="g",
+        length=longueur,
+        normalize=True,
+    )
+    ax.quiver(
+        origine[0],
+        origine[1],
+        origine[2],
+        vecteur_z[0],
+        vecteur_z[1],
+        vecteur_z[2],
+        color="b",
+        length=longueur,
+        normalize=True,
+    )
 
 
 def transform_point(local_point, rotation_matrix, origin):
@@ -481,8 +546,16 @@ def transform_point(local_point, rotation_matrix, origin):
     return global_point
 
 
-def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index, malintd_index,
-                  malintg_index, is_right_side):
+def calculate_hjc(
+    pos_marker,
+    EIASD_index,
+    EIASG_index,
+    condintd_index,
+    condintg_index,
+    malintd_index,
+    malintg_index,
+    is_right_side,
+):
     if is_right_side:
         # Utilisation des indices pour le côté droit
         condint_index = condintd_index
@@ -492,25 +565,37 @@ def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg
         condint_index = condintg_index
         malint_index = malintg_index
 
-    diffs_ASIS = (pos_marker[:, EIASD_index, :].T - pos_marker[:, EIASG_index, :].T)
+    diffs_ASIS = pos_marker[:, EIASD_index, :].T - pos_marker[:, EIASG_index, :].T
     inter_ASIS_distance = np.linalg.norm(diffs_ASIS, axis=1)
 
-    diffs_length_lower_leg = (pos_marker[:, EIASD_index, :].T - pos_marker[:, condint_index, :].T) if is_right_side \
+    diffs_length_lower_leg = (
+        (pos_marker[:, EIASD_index, :].T - pos_marker[:, condint_index, :].T)
+        if is_right_side
         else (pos_marker[:, EIASG_index, :].T - pos_marker[:, condint_index, :].T)
+    )
 
     lower_leg_length = np.linalg.norm(diffs_length_lower_leg, axis=1)
-    diffs_length_upper_leg = (pos_marker[:, condint_index, :].T - pos_marker[:, malint_index, :].T)
+    diffs_length_upper_leg = (
+        pos_marker[:, condint_index, :].T - pos_marker[:, malint_index, :].T
+    )
     upper_leg_length = np.linalg.norm(diffs_length_upper_leg, axis=1)
 
     leg_length_total = upper_leg_length + lower_leg_length
 
     hip_joint_center_x = (11 - 0.063 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_y = - (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side\
+    hip_joint_center_y = (
+        -(8 + 0.086 * (leg_length_total * 1000)) / 1000
+        if is_right_side
         else (8 + 0.086 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000
+    )
+    hip_joint_center_z = (
+        -8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)
+    ) / 1000
 
     # Création du tableau numpy pour les coordonnées HJC
-    hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
+    hip_joint_center_local = np.array(
+        [hip_joint_center_x, hip_joint_center_y, hip_joint_center_z]
+    )
 
     return hip_joint_center_local
 
@@ -521,11 +606,17 @@ def get_orientation_knee_left(pos_marker, marker_name_list):
     malintg_index = find_index("MALINTG", marker_name_list)
     malextg_index = find_index("MALEXTG", marker_name_list)
 
-    axe_z_knee = (pos_marker[:, conextg_index, :]).T - (pos_marker[:, condintg_index, :]).T
+    axe_z_knee = (pos_marker[:, conextg_index, :]).T - (
+        pos_marker[:, condintg_index, :]
+    ).T
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
-    mid_cond = ((pos_marker[:, conextg_index, :]).T + (pos_marker[:, condintg_index, :]).T) / 2
-    mid_mal = ((pos_marker[:, malextg_index, :]).T + (pos_marker[:, malintg_index, :]).T) / 2
+    mid_cond = (
+        (pos_marker[:, conextg_index, :]).T + (pos_marker[:, condintg_index, :]).T
+    ) / 2
+    mid_mal = (
+        (pos_marker[:, malextg_index, :]).T + (pos_marker[:, malintg_index, :]).T
+    ) / 2
 
     axe_y_knee = mid_cond - mid_mal
     axe_y_knee = normalise_vecteurs(axe_y_knee)
@@ -536,7 +627,12 @@ def get_orientation_knee_left(pos_marker, marker_name_list):
     axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+        ]
+    )
 
     return matrices_rotation, mid_cond
 
@@ -547,11 +643,17 @@ def get_orientation_knee_right(pos_marker, marker_name_list):
     malintd_index = find_index("MALINTD", marker_name_list)
     malextd_index = find_index("MALEXTD", marker_name_list)
 
-    axe_z_knee = (pos_marker[:, condintd_index, :]).T - (pos_marker[:, condextd_index, :]).T
+    axe_z_knee = (pos_marker[:, condintd_index, :]).T - (
+        pos_marker[:, condextd_index, :]
+    ).T
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
-    mid_cond = ((pos_marker[:, condextd_index, :]).T + (pos_marker[:, condintd_index, :]).T) / 2
-    mid_mal = ((pos_marker[:, malextd_index, :]).T + (pos_marker[:, malintd_index, :]).T) / 2
+    mid_cond = (
+        (pos_marker[:, condextd_index, :]).T + (pos_marker[:, condintd_index, :]).T
+    ) / 2
+    mid_mal = (
+        (pos_marker[:, malextd_index, :]).T + (pos_marker[:, malintd_index, :]).T
+    ) / 2
 
     axe_y_knee = mid_cond - mid_mal
     axe_y_knee = normalise_vecteurs(axe_y_knee)
@@ -562,7 +664,12 @@ def get_orientation_knee_right(pos_marker, marker_name_list):
     axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+        ]
+    )
 
     return matrices_rotation, mid_cond
 
@@ -577,8 +684,12 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     malintd_index = find_index("MALINTD", marker_name_list)
     malintg_index = find_index("MALINTG", marker_name_list)
 
-    mid_EIAS = ((pos_marker[:, EIASD_index, :]).T + (pos_marker[:, EIASG_index, :]).T) / 2
-    mid_EIPS = ((pos_marker[:, EIPSD_index, :]).T + (pos_marker[:, EIPSG_index, :]).T) / 2
+    mid_EIAS = (
+        (pos_marker[:, EIASD_index, :]).T + (pos_marker[:, EIASG_index, :]).T
+    ) / 2
+    mid_EIPS = (
+        (pos_marker[:, EIPSD_index, :]).T + (pos_marker[:, EIPSG_index, :]).T
+    ) / 2
 
     # Repere pelvis classique
     # axe_z_pelvic = (pos_marker[:, EIASD_index, :]).T - (pos_marker[:, EIASG_index, :]).T
@@ -604,19 +715,44 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     axe_z_pelvic = np.cross(axe_y_pelvic, axe_x_pelvic)
     axe_z_pelvic = normalise_vecteurs(axe_z_pelvic)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_pelvic, axe_y_pelvic, axe_z_pelvic)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_pelvic, axe_y_pelvic, axe_z_pelvic)
+        ]
+    )
 
     diffs_pelvic_depth = mid_EIAS + mid_EIPS
     pelvic_depth = np.linalg.norm(diffs_pelvic_depth, axis=1)
 
-    hip_right_joint_center_local = calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index,
-                                                 malintd_index, malintg_index, True)
+    hip_right_joint_center_local = calculate_hjc(
+        pos_marker,
+        EIASD_index,
+        EIASG_index,
+        condintd_index,
+        condintg_index,
+        malintd_index,
+        malintg_index,
+        True,
+    )
 
-    hip_left_joint_center_local = calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg_index,
-                                                malintd_index, malintg_index, False)
+    hip_left_joint_center_local = calculate_hjc(
+        pos_marker,
+        EIASD_index,
+        EIASG_index,
+        condintd_index,
+        condintg_index,
+        malintd_index,
+        malintg_index,
+        False,
+    )
 
-    hip_right_joint_center = transform_point(hip_right_joint_center_local, matrices_rotation, mid_EIAS)
-    hip_left_joint_center = transform_point(hip_left_joint_center_local, matrices_rotation, mid_EIAS)
+    hip_right_joint_center = transform_point(
+        hip_right_joint_center_local, matrices_rotation, mid_EIAS
+    )
+    hip_left_joint_center = transform_point(
+        hip_left_joint_center_local, matrices_rotation, mid_EIAS
+    )
 
     return hip_right_joint_center, hip_left_joint_center, mid_EIAS, matrices_rotation
 
@@ -631,7 +767,9 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
         condint_index = find_index("CONDINTG", marker_name_list)
         condext_index = find_index("CONEXTG", marker_name_list)
 
-    mid_cond = ((pos_marker[:, condext_index, :]).T + (pos_marker[:, condint_index, :]).T) / 2
+    mid_cond = (
+        (pos_marker[:, condext_index, :]).T + (pos_marker[:, condint_index, :]).T
+    ) / 2
 
     axe_y_hip = mid_cond - hjc_center
     axe_y_hip = normalise_vecteurs(axe_y_hip)
@@ -649,7 +787,9 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
     axe_x_hip = normalise_vecteurs(axe_x_hip)
     axe_x_hip = [-i for i in axe_x_hip]
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_hip, axe_y_hip, axe_z_hip)])
+    matrices_rotation = np.array(
+        [np.column_stack([x, y, z]) for x, y, z in zip(axe_x_hip, axe_y_hip, axe_z_hip)]
+    )
 
     return matrices_rotation
 
@@ -670,11 +810,18 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
         metat1_index = find_index("METAT1G", marker_name_list)
         metat5_index = find_index("METAT5G", marker_name_list)
 
-    mid_meta1 = ((pos_marker[:, metat1_index, :]).T + (pos_marker[:, metat5_index, :]).T) / 2
-    mid_mal = ((pos_marker[:, malint_index, :]).T + (pos_marker[:, malext_index, :]).T) / 2
+    mid_meta1 = (
+        (pos_marker[:, metat1_index, :]).T + (pos_marker[:, metat5_index, :]).T
+    ) / 2
+    mid_mal = (
+        (pos_marker[:, malint_index, :]).T + (pos_marker[:, malext_index, :]).T
+    ) / 2
 
-    axe_z_ankle = (pos_marker[:, malext_index, :]).T - (pos_marker[:, malint_index, :]).T if is_right_side \
+    axe_z_ankle = (
+        (pos_marker[:, malext_index, :]).T - (pos_marker[:, malint_index, :]).T
+        if is_right_side
         else (pos_marker[:, malint_index, :].T - pos_marker[:, malext_index, :].T)
+    )
     axe_z_ankle = normalise_vecteurs(axe_z_ankle)
 
     axe_x_ankle = mid_meta1 - (pos_marker[:, calc_index, :]).T
@@ -688,7 +835,12 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
     axe_x_ankle = normalise_vecteurs(axe_x_ankle)
     axe_x_ankle = [-i for i in axe_x_ankle]
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_ankle, axe_y_ankle, axe_z_ankle)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_ankle, axe_y_ankle, axe_z_ankle)
+        ]
+    )
 
     return matrices_rotation, mid_mal
 
@@ -701,8 +853,12 @@ def get_orientation_thorax(pos_marker, marker_name_list):
     d10_index = find_index("METAT1D", marker_name_list)
 
     manu = pos_marker[:, manu_index, :].T
-    mid_lower_stern = ((pos_marker[:, xiphoide_index, :]).T + (pos_marker[:, d10_index, :]).T) / 2
-    mid_upper_stern = ((pos_marker[:, manu_index, :]).T + (pos_marker[:, c7_index, :]).T) / 2
+    mid_lower_stern = (
+        (pos_marker[:, xiphoide_index, :]).T + (pos_marker[:, d10_index, :]).T
+    ) / 2
+    mid_upper_stern = (
+        (pos_marker[:, manu_index, :]).T + (pos_marker[:, c7_index, :]).T
+    ) / 2
 
     axe_y_stern = mid_upper_stern - mid_lower_stern
     axe_y_stern = normalise_vecteurs(axe_y_stern)
@@ -717,11 +873,15 @@ def get_orientation_thorax(pos_marker, marker_name_list):
     axe_x_stern = normalise_vecteurs(axe_x_stern)
     axe_x_stern = [-i for i in axe_x_stern]
 
-
     axe_y_stern = np.cross(axe_z_stern, axe_x_stern)
     axe_y_stern = normalise_vecteurs(axe_y_stern)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_stern, axe_y_stern, axe_z_stern)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_stern, axe_y_stern, axe_z_stern)
+        ]
+    )
 
     return matrices_rotation, manu
 
@@ -740,18 +900,23 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
         ulna_index = find_index("ULNAG", marker_name_list)
         radius_index = find_index("RADIUSG", marker_name_list)
 
-    mid_epi = ((pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T) / 2
-    mid_ul_rad = ((pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T) / 2
+    mid_epi = (
+        (pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T
+    ) / 2
+    mid_ul_rad = (
+        (pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T
+    ) / 2
 
-    axe_z_elbow = (pos_marker[:, epitro_index, :]).T - (pos_marker[:, epicon_index, :]).T if is_right_side \
+    axe_z_elbow = (
+        (pos_marker[:, epitro_index, :]).T - (pos_marker[:, epicon_index, :]).T
+        if is_right_side
         else (pos_marker[:, epicon_index, :].T - pos_marker[:, epitro_index, :].T)
+    )
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
 
-    axe_y_elbow = mid_epi - mid_ul_rad if is_right_side \
-        else mid_ul_rad - mid_epi
+    axe_y_elbow = mid_epi - mid_ul_rad if is_right_side else mid_ul_rad - mid_epi
     axe_y_elbow = normalise_vecteurs(axe_y_elbow)
-    axe_y_elbow = axe_y_elbow if is_right_side \
-        else [-i for i in axe_y_elbow]
+    axe_y_elbow = axe_y_elbow if is_right_side else [-i for i in axe_y_elbow]
 
     axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
     axe_x_elbow = normalise_vecteurs(axe_x_elbow)
@@ -760,7 +925,12 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
     axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_elbow, axe_y_elbow, axe_z_elbow)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_elbow, axe_y_elbow, axe_z_elbow)
+        ]
+    )
 
     return matrices_rotation, mid_epi
 
@@ -777,10 +947,15 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
         radius_index = find_index("RADIUSG", marker_name_list)
         midmetac3_index = find_index("MIDMETAC3G", marker_name_list)
 
-    mid_ul_rad = ((pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T) / 2
+    mid_ul_rad = (
+        (pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T
+    ) / 2
 
-    axe_z_wrist = (pos_marker[:, radius_index, :]).T - (pos_marker[:, ulna_index, :]).T if is_right_side \
+    axe_z_wrist = (
+        (pos_marker[:, radius_index, :]).T - (pos_marker[:, ulna_index, :]).T
+        if is_right_side
         else (pos_marker[:, ulna_index, :].T - pos_marker[:, radius_index, :].T)
+    )
     axe_z_wrist = normalise_vecteurs(axe_z_wrist)
 
     axe_y_wrist = pos_marker[:, midmetac3_index, :].T - mid_ul_rad
@@ -794,7 +969,12 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
     axe_z_wrist = normalise_vecteurs(axe_z_wrist)
     axe_z_wrist = [-i for i in axe_z_wrist]
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)
+        ]
+    )
 
     return matrices_rotation, mid_ul_rad
 
@@ -808,9 +988,13 @@ def get_orientation_head(pos_marker, marker_name_list):
     zygd_index = find_index("ZYGD", marker_name_list)
     zygg_index = find_index("ZYGG", marker_name_list)
 
-    jc_head = ((pos_marker[:, c7_index, :]).T + (pos_marker[:, glabelle_index, :]).T) / 2
+    jc_head = (
+        (pos_marker[:, c7_index, :]).T + (pos_marker[:, glabelle_index, :]).T
+    ) / 2
     mid_zyg = ((pos_marker[:, zygd_index, :]).T + (pos_marker[:, zygg_index, :]).T) / 2
-    mid_temp = ((pos_marker[:, tempd_index, :]).T + (pos_marker[:, tempg_index, :]).T) / 2
+    mid_temp = (
+        (pos_marker[:, tempd_index, :]).T + (pos_marker[:, tempg_index, :]).T
+    ) / 2
 
     axe_z_head = (pos_marker[:, tempd_index, :]).T - (pos_marker[:, tempg_index, :]).T
     axe_z_head = normalise_vecteurs(axe_z_head)
@@ -824,7 +1008,12 @@ def get_orientation_head(pos_marker, marker_name_list):
     axe_y_head = np.cross(axe_x_head, axe_z_head)
     axe_y_head = normalise_vecteurs(axe_y_head)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_head, axe_y_head, axe_z_head)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_head, axe_y_head, axe_z_head)
+        ]
+    )
 
     return matrices_rotation, jc_head
 
@@ -843,8 +1032,12 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
         acrant_index = find_index("ACRANTG", marker_name_list)
         acrpost_index = find_index("ACRPOSTG", marker_name_list)
 
-    mid_acr = ((pos_marker[:, acrant_index, :]).T + (pos_marker[:, acrpost_index, :]).T) / 2
-    mid_epi = ((pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T) / 2
+    mid_acr = (
+        (pos_marker[:, acrant_index, :]).T + (pos_marker[:, acrpost_index, :]).T
+    ) / 2
+    mid_epi = (
+        (pos_marker[:, epicon_index, :]).T + (pos_marker[:, epitro_index, :]).T
+    ) / 2
 
     axe_y_shoulder = mid_acr - mid_epi
     axe_y_shoulder = normalise_vecteurs(axe_y_shoulder)
@@ -852,8 +1045,7 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
     V1 = mid_acr - (pos_marker[:, epitro_index, :]).T
     V2 = mid_acr - (pos_marker[:, epicon_index, :]).T
 
-    axe_x_shoulder = np.cross(V2, V1) if is_right_side \
-        else np.cross(V1, V2)
+    axe_x_shoulder = np.cross(V2, V1) if is_right_side else np.cross(V1, V2)
     axe_x_shoulder = normalise_vecteurs(axe_x_shoulder)
 
     axe_z_shoulder = np.cross(axe_x_shoulder, axe_y_shoulder)
@@ -862,7 +1054,12 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
     axe_x_shoulder = np.cross(axe_y_shoulder, axe_z_shoulder)
     axe_x_shoulder = normalise_vecteurs(axe_x_shoulder)
 
-    matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)])
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)
+        ]
+    )
 
     return matrices_rotation, mid_acr
 
@@ -871,23 +1068,27 @@ def get_all_matrice(file_path, interval, model):
     file_name = os.path.basename(file_path).split(".")[0]
     print(f"{file_name} is running")
     c = ezc3d.c3d(file_path)
-    point_data = c["data"]["points"][:, :, interval[0]: interval[1]]
+    point_data = c["data"]["points"][:, :, interval[0] : interval[1]]
     n_markers = point_data.shape[1]
     nf_mocap = point_data.shape[2]
     f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]
     point_labels = c["parameters"]["POINT"]["LABELS"]
     # Extraire les noms de marqueurs utiles de 'point_labels'
-    useful_labels = [label for label in point_labels["value"] if not label.startswith("*")]
+    useful_labels = [
+        label for label in point_labels["value"] if not label.startswith("*")
+    ]
 
     sample_label = useful_labels[0]
-    typical_dimensions = point_data[0][find_index(sample_label, point_labels["value"])].shape[0]
+    typical_dimensions = point_data[0][
+        find_index(sample_label, point_labels["value"])
+    ].shape[0]
 
-    desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
+    desired_order = [
+        model.markerNames()[i].to_string() for i in range(model.nbMarkers())
+    ]
 
     n_markers_desired = len(desired_order)
-    reordered_point_data = np.full(
-        (4, n_markers_desired, typical_dimensions), np.nan
-    )
+    reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)
 
     for i, marker in enumerate(desired_order):
         marker_found = False
@@ -899,7 +1100,9 @@ def get_all_matrice(file_path, interval, model):
                 break
 
         if not marker_found:
-            print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
+            print(
+                f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN."
+            )
             pass
 
     n_markers_reordered = reordered_point_data.shape[1]
@@ -914,11 +1117,12 @@ def get_all_matrice(file_path, interval, model):
 
     frame_index = 0
     # frame_index = nf_mocap-1
-    start_frame = markers[:, :, frame_index: frame_index + 1]
+    start_frame = markers[:, :, frame_index : frame_index + 1]
     if start_frame.shape != (3, n_markers_reordered, 1):
         raise ValueError(
             f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: "
-            f"{start_frame.shape}")
+            f"{start_frame.shape}"
+        )
 
     ik = biorbd.InverseKinematics(model, start_frame)
     ik.solve("only_lm")
@@ -933,53 +1137,89 @@ def get_all_matrice(file_path, interval, model):
     # Créer initial_guess avec ces vecteurs 1D
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
-    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(nf_mocap, n_markers_reordered, markers, model,
-                                                                  initial_guess)
+    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(
+        nf_mocap, n_markers_reordered, markers, model, initial_guess
+    )
 
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
     origine = np.zeros((q_recons.shape[1], 3))
     matrice_origin = np.array([np.eye(3) for _ in range(q_recons.shape[1])])
 
-    hip_right_joint_center, hip_left_joint_center, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(
-        pos_recons, desired_order)
+    (
+        hip_right_joint_center,
+        hip_left_joint_center,
+        pelvic_origin,
+        matrices_rotation_pelvic,
+    ) = predictive_hip_joint_center_location(pos_recons, desired_order)
 
-    matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, False)
-    matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, True)
+    matrices_rotation_hip_right = get_orientation_hip(
+        pos_recons, desired_order, hip_right_joint_center, False
+    )
+    matrices_rotation_hip_left = get_orientation_hip(
+        pos_recons, desired_order, hip_left_joint_center, True
+    )
 
-    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
-    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(
+        pos_recons, desired_order
+    )
+    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(
+        pos_recons, desired_order
+    )
 
-    matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(pos_recons, desired_order, True)
-    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(pos_recons, desired_order, False)
+    matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(
+        pos_recons, desired_order, False
+    )
 
     matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
 
-    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
+    matrices_rotation_head, head_joint_center = get_orientation_head(
+        pos_recons, desired_order
+    )
 
-    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
-    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
+    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(
+        pos_recons, desired_order, False
+    )
 
-    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(pos_recons, desired_order, True)
-    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(pos_recons, desired_order, False)
+    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(
+        pos_recons, desired_order, False
+    )
 
-    matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(pos_recons, desired_order, True)
-    matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(pos_recons, desired_order, False)
+    matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(
+        pos_recons, desired_order, True
+    )
+    matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(
+        pos_recons, desired_order, False
+    )
 
-    rot_mat = np.stack([matrices_rotation_pelvic,
-                        matrices_rotation_hip_right,
-                        matrices_rotation_hip_left,
-                        matrices_rotation_knee_right,
-                        matrices_rotation_knee_left,
-                        matrices_rotation_ankle_right,
-                        matrices_rotation_ankle_left,
-                        matrices_rotation_thorax,
-                        matrices_rotation_head,
-                        matrices_rotation_shoulder_right,
-                        matrices_rotation_shoulder_left,
-                        matrices_rotation_elbow_right,
-                        matrices_rotation_elbow_left,
-                        matrices_rotation_wrist_right,
-                        matrices_rotation_wrist_left], axis=0)
+    rot_mat = np.stack(
+        [
+            matrices_rotation_pelvic,
+            matrices_rotation_hip_right,
+            matrices_rotation_hip_left,
+            matrices_rotation_knee_right,
+            matrices_rotation_knee_left,
+            matrices_rotation_ankle_right,
+            matrices_rotation_ankle_left,
+            matrices_rotation_thorax,
+            matrices_rotation_head,
+            matrices_rotation_shoulder_right,
+            matrices_rotation_shoulder_left,
+            matrices_rotation_elbow_right,
+            matrices_rotation_elbow_left,
+            matrices_rotation_wrist_right,
+            matrices_rotation_wrist_left,
+        ],
+        axis=0,
+    )
 
     return rot_mat
