@@ -470,9 +470,9 @@ def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg
     leg_length_total = upper_leg_length + lower_leg_length
 
     hip_joint_center_x = (11 - 0.063 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000 if is_right_side\
-        else - ((-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000)
+    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side\
+        else - (8 + 0.086 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000
 
     # Création du tableau numpy pour les coordonnées HJC
     hip_joint_center_local = np.array([hip_joint_center_x, hip_joint_center_y, hip_joint_center_z])
@@ -545,17 +545,29 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     mid_EIAS = ((pos_marker[:, EIASD_index, :]).T + (pos_marker[:, EIASG_index, :]).T) / 2
     mid_EIPS = ((pos_marker[:, EIPSD_index, :]).T + (pos_marker[:, EIPSG_index, :]).T) / 2
 
-    axe_z_pelvic = (pos_marker[:, EIASD_index, :]).T - (pos_marker[:, EIASG_index, :]).T
+    # Repere pelvis classique
+    # axe_z_pelvic = (pos_marker[:, EIASD_index, :]).T - (pos_marker[:, EIASG_index, :]).T
+    # axe_z_pelvic = normalise_vecteurs(axe_z_pelvic)
+    # axe_x_pelvic = mid_EIAS - mid_EIPS
+    # axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
+    # axe_y_pelvic = np.cross(axe_z_pelvic, axe_x_pelvic)
+    # axe_y_pelvic = normalise_vecteurs(axe_y_pelvic)
+    # # axe_y_pelvic = [-i for i in axe_y_pelvic]
+    # axe_x_pelvic = np.cross(axe_z_pelvic, axe_y_pelvic)
+    # axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
+    # axe_x_pelvic = [-i for i in axe_x_pelvic]
+
+    # Repere pelvis selon article pour estimation des HJC
+    B1 = mid_EIAS - mid_EIPS
+
+    B2 = (pos_marker[:, EIASG_index, :]).T - (pos_marker[:, EIASD_index, :]).T
+    axe_y_pelvic = normalise_vecteurs(B2)
+
+    axe_x_pelvic = np.cross(B1, axe_y_pelvic)
+    axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
+
+    axe_z_pelvic = np.cross(axe_y_pelvic, axe_x_pelvic)
     axe_z_pelvic = normalise_vecteurs(axe_z_pelvic)
-
-    axe_x_pelvic = mid_EIAS - mid_EIPS
-    axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
-
-    axe_y_pelvic = np.cross(axe_z_pelvic, axe_x_pelvic)
-    axe_y_pelvic = normalise_vecteurs(axe_y_pelvic)
-
-    axe_x_pelvic = np.cross(axe_z_pelvic, axe_y_pelvic)
-    axe_x_pelvic = normalise_vecteurs(axe_x_pelvic)
 
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_pelvic, axe_y_pelvic, axe_z_pelvic)])
 
@@ -588,7 +600,6 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
     axe_y_hip = mid_cond - hjc_center
     axe_y_hip = normalise_vecteurs(axe_y_hip)
     axe_y_hip = [-i for i in axe_y_hip]
-
 
     V1 = hjc_center - (pos_marker[:, condext_index, :]).T
     V2 = hjc_center - (pos_marker[:, condint_index, :]).T
@@ -643,7 +654,7 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
 
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_ankle, axe_y_ankle, axe_z_ankle)])
 
-    return matrices_rotation, mid_meta1
+    return matrices_rotation, mid_mal
 
 
 def get_orientation_thorax(pos_marker, marker_name_list):
@@ -703,9 +714,12 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
     axe_y_elbow = mid_epi - mid_ul_rad if is_right_side \
         else mid_ul_rad - mid_epi
     axe_y_elbow = normalise_vecteurs(axe_y_elbow)
+    axe_y_elbow = axe_y_elbow if is_right_side \
+        else [-i for i in axe_y_elbow]
 
     axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
     axe_x_elbow = normalise_vecteurs(axe_x_elbow)
+    axe_x_elbow = [-i for i in axe_x_elbow]
 
     axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
@@ -738,9 +752,11 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
 
     axe_x_wrist = np.cross(axe_y_wrist, axe_z_wrist)
     axe_x_wrist = normalise_vecteurs(axe_x_wrist)
+    axe_x_wrist = [-i for i in axe_x_wrist]
 
     axe_z_wrist = np.cross(axe_x_wrist, axe_y_wrist)
     axe_z_wrist = normalise_vecteurs(axe_z_wrist)
+    axe_z_wrist = [-i for i in axe_z_wrist]
 
     matrices_rotation = np.array([np.column_stack([x, y, z]) for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)])
 
