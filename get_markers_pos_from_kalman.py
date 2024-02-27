@@ -6,47 +6,11 @@ import ezc3d
 import bioviz
 import pandas as pd
 
-from Function_Class_Graph import (find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
+from Function_Class_Graph import (recons_kalman_with_marker, find_index, calculate_rmsd, get_orientation_knee_left, get_orientation_knee_right,
                                   dessiner_vecteurs, predictive_hip_joint_center_location, get_orientation_ankle,
                                   get_orientation_hip, get_orientation_thorax, get_orientation_elbow,
                                   get_orientation_wrist, get_orientation_head, get_orientation_shoulder)
 from matplotlib.animation import FuncAnimation
-
-
-def recons_kalman_v2(n_frames, num_markers, markers_xsens, model, initial_guess):
-    # Préparation comme avant
-    markersOverFrames = []
-    for i in range(n_frames):
-        node_segment = []
-        for j in range(num_markers):
-            node_segment.append(biorbd.NodeSegment(markers_xsens[:, j, i].T))
-        markersOverFrames.append(node_segment)
-
-    freq = 200
-    params = biorbd.KalmanParam(freq)
-    kalman = biorbd.KalmanReconsMarkers(model, params)
-    kalman.setInitState(initial_guess[0], initial_guess[1], initial_guess[2])
-
-    Q = biorbd.GeneralizedCoordinates(model)
-    Qdot = biorbd.GeneralizedVelocity(model)
-    Qddot = biorbd.GeneralizedAcceleration(model)
-    q_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
-    qdot_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
-    markers_recons = np.ndarray(
-        (3, num_markers, len(markersOverFrames)))  # Pour stocker les positions reconstruites des marqueurs
-
-    for i, targetMarkers in enumerate(markersOverFrames):
-        kalman.reconstructFrame(model, targetMarkers, Q, Qdot, Qddot)
-        q_recons[:, i] = Q.to_array()
-        qdot_recons[:, i] = Qdot.to_array()
-
-        # Nouveau : Calculer et stocker les positions reconstruites des marqueurs pour ce cadre
-        markers_reconstructed = model.markers(Q)
-        for m, marker_recons in enumerate(markers_reconstructed):
-            markers_recons[:, m, i] = marker_recons.to_array()
-
-    return q_recons, qdot_recons, markers_recons
-
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -126,7 +90,7 @@ for file_path, interval in file_intervals:
     # Créer initial_guess avec ces vecteurs 1D
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
-    q_recons, qdot_recons, pos_recons = recons_kalman_v2(nf_mocap, n_markers_reordered, markers, model, initial_guess)
+    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(nf_mocap, n_markers_reordered, markers, model, initial_guess)
     # b = bioviz.Viz(loaded_model=model)
     # b.load_movement(q_recons)
     # b.load_experimental_markers(markers[:, :, :])
@@ -137,24 +101,45 @@ for file_path, interval in file_intervals:
     origine = np.zeros((q_recons.shape[1], 3))
     matrice_origin = np.array([np.eye(3) for _ in range(q_recons.shape[1])])
 
-    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
-    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
     hip_right_joint_center, hip_left_joint_center, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(pos_recons, desired_order)
-    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(pos_recons, desired_order, False)
+
+    matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, True)
+    matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, False)
+
+    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
+    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+
     matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(pos_recons, desired_order, True)
-    matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, False)
-    matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, True)
+    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(pos_recons, desired_order, False)
+
     matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
+
+    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
+
+    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
+    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
+
+    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(pos_recons, desired_order, True)
+    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(pos_recons, desired_order, False)
 
     matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(pos_recons, desired_order, True)
     matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(pos_recons, desired_order, False)
 
-    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(pos_recons, desired_order, False)
-    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(pos_recons, desired_order, True)
-
-    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
-    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
-    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
+    rot_mat = np.stack([matrices_rotation_pelvic,
+                        matrices_rotation_hip_right,
+                        matrices_rotation_hip_left,
+                        matrices_rotation_knee_right,
+                        matrices_rotation_knee_left,
+                        matrices_rotation_ankle_right,
+                        matrices_rotation_ankle_left,
+                        matrices_rotation_thorax,
+                        matrices_rotation_head,
+                        matrices_rotation_shoulder_right,
+                        matrices_rotation_shoulder_left,
+                        matrices_rotation_elbow_right,
+                        matrices_rotation_elbow_left,
+                        matrices_rotation_wrist_right,
+                        matrices_rotation_wrist_left], axis=0)
 
     # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})

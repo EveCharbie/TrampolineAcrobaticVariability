@@ -394,6 +394,41 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
     return q_recons, qdot_recons
 
 
+def recons_kalman_with_marker(n_frames, num_markers, markers_xsens, model, initial_guess):
+    # Préparation comme avant
+    markersOverFrames = []
+    for i in range(n_frames):
+        node_segment = []
+        for j in range(num_markers):
+            node_segment.append(biorbd.NodeSegment(markers_xsens[:, j, i].T))
+        markersOverFrames.append(node_segment)
+
+    freq = 200
+    params = biorbd.KalmanParam(freq)
+    kalman = biorbd.KalmanReconsMarkers(model, params)
+    kalman.setInitState(initial_guess[0], initial_guess[1], initial_guess[2])
+
+    Q = biorbd.GeneralizedCoordinates(model)
+    Qdot = biorbd.GeneralizedVelocity(model)
+    Qddot = biorbd.GeneralizedAcceleration(model)
+    q_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
+    qdot_recons = np.ndarray((model.nbQ(), len(markersOverFrames)))
+    markers_recons = np.ndarray(
+        (3, num_markers, len(markersOverFrames)))  # Pour stocker les positions reconstruites des marqueurs
+
+    for i, targetMarkers in enumerate(markersOverFrames):
+        kalman.reconstructFrame(model, targetMarkers, Q, Qdot, Qddot)
+        q_recons[:, i] = Q.to_array()
+        qdot_recons[:, i] = Qdot.to_array()
+
+        # Nouveau : Calculer et stocker les positions reconstruites des marqueurs pour ce cadre
+        markers_reconstructed = model.markers(Q)
+        for m, marker_recons in enumerate(markers_reconstructed):
+            markers_recons[:, m, i] = marker_recons.to_array()
+
+    return q_recons, qdot_recons, markers_recons
+
+
 def find_index(name, list):
     return list.index(name)
 
@@ -470,8 +505,8 @@ def calculate_hjc(pos_marker, EIASD_index, EIASG_index, condintd_index, condintg
     leg_length_total = upper_leg_length + lower_leg_length
 
     hip_joint_center_x = (11 - 0.063 * (leg_length_total * 1000)) / 1000
-    hip_joint_center_y = (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side\
-        else - (8 + 0.086 * (leg_length_total * 1000)) / 1000
+    hip_joint_center_y = - (8 + 0.086 * (leg_length_total * 1000)) / 1000 if is_right_side\
+        else (8 + 0.086 * (leg_length_total * 1000)) / 1000
     hip_joint_center_z = (-8 - 0.038 * inter_ASIS_distance - 0.071 * (leg_length_total * 1000)) / 1000
 
     # Création du tableau numpy pour les coordonnées HJC
@@ -587,6 +622,7 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
 
 
 def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side):
+
     if is_right_side:
         condint_index = find_index("CONDINTD", marker_name_list)
         condext_index = find_index("CONDEXTD", marker_name_list)
@@ -831,3 +867,123 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
     return matrices_rotation, mid_acr
 
 
+def get_all_matrice(file_path, interval, model):
+    file_name = os.path.basename(file_path).split(".")[0]
+    print(f"{file_name} is running")
+    c = ezc3d.c3d(file_path)
+    point_data = c["data"]["points"][:, :, interval[0]: interval[1]]
+    n_markers = point_data.shape[1]
+    nf_mocap = point_data.shape[2]
+    f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]
+    point_labels = c["parameters"]["POINT"]["LABELS"]
+    # Extraire les noms de marqueurs utiles de 'point_labels'
+    useful_labels = [label for label in point_labels["value"] if not label.startswith("*")]
+
+    sample_label = useful_labels[0]
+    typical_dimensions = point_data[0][find_index(sample_label, point_labels["value"])].shape[0]
+
+    desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
+
+    n_markers_desired = len(desired_order)
+    reordered_point_data = np.full(
+        (4, n_markers_desired, typical_dimensions), np.nan
+    )
+
+    for i, marker in enumerate(desired_order):
+        marker_found = False
+        for label in useful_labels:
+            if marker in label:  # Vérifie si marker est une sous-chaîne de label.
+                original_index = find_index(label, point_labels["value"])
+                reordered_point_data[:, i, :] = point_data[:, original_index, :]
+                marker_found = True
+                break
+
+        if not marker_found:
+            print(f"Le marqueur '{marker}' n'a pas été trouvé et a été initialisé avec NaN.")
+            pass
+
+    n_markers_reordered = reordered_point_data.shape[1]
+
+    # Ne prendre que les 3 premiere colonnes et divise par 1000
+    markers = np.zeros((3, n_markers_reordered, nf_mocap))
+    for i in range(nf_mocap):
+        for j in range(n_markers_reordered):
+            markers[:, j, i] = reordered_point_data[:3, j, i]
+            # markers[:, j, nf_mocap-1-i] = reordered_point_data[:3, j, i]
+    markers = markers / 1000
+
+    frame_index = 0
+    # frame_index = nf_mocap-1
+    start_frame = markers[:, :, frame_index: frame_index + 1]
+    if start_frame.shape != (3, n_markers_reordered, 1):
+        raise ValueError(
+            f"Dimension incorrecte pour 'specific_frame'. Attendu: (3, {n_markers_reordered}, 1), Obtenu: "
+            f"{start_frame.shape}")
+
+    ik = biorbd.InverseKinematics(model, start_frame)
+    ik.solve("only_lm")
+    Q = ik.q
+    # Assurez-vous que Q est un vecteur 1D
+    Q_1d = Q.flatten() if Q.ndim > 1 else Q
+
+    # Initialiser Qdot et Qddot en tant que vecteurs 1D
+    Qdot_1d = np.zeros(Q_1d.shape)
+    Qddot_1d = np.zeros(Q_1d.shape)
+
+    # Créer initial_guess avec ces vecteurs 1D
+    initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
+
+    q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(nf_mocap, n_markers_reordered, markers, model,
+                                                                  initial_guess)
+    # b = bioviz.Viz(loaded_model=model)
+    # b.load_movement(q_recons)
+    # b.load_experimental_markers(markers[:, :, :])
+    # b.exec()
+
+    rmsd_by_frame = calculate_rmsd(markers, pos_recons)
+
+    origine = np.zeros((q_recons.shape[1], 3))
+    matrice_origin = np.array([np.eye(3) for _ in range(q_recons.shape[1])])
+
+    hip_right_joint_center, hip_left_joint_center, pelvic_origin, matrices_rotation_pelvic = predictive_hip_joint_center_location(
+        pos_recons, desired_order)
+
+    matrices_rotation_hip_right = get_orientation_hip(pos_recons, desired_order, hip_right_joint_center, False)
+    matrices_rotation_hip_left = get_orientation_hip(pos_recons, desired_order, hip_left_joint_center, True)
+
+    matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(pos_recons, desired_order)
+    matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(pos_recons, desired_order)
+
+    matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(pos_recons, desired_order, True)
+    matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(pos_recons, desired_order, False)
+
+    matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
+
+    matrices_rotation_head, head_joint_center = get_orientation_head(pos_recons, desired_order)
+
+    matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(pos_recons, desired_order, True)
+    matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(pos_recons, desired_order, False)
+
+    matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(pos_recons, desired_order, True)
+    matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(pos_recons, desired_order, False)
+
+    matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(pos_recons, desired_order, True)
+    matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(pos_recons, desired_order, False)
+
+    rot_mat = np.stack([matrices_rotation_pelvic,
+                        matrices_rotation_hip_right,
+                        matrices_rotation_hip_left,
+                        matrices_rotation_knee_right,
+                        matrices_rotation_knee_left,
+                        matrices_rotation_ankle_right,
+                        matrices_rotation_ankle_left,
+                        matrices_rotation_thorax,
+                        matrices_rotation_head,
+                        matrices_rotation_shoulder_right,
+                        matrices_rotation_shoulder_left,
+                        matrices_rotation_elbow_right,
+                        matrices_rotation_elbow_left,
+                        matrices_rotation_wrist_right,
+                        matrices_rotation_wrist_left], axis=0)
+
+    return rot_mat
