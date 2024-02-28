@@ -45,7 +45,7 @@ for file_path, interval in file_intervals:
     nf_mocap = point_data.shape[2]
     f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]
     point_labels = c["parameters"]["POINT"]["LABELS"]
-    # Extraire les noms de marqueurs utiles de 'point_labels'
+    # Extract useful marker name from point_labels
     useful_labels = [
         label for label in point_labels["value"] if not label.startswith("*")
     ]
@@ -54,18 +54,18 @@ for file_path, interval in file_intervals:
     typical_dimensions = point_data[0][
         find_index(sample_label, point_labels["value"])
     ].shape[0]
-
+# Extract marker name order from model
     desired_order = [
         model.markerNames()[i].to_string() for i in range(model.nbMarkers())
     ]
 
     n_markers_desired = len(desired_order)
     reordered_point_data = np.full((4, n_markers_desired, typical_dimensions), np.nan)
-
+# Reorder marker based on list from model
     for i, marker in enumerate(desired_order):
         marker_found = False
         for label in useful_labels:
-            if marker in label:  # Vérifie si marker est une sous-chaîne de label.
+            if marker in label:  # Check if "marker" is a substring of "label".
                 original_index = find_index(label, point_labels["value"])
                 reordered_point_data[:, i, :] = point_data[:, original_index, :]
                 marker_found = True
@@ -79,7 +79,7 @@ for file_path, interval in file_intervals:
 
     n_markers_reordered = reordered_point_data.shape[1]
 
-    # Ne prendre que les 3 premiere colonnes et divise par 1000
+    # Take 3 first col, convert mm in m and possibility to reverse direction
     markers = np.zeros((3, n_markers_reordered, nf_mocap))
     for i in range(nf_mocap):
         for j in range(n_markers_reordered):
@@ -99,14 +99,11 @@ for file_path, interval in file_intervals:
     ik = biorbd.InverseKinematics(model, start_frame)
     ik.solve("only_lm")
     Q = ik.q
-    # Assurez-vous que Q est un vecteur 1D
     Q_1d = Q.flatten() if Q.ndim > 1 else Q
-
-    # Initialiser Qdot et Qddot en tant que vecteurs 1D
     Qdot_1d = np.zeros(Q_1d.shape)
     Qddot_1d = np.zeros(Q_1d.shape)
 
-    # Créer initial_guess avec ces vecteurs 1D
+    # Create initial guess with 1D vector
     initial_guess = (Q_1d, Qdot_1d, Qddot_1d)
 
     q_recons, qdot_recons, pos_recons = recons_kalman_with_marker(
@@ -198,23 +195,18 @@ for file_path, interval in file_intervals:
         axis=0,
     )
 
-    # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
-    # Limites de l'axe pour une bonne visualisation
-    # Ajustez ces limites en fonction de vos données spécifiques
     ax.set_xlim([-3, 3])
     ax.set_ylim([-3, 3])
     ax.set_zlim([-3, 3])
 
-    # Initialisation de l'animation en nettoyant les axes
     def init():
         ax.clear()
         ax.set_xlim([-3, 3])
         ax.set_ylim([-3, 3])
         ax.set_zlim([-3, 3])
 
-    # Mise à jour de l'animation pour chaque frame
     def update(frame):
         ax.clear()
         origin_left = mid_cond_left[frame]
@@ -348,10 +340,9 @@ for file_path, interval in file_intervals:
             matrices_rotation_head[frame][:, 2],
         )
 
-        # Affichage des points pour tous les marqueurs avec une couleur fixe, par exemple bleu ('b')
-        for m in range(pos_recons.shape[1]):
-            x, y, z = pos_recons[:, m, frame]
-            ax.scatter(x, y, z, s=10, c="b")
+        for ma in range(pos_recons.shape[1]):
+            xpos, ypos, zpos = pos_recons[:, ma, frame]
+            ax.scatter(xpos, ypos, zpos, s=10, c="b")
 
         # Création de l'animation
 
@@ -378,18 +369,14 @@ for file_path, interval in file_intervals:
     # for segment, markers in markers_by_segment.items():
     #     print(f"Segment: {segment}, Marqueurs: {markers}")
 
-    # Sélectionnez la frame que vous voulez visualiser
+    # Select frame
     frame = 0
-
-    # Création de la figure et de l'axe 3D
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
-    # Définissez les limites de l'axe pour une bonne visualisation
     ax.set_xlim([-2, 2])
     ax.set_ylim([-2, 2])
     ax.set_zlim([-2, 2])
 
-    # Extraire et afficher les éléments pour la frame sélectionnée
     origin_left = mid_cond_left[frame]
     origin_right = mid_cond_right[frame]
     origin_pelvic = pelvic_origin[frame]
@@ -521,9 +508,8 @@ for file_path, interval in file_intervals:
         matrices_rotation_head[frame][:, 2],
     )
 
-    # Pour l'exemple, nous allons simplement afficher les points de marqueurs
     for m in range(pos_recons.shape[1]):
         x, y, z = pos_recons[:, m, frame]
-        ax.scatter(x, y, z, s=10, c="b")  # Affiche les points de marqueurs
+        ax.scatter(x, y, z, s=10, c="b")
 
     plt.show()

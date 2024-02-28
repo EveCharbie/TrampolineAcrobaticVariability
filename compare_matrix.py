@@ -61,7 +61,7 @@ for i_segment in range(nb_mat):
 Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
 
-for i in range(15):
+for i in range(nb_mat):
     for j in range(3):
         plt.figure(figsize=(5, 3))
         plt.plot(Q_degrees[i*3+j, :], label=f'Segment {i+1}, Angle {j+1}')
