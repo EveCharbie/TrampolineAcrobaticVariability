@@ -20,11 +20,11 @@ results_list = []
 relax_list = []
 
 for file_path, interval in file_intervals:
-    rot_mat = get_all_matrice(file_path, interval, model)
+    rot_mat, articular_joint_center = get_all_matrice(file_path, interval, model)
     results_list.append(rot_mat)
 
 for file_path, interval in relax_intervals:
-    rot_mat_relax = get_all_matrice(file_path, interval, model)
+    rot_mat_relax, relax_articular_joint_center = get_all_matrice(file_path, interval, model)
     relax_list.append(rot_mat_relax)
 
 relax_matrix = np.mean(relax_list[0], axis=1)
@@ -62,11 +62,11 @@ Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
 
 for i in range(nb_mat):
-    for j in range(3):
-        plt.figure(figsize=(5, 3))
-        plt.plot(Q_degrees[i*3+j, :], label=f'Segment {i+1}, Angle {j+1}')
-        plt.title(f'Segment {i+1}, Angle {j+1}')
-        plt.xlabel('Frame')
-        plt.ylabel('Angle (rad)')
-        plt.legend()
-        plt.show()
+    plt.figure(figsize=(5, 3))
+    for axis in range(3):
+        plt.plot(Q_corrected[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+    plt.title(f'Segment {i+1}')
+    plt.xlabel('Frame')
+    plt.ylabel('Angle (rad)')
+    plt.legend()
+    plt.show()

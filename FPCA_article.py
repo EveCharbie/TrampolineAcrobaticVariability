@@ -7,10 +7,6 @@ file = "/media/lim/My Passport/XsensData/SaBe/exports_shoulder_height/SaBe_01/an
 data = scipy.io.loadmat(file)
 df = data['angularVelocity']
 
-
-print("Header:", header)
-print("Version:", version)
-print("Globals:", globals)
 print(df.shape)
 
 nb_art = df.shape[1]

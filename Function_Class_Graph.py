@@ -1208,21 +1208,66 @@ def get_all_matrice(file_path, interval, model):
         [
             matrices_rotation_pelvic,
             matrices_rotation_hip_right,
-            matrices_rotation_hip_left,
             matrices_rotation_knee_right,
-            matrices_rotation_knee_left,
             matrices_rotation_ankle_right,
+            matrices_rotation_hip_left,
+            matrices_rotation_knee_left,
             matrices_rotation_ankle_left,
             matrices_rotation_thorax,
             matrices_rotation_head,
             matrices_rotation_shoulder_right,
-            matrices_rotation_shoulder_left,
             matrices_rotation_elbow_right,
-            matrices_rotation_elbow_left,
             matrices_rotation_wrist_right,
+            matrices_rotation_shoulder_left,
+            matrices_rotation_elbow_left,
             matrices_rotation_wrist_left,
         ],
         axis=0,
     )
 
-    return rot_mat
+    articular_joint_center = np.stack(
+        [
+            pelvic_origin,
+            hip_right_joint_center,
+            mid_cond_right,
+            mid_mal_right,
+            hip_left_joint_center,
+            mid_cond_left,
+            mid_mal_left,
+            manu,
+            head_joint_center,
+            mid_acr_right,
+            mid_epi_right,
+            mid_ul_rad_right,
+            mid_acr_left,
+            mid_epi_left,
+            mid_ul_rad_left,
+        ]
+    )
+
+    return rot_mat, articular_joint_center
+
+
+def convert_to_local_frame(P1, R1, P2, R2):
+    """
+    Converts the position and rotation matrix of a point in the global frame
+    to its position and rotation matrix in the frame of another point.
+
+    Parameters:
+    - P1: Position of the first point in the global frame (numpy array).
+    - R1: Rotation matrix of the first point in the global frame (numpy array).
+    - P2: Position of the second point in the global frame (numpy array).
+    - R2: Rotation matrix of the second point in the global frame (numpy array).
+
+    Returns:
+    - P2_prime: Position of the second point in the frame of the first point.
+    - R2_prime: Rotation matrix of the second point relative to the first point.
+    """
+
+    P2_prime = P2 - P1
+
+    R1_inverse = np.linalg.inv(R1)  # Utilisez R1.T si R1 est orthogonale
+    R2_prime = R1_inverse @ R2
+
+    return P2_prime, R2_prime
+
