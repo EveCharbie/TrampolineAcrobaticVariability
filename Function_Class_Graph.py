@@ -1207,12 +1207,6 @@ def get_all_matrice(file_path, interval, model):
     rot_mat = np.stack(
         [
             matrices_rotation_pelvic,
-            matrices_rotation_hip_right,
-            matrices_rotation_knee_right,
-            matrices_rotation_ankle_right,
-            matrices_rotation_hip_left,
-            matrices_rotation_knee_left,
-            matrices_rotation_ankle_left,
             matrices_rotation_thorax,
             matrices_rotation_head,
             matrices_rotation_shoulder_right,
@@ -1221,6 +1215,12 @@ def get_all_matrice(file_path, interval, model):
             matrices_rotation_shoulder_left,
             matrices_rotation_elbow_left,
             matrices_rotation_wrist_left,
+            matrices_rotation_hip_right,
+            matrices_rotation_knee_right,
+            matrices_rotation_ankle_right,
+            matrices_rotation_hip_left,
+            matrices_rotation_knee_left,
+            matrices_rotation_ankle_left,
         ],
         axis=0,
     )
@@ -1228,12 +1228,6 @@ def get_all_matrice(file_path, interval, model):
     articular_joint_center = np.stack(
         [
             pelvic_origin,
-            hip_right_joint_center,
-            mid_cond_right,
-            mid_mal_right,
-            hip_left_joint_center,
-            mid_cond_left,
-            mid_mal_left,
             manu,
             head_joint_center,
             mid_acr_right,
@@ -1242,6 +1236,12 @@ def get_all_matrice(file_path, interval, model):
             mid_acr_left,
             mid_epi_left,
             mid_ul_rad_left,
+            hip_right_joint_center,
+            mid_cond_right,
+            mid_mal_right,
+            hip_left_joint_center,
+            mid_cond_left,
+            mid_mal_left,
         ]
     )
 

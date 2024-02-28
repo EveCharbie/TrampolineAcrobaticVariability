@@ -1,5 +1,6 @@
 import biorbd
 import numpy as np
+import bioviz
 import matplotlib.pyplot as plt
 from Function_Class_Graph import get_all_matrice, convert_to_local_frame
 
@@ -37,20 +38,20 @@ relax_joint_center = np.mean(joint_center_relax[0], axis=1)
 
 parent_list = {
     "Pelvis": None,  # 0
-    "HipR": [0, "Pelvis"],  # 1
-    "KneeR": [1, "HipR"],  # 2
-    "AnkleR": [2, "KneeR"],  # 3
-    "HipL": [0, "Pelvis"],  # 4
-    "KneeL": [4, "HipL"],  # 5
-    "AnkleL": [5, "KneeL"],  # 6
-    "Thorax": [0, "Pelvis"],  # 7
-    "Head": [7, "Thorax"],  # 8
-    "UpperArmR": [7, "Thorax"],  # 9
-    "LowerArmR": [9, "UpperArmR"],  # 10
-    "HandR": [10, "LowerArmR"],  # 11
-    "UpperArmL": [7, "Thorax"],  # 12
-    "LowerArmL": [12, "UpperArmL"],  # 13
-    "HandL": [13, "LowerArmL"],  # 14
+    "Thorax": [0, "Pelvis"],  # 1
+    "Head": [1, "Thorax"],  # 2
+    "UpperArmR": [1, "Thorax"],  # 3
+    "LowerArmR": [3, "UpperArmR"],  # 4
+    "HandR": [4, "LowerArmR"],  # 5
+    "UpperArmL": [1, "Thorax"],  # 6
+    "LowerArmL": [6, "UpperArmL"],  # 7
+    "HandL": [7, "LowerArmL"],  # 8
+    "HipR": [0, "Pelvis"],  # 9
+    "KneeR": [9, "HipR"],  # 10
+    "AnkleR": [10, "KneeR"],  # 11
+    "HipL": [0, "Pelvis"],  # 12
+    "KneeL": [12, "HipL"],  # 13
+    "AnkleL": [13, "KneeL"],  # 14
 }
 
 matrix_in_parent_frame = []
@@ -84,9 +85,9 @@ chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/test
 with open(chemin_fichier_original, 'r') as fichier:
     lignes = fichier.readlines()
 
-a = 0
 
 with open(chemin_fichier_modifie, 'w') as fichier_modifie:
+    a = 0
     i = 0
     while i < len(lignes):
         if "RT" in lignes[i]:
@@ -101,3 +102,9 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         else:
             fichier_modifie.write(lignes[i])
             i += 1
+
+
+model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/test1.s2mMod")
+b = bioviz.Viz(loaded_model=model)
+b.exec()
+
