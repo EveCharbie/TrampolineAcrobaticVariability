@@ -79,8 +79,8 @@ for index, (joint, parent_info) in enumerate(parent_list.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest (copy).s2mMod"
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/test1.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
+chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 
 with open(chemin_fichier_original, 'r') as fichier:
     lignes = fichier.readlines()
@@ -104,7 +104,11 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
             i += 1
 
 
-model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/test1.s2mMod")
+model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.exec()
 
+goodmodel = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod"
+model = biorbd.Model(goodmodel)
+b = bioviz.Viz(loaded_model=model)
+b.exec()

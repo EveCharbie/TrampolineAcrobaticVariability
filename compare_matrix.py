@@ -1,5 +1,6 @@
 import biorbd
 import numpy as np
+import bioviz
 import matplotlib.pyplot as plt
 from Function_Class_Graph import get_all_matrice
 
@@ -61,12 +62,19 @@ for i_segment in range(nb_mat):
 Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
 
-for i in range(nb_mat):
-    plt.figure(figsize=(5, 3))
-    for axis in range(3):
-        plt.plot(Q_corrected[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-    plt.title(f'Segment {i+1}')
-    plt.xlabel('Frame')
-    plt.ylabel('Angle (rad)')
-    plt.legend()
-    plt.show()
+# for i in range(nb_mat):
+#     plt.figure(figsize=(5, 3))
+#     for axis in range(3):
+#         plt.plot(Q_corrected[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+#     plt.title(f'Segment {i+1}')
+#     plt.xlabel('Frame')
+#     plt.ylabel('Angle (rad)')
+#     plt.legend()
+#     plt.show()
+
+chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
+model = biorbd.Model(chemin_fichier_modifie)
+b = bioviz.Viz(loaded_model=model)
+b.load_movement(Q_corrected)
+
+b.exec()

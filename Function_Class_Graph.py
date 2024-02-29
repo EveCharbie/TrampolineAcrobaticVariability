@@ -709,7 +709,6 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
 
     # Repere pelvis selon article pour estimation des HJC
     B1 = mid_EIAS - mid_EIPS
-
     B2 = (pos_marker[:, EIASG_index, :]).T - (pos_marker[:, EIASD_index, :]).T
     axe_y_pelvic = normalise_vecteurs(B2)
 
@@ -719,10 +718,18 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     axe_z_pelvic = np.cross(axe_y_pelvic, axe_x_pelvic)
     axe_z_pelvic = normalise_vecteurs(axe_z_pelvic)
 
-    matrices_rotation = np.array(
+    matrices_rotation_for_hjc = np.array(
         [
             np.column_stack([x, y, z])
             for x, y, z in zip(axe_x_pelvic, axe_y_pelvic, axe_z_pelvic)
+        ]
+    )
+    axe_y_pelvic = [-i for i in axe_y_pelvic]
+
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_z_pelvic, axe_x_pelvic, axe_y_pelvic)
         ]
     )
 
@@ -749,10 +756,10 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     )
 
     hip_right_joint_center = transform_point(
-        hip_right_joint_center_local, matrices_rotation, mid_EIAS
+        hip_right_joint_center_local, matrices_rotation_for_hjc, mid_EIAS
     )
     hip_left_joint_center = transform_point(
-        hip_left_joint_center_local, matrices_rotation, mid_EIAS
+        hip_left_joint_center_local, matrices_rotation_for_hjc, mid_EIAS
     )
 
     return hip_right_joint_center, hip_left_joint_center, mid_EIAS, matrices_rotation
@@ -884,7 +891,7 @@ def get_orientation_thorax(pos_marker, marker_name_list):
         ]
     )
 
-    return matrices_rotation, manu
+    return matrices_rotation, mid_lower_stern
 
 
 def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
@@ -1264,10 +1271,12 @@ def convert_to_local_frame(P1, R1, P2, R2):
     - R2_prime: Rotation matrix of the second point relative to the first point.
     """
 
+    # Calcul de la position relative
     P2_prime = P2 - P1
+    P2_prime = R1.T @ P2_prime  # Applique la rotation inverse de R1 à la différence de position
 
-    R1_inverse = np.linalg.inv(R1)  # Utilisez R1.T si R1 est orthogonale
-    R2_prime = R1_inverse @ R2
+    # Calcul de la matrice de rotation relative
+    R2_prime = R1.T @ R2
 
     return P2_prime, R2_prime
 
