@@ -6,9 +6,9 @@ import biorbd
 import scipy
 import ezc3d
 import bioviz
-from Function_Class_Graph import column_names, recons_kalman, find_index
+from Function_Class_Basics import recons_kalman, find_index
 import pandas as pd
-
+from Draw_function import column_names
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Guillaume.s2mMod")
 b = bioviz.Viz(loaded_model=model)

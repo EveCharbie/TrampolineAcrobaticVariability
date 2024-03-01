@@ -6,7 +6,7 @@ import biorbd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Function_Class_Graph import OrderMatData, column_names
+from Function_Class_Basics import OrderMatData, column_names
 
 
 file_path_mat = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/"

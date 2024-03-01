@@ -6,7 +6,7 @@ import biorbd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Function_Class_Graph import (
+from Function_Class_Basics import (
     OrderMatData,
     load_and_interpolate,
     calculate_mean_std,

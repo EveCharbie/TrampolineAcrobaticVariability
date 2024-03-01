@@ -5,7 +5,7 @@ import pandas as pd
 import scipy.io
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from Function_Class_Graph import OrderMatData, load_and_interpolate, calculate_mean_std
+from Function_Class_Basics import OrderMatData, load_and_interpolate, calculate_mean_std
 
 # Path of the .mat file
 file_path_mat = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/"

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from Function_Class_Graph import (
+from Function_Class_Basics import (
     load_and_interpolate,
 )
 file_path_mat = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Q/"

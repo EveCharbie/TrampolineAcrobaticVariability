@@ -2,7 +2,7 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function_Class_Graph import get_all_matrice
+from Function_Class_Basics import get_all_matrice
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d

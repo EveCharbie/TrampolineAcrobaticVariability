@@ -5,14 +5,17 @@ import biorbd
 import ezc3d
 import bioviz
 import pandas as pd
+from Draw_function import dessiner_vecteurs
 
-from Function_Class_Graph import (
-    recons_kalman_with_marker,
+from Function_Class_Basics import (
     find_index,
     calculate_rmsd,
+)
+
+from Build_model_function import (
+    recons_kalman_with_marker,
     get_orientation_knee_left,
     get_orientation_knee_right,
-    dessiner_vecteurs,
     predictive_hip_joint_center_location,
     get_orientation_ankle,
     get_orientation_hip,
