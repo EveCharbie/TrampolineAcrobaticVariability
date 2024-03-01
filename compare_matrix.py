@@ -77,6 +77,6 @@ Q_complet = np.concatenate((pelv_trans.T, Q), axis=0)
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
-b.load_movement(Q_corrected)
+b.load_movement(Q_complet)
 
 b.exec()
