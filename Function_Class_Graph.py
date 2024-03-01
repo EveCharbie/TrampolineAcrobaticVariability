@@ -1289,3 +1289,29 @@ def convert_marker_to_local_frame(P1, R1, P2):
 
     return P2_prime
 
+
+parent_list = {
+    "Pelvis": None,  # 0
+    "Thorax": [0, "Pelvis"],  # 1
+    "Tete": [1, "Thorax"],  # 2
+    "BrasD": [1, "Thorax"],  # 3
+    "ABrasD": [3, "BrasD"],  # 4
+    "MainD": [4, "ABrasD"],  # 5
+    "BrasG": [1, "Thorax"],  # 6
+    "ABrasG": [6, "BrasG"],  # 7
+    "MainG": [7, "ABrasG"],  # 8
+    "CuisseD": [0, "Pelvis"],  # 9
+    "JambeD": [9, "CuisseD"],  # 10
+    "PiedD": [10, "JambeD"],  # 11
+    "CuisseG": [0, "Pelvis"],  # 12
+    "JambeG": [12, "CuisseG"],  # 13
+    "PiedG": [13, "JambeG"],  # 14
+}
+
+
+def trouver_index_parent(nom_parent):
+    # Créer une liste des clés de parent_list pour obtenir les index
+    keys_list = list(parent_list.keys())
+    # Trouver l'index du nom du parent dans cette liste
+    index_parent = keys_list.index(nom_parent) if nom_parent in keys_list else None
+    return index_parent

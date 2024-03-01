@@ -12,25 +12,25 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+    (file_path_c3d + "Sa_bras_volant_1.c3d", (3331, 3836)),
 ]
 
 relax_intervals = [(file_path_c3d + "Relax.c3d", (0, 50))]
 
 results_list = []
 relax_list = []
+pelv_trans_list = []
 
 for file_path, interval in file_intervals:
-    rot_mat, articular_joint_center = get_all_matrice(file_path, interval, model)
+    rot_mat, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model)
     results_list.append(rot_mat)
+    pelv_trans_list.append(articular_joint_center[0])
 
 for file_path, interval in relax_intervals:
-    rot_mat_relax, relax_articular_joint_center = get_all_matrice(file_path, interval, model)
+    rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path, interval, model)
     relax_list.append(rot_mat_relax)
 
 relax_matrix = np.mean(relax_list[0], axis=1)
-
-pelv_trans = articular_joint_center[0]
 
 nb_frames = results_list[0].shape[1]
 nb_mat = results_list[0].shape[0]
@@ -62,7 +62,7 @@ for i_segment in range(nb_mat):
 
 Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
-Q_complet = np.concatenate((pelv_trans.T, Q), axis=0)
+Q_complet = np.concatenate((pelv_trans_list[0].T, Q), axis=0)
 
 # for i in range(nb_mat):
 #     plt.figure(figsize=(5, 3))

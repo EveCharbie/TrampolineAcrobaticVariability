@@ -2,7 +2,8 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function_Class_Graph import get_all_matrice, convert_to_local_frame, find_index, convert_marker_to_local_frame
+from Function_Class_Graph import (get_all_matrice, convert_to_local_frame, find_index, convert_marker_to_local_frame,
+                                  trouver_index_parent)
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -82,7 +83,7 @@ for index, (joint, parent_info) in enumerate(parent_list.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestMarker.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
@@ -110,48 +111,42 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
             i += 1
 #
 
-def trouver_index_parent(nom_parent):
-    # Créer une liste des clés de parent_list pour obtenir les index
-    keys_list = list(parent_list.keys())
-    # Trouver l'index du nom du parent dans cette liste
-    index_parent = keys_list.index(nom_parent) if nom_parent in keys_list else None
-    return index_parent
 #
-informations_marqueurs = []
-nouvelles_lignes = []  # Liste pour stocker les nouvelles lignes avec les positions mises à jour
-# Parcourir les lignes du fichier pour extraire les informations
-i = 0  # Index pour parcourir les lignes
-while i < len(lignes):
-    if lignes[i].strip().startswith("marker"):  # Vérifie si la ligne commence par "marker"
-        nouvelles_lignes.append(lignes[i])
-        nouvelles_lignes.append(lignes[i+1])
-        nom_marqueur = lignes[i].split()[1]  # Extrait le nom du marqueur
-        nom_parent = lignes[i+1].split()[1]  # Extrait le nom du parent à la ligne suivante
-        id_parent = trouver_index_parent(nom_parent)
-        mat_parent_marker = matrix_in_parent_frame[id_parent]
-        pos_parent_marker = joint_center_in_parent_frame[id_parent]
-        index_marker = find_index(nom_marqueur, desired_order)
-        marker_global_pos = pos_marker_relax[0][:, index_marker, :]
-        mean_marker_global_pos = np.mean(marker_global_pos, axis=1)
-
-        marker_local_pos = convert_marker_to_local_frame(pos_parent_marker, mat_parent_marker, mean_marker_global_pos)
-
-        pos_str = "\t\t" + "position" + "\t\t" + "\t".join(f"{coord:.6f}" for coord in marker_local_pos) + "\n"
-        print(pos_str)
-
-        # Ajoute la nouvelle position à la liste des nouvelles lignes
-        nouvelles_lignes.append(pos_str)
-
-        # Incrémente i pour passer les lignes déjà traitées, en supposant que 'position' est la ligne i+2
-        i += 3
-    else:
-        # Ajoute les lignes non relatives aux markers directement à nouvelles_lignes
-        nouvelles_lignes.append(lignes[i])
-        i += 1
-
-
-with open(chemin_fichier_modifie, 'w') as fichier_modifie:
-    fichier_modifie.writelines(nouvelles_lignes)
+# informations_marqueurs = []
+# nouvelles_lignes = []  # Liste pour stocker les nouvelles lignes avec les positions mises à jour
+# # Parcourir les lignes du fichier pour extraire les informations
+# i = 0  # Index pour parcourir les lignes
+# while i < len(lignes):
+#     if lignes[i].strip().startswith("marker"):  # Vérifie si la ligne commence par "marker"
+#         nouvelles_lignes.append(lignes[i])
+#         nouvelles_lignes.append(lignes[i+1])
+#         nom_marqueur = lignes[i].split()[1]  # Extrait le nom du marqueur
+#         nom_parent = lignes[i+1].split()[1]  # Extrait le nom du parent à la ligne suivante
+#         id_parent = trouver_index_parent(nom_parent)
+#         mat_parent_marker = matrix_in_parent_frame[id_parent]
+#         pos_parent_marker = joint_center_in_parent_frame[id_parent]
+#         index_marker = find_index(nom_marqueur, desired_order)
+#         marker_global_pos = pos_marker_relax[0][:, index_marker, :]
+#         mean_marker_global_pos = np.mean(marker_global_pos, axis=1)
+#
+#         marker_local_pos = convert_marker_to_local_frame(pos_parent_marker, mat_parent_marker, mean_marker_global_pos)
+#
+#         pos_str = "\t\t" + "position" + "\t\t" + "\t".join(f"{coord:.6f}" for coord in marker_local_pos) + "\n"
+#         print(pos_str)
+#
+#         # Ajoute la nouvelle position à la liste des nouvelles lignes
+#         nouvelles_lignes.append(pos_str)
+#
+#         # Incrémente i pour passer les lignes déjà traitées, en supposant que 'position' est la ligne i+2
+#         i += 3
+#     else:
+#         # Ajoute les lignes non relatives aux markers directement à nouvelles_lignes
+#         nouvelles_lignes.append(lignes[i])
+#         i += 1
+#
+#
+# with open(chemin_fichier_modifie, 'w') as fichier_modifie:
+#     fichier_modifie.writelines(nouvelles_lignes)
 
 #
 
