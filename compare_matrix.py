@@ -2,7 +2,7 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function_Class_Basics import get_all_matrice
+from Build_model_function import get_all_matrice
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -12,7 +12,7 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    (file_path_c3d + "Sa_bras_volant_1.c3d", (3331, 3836)),
+    (file_path_c3d + "Sa_821_822_2.c3d", (3289, 3596)),
 ]
 
 relax_intervals = [(file_path_c3d + "Relax.c3d", (0, 50))]

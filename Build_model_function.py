@@ -141,10 +141,16 @@ def get_orientation_knee_left(pos_marker, marker_name_list):
     axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+            for x, y, z in zip(axe_z_knee, axe_x_knee, axe_y_knee)
         ]
     )
 
@@ -178,10 +184,16 @@ def get_orientation_knee_right(pos_marker, marker_name_list):
     axe_z_knee = np.cross(axe_x_knee, axe_y_knee)
     axe_z_knee = normalise_vecteurs(axe_z_knee)
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_knee, axe_y_knee, axe_z_knee)
+            for x, y, z in zip(axe_z_knee, axe_x_knee, axe_y_knee)
         ]
     )
 
@@ -236,10 +248,16 @@ def predictive_hip_joint_center_location(pos_marker, marker_name_list):
     )
     axe_y_pelvic = [-i for i in axe_y_pelvic]
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_z_pelvic, axe_x_pelvic, axe_y_pelvic)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_z_pelvic, axe_x_pelvic, axe_y_pelvic)
+            for x, y, z in zip(axe_y_pelvic, axe_z_pelvic, axe_x_pelvic)
         ]
     )
 
@@ -305,8 +323,11 @@ def get_orientation_hip(pos_marker, marker_name_list, hjc_center, is_right_side)
     axe_x_hip = normalise_vecteurs(axe_x_hip)
     axe_x_hip = [-i for i in axe_x_hip]
 
+    # matrices_rotation = np.array(
+    #     [np.column_stack([x, y, z]) for x, y, z in zip(axe_x_hip, axe_y_hip, axe_z_hip)]
+    # )
     matrices_rotation = np.array(
-        [np.column_stack([x, y, z]) for x, y, z in zip(axe_x_hip, axe_y_hip, axe_z_hip)]
+        [np.column_stack([x, y, z]) for x, y, z in zip(axe_z_hip, axe_x_hip, axe_y_hip)]
     )
 
     return matrices_rotation
@@ -354,10 +375,16 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
     axe_x_ankle = [-i for i in axe_x_ankle]
 
 # reverse x and y to have rot int ext on y
+#     matrices_rotation = np.array(
+#         [
+#             np.column_stack([x, y, z])
+#             for x, y, z in zip(axe_y_ankle, axe_x_ankle, axe_z_ankle)
+#         ]
+#     )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_y_ankle, axe_x_ankle, axe_z_ankle)
+            for x, y, z in zip(axe_z_ankle, axe_y_ankle, axe_x_ankle)
         ]
     )
 
@@ -395,10 +422,16 @@ def get_orientation_thorax(pos_marker, marker_name_list):
     # axe_y_stern = np.cross(axe_z_stern, axe_x_stern)
     # axe_y_stern = normalise_vecteurs(axe_y_stern)
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_stern, axe_y_stern, axe_z_stern)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_stern, axe_y_stern, axe_z_stern)
+            for x, y, z in zip(axe_z_stern, axe_x_stern, axe_y_stern)
         ]
     )
 
@@ -444,10 +477,16 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side):
     axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_elbow, axe_y_elbow, axe_z_elbow)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_elbow, axe_y_elbow, axe_z_elbow)
+            for x, y, z in zip(axe_z_elbow, axe_x_elbow, axe_y_elbow)
         ]
     )
 
@@ -488,10 +527,16 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side):
     axe_z_wrist = normalise_vecteurs(axe_z_wrist)
     axe_z_wrist = [-i for i in axe_z_wrist]
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_wrist, axe_y_wrist, axe_z_wrist)
+            for x, y, z in zip(axe_z_wrist, axe_y_wrist, axe_x_wrist)
         ]
     )
 
@@ -529,10 +574,16 @@ def get_orientation_head(pos_marker, marker_name_list):
     axe_y_head = normalise_vecteurs(axe_y_head)
     axe_y_head = [-i for i in axe_y_head]
 
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_head, axe_y_head, axe_z_head)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_head, axe_y_head, axe_z_head)
+            for x, y, z in zip(axe_z_head, axe_x_head, axe_y_head)
         ]
     )
 
@@ -579,6 +630,12 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
         [
             np.column_stack([x, y, z])
             for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)
+        ]
+    )
+    matrices_rotation = np.array(
+        [
+            np.column_stack([x, y, z])
+            for x, y, z in zip(axe_z_shoulder, axe_x_shoulder, axe_y_shoulder)
         ]
     )
 

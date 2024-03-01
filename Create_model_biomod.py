@@ -83,7 +83,7 @@ for index, (joint, parent_info) in enumerate(parent_list.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestMarker.s2mMod"
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
@@ -123,8 +123,8 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
 #         nom_marqueur = lignes[i].split()[1]  # Extrait le nom du marqueur
 #         nom_parent = lignes[i+1].split()[1]  # Extrait le nom du parent à la ligne suivante
 #         id_parent = trouver_index_parent(nom_parent)
-#         mat_parent_marker = matrix_in_parent_frame[id_parent]
-#         pos_parent_marker = joint_center_in_parent_frame[id_parent]
+#         mat_parent_marker = relax_matrix[id_parent]
+#         pos_parent_marker = relax_joint_center[id_parent]
 #         index_marker = find_index(nom_marqueur, desired_order)
 #         marker_global_pos = pos_marker_relax[0][:, index_marker, :]
 #         mean_marker_global_pos = np.mean(marker_global_pos, axis=1)
