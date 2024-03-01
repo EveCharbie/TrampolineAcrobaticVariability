@@ -30,6 +30,7 @@ for file_path, interval in relax_intervals:
 
 relax_matrix = np.mean(relax_list[0], axis=1)
 
+pelv_trans = articular_joint_center[0]
 
 nb_frames = results_list[0].shape[1]
 nb_mat = results_list[0].shape[0]
@@ -61,6 +62,7 @@ for i_segment in range(nb_mat):
 
 Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
+Q_complet = np.concatenate((pelv_trans.T, Q), axis=0)
 
 # for i in range(nb_mat):
 #     plt.figure(figsize=(5, 3))
