@@ -2,7 +2,7 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function_Class_Graph import get_all_matrice, convert_to_local_frame
+from Function_Class_Graph import get_all_matrice, convert_to_local_frame, find_index, convert_marker_to_local_frame
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -22,12 +22,15 @@ rotate_matrice_mov = []
 joint_center_relax = []
 rotate_matrice_relax = []
 
+pos_marker_relax = []
+
 for file_path, interval in file_intervals:
-    rot_mat, articular_joint_center = get_all_matrice(file_path, interval, model)
+    rot_mat, articular_joint_center, pos_marker = get_all_matrice(file_path, interval, model)
 
     if "Relax" in file_path:
         joint_center_relax.append(articular_joint_center)
         rotate_matrice_relax.append(rot_mat)
+        pos_marker_relax.append(pos_marker)
     else:
         joint_center_mov.append(articular_joint_center)
         rotate_matrice_mov.append(rot_mat)
@@ -39,19 +42,19 @@ relax_joint_center = np.mean(joint_center_relax[0], axis=1)
 parent_list = {
     "Pelvis": None,  # 0
     "Thorax": [0, "Pelvis"],  # 1
-    "Head": [1, "Thorax"],  # 2
-    "UpperArmR": [1, "Thorax"],  # 3
-    "LowerArmR": [3, "UpperArmR"],  # 4
-    "HandR": [4, "LowerArmR"],  # 5
-    "UpperArmL": [1, "Thorax"],  # 6
-    "LowerArmL": [6, "UpperArmL"],  # 7
-    "HandL": [7, "LowerArmL"],  # 8
-    "HipR": [0, "Pelvis"],  # 9
-    "KneeR": [9, "HipR"],  # 10
-    "AnkleR": [10, "KneeR"],  # 11
-    "HipL": [0, "Pelvis"],  # 12
-    "KneeL": [12, "HipL"],  # 13
-    "AnkleL": [13, "KneeL"],  # 14
+    "Tete": [1, "Thorax"],  # 2
+    "BrasD": [1, "Thorax"],  # 3
+    "ABrasD": [3, "BrasD"],  # 4
+    "MainD": [4, "ABrasD"],  # 5
+    "BrasG": [1, "Thorax"],  # 6
+    "ABrasG": [6, "BrasG"],  # 7
+    "MainG": [7, "ABrasG"],  # 8
+    "CuisseD": [0, "Pelvis"],  # 9
+    "JambeD": [9, "CuisseD"],  # 10
+    "PiedD": [10, "JambeD"],  # 11
+    "CuisseG": [0, "Pelvis"],  # 12
+    "JambeG": [12, "CuisseG"],  # 13
+    "PiedG": [13, "JambeG"],  # 14
 }
 
 matrix_in_parent_frame = []
@@ -79,8 +82,11 @@ for index, (joint, parent_info) in enumerate(parent_list.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestMarker.s2mMod"
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
+
+model = biorbd.Model(chemin_fichier_original)
+desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
 with open(chemin_fichier_original, 'r') as fichier:
     lignes = fichier.readlines()
@@ -102,7 +108,52 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         else:
             fichier_modifie.write(lignes[i])
             i += 1
+#
 
+def trouver_index_parent(nom_parent):
+    # Créer une liste des clés de parent_list pour obtenir les index
+    keys_list = list(parent_list.keys())
+    # Trouver l'index du nom du parent dans cette liste
+    index_parent = keys_list.index(nom_parent) if nom_parent in keys_list else None
+    return index_parent
+#
+informations_marqueurs = []
+nouvelles_lignes = []  # Liste pour stocker les nouvelles lignes avec les positions mises à jour
+# Parcourir les lignes du fichier pour extraire les informations
+i = 0  # Index pour parcourir les lignes
+while i < len(lignes):
+    if lignes[i].strip().startswith("marker"):  # Vérifie si la ligne commence par "marker"
+        nouvelles_lignes.append(lignes[i])
+        nouvelles_lignes.append(lignes[i+1])
+        nom_marqueur = lignes[i].split()[1]  # Extrait le nom du marqueur
+        nom_parent = lignes[i+1].split()[1]  # Extrait le nom du parent à la ligne suivante
+        id_parent = trouver_index_parent(nom_parent)
+        mat_parent_marker = matrix_in_parent_frame[id_parent]
+        pos_parent_marker = joint_center_in_parent_frame[id_parent]
+        index_marker = find_index(nom_marqueur, desired_order)
+        marker_global_pos = pos_marker_relax[0][:, index_marker, :]
+        mean_marker_global_pos = np.mean(marker_global_pos, axis=1)
+
+        marker_local_pos = convert_marker_to_local_frame(pos_parent_marker, mat_parent_marker, mean_marker_global_pos)
+
+        pos_str = "\t\t" + "position" + "\t\t" + "\t".join(f"{coord:.6f}" for coord in marker_local_pos) + "\n"
+        print(pos_str)
+
+        # Ajoute la nouvelle position à la liste des nouvelles lignes
+        nouvelles_lignes.append(pos_str)
+
+        # Incrémente i pour passer les lignes déjà traitées, en supposant que 'position' est la ligne i+2
+        i += 3
+    else:
+        # Ajoute les lignes non relatives aux markers directement à nouvelles_lignes
+        nouvelles_lignes.append(lignes[i])
+        i += 1
+
+
+with open(chemin_fichier_modifie, 'w') as fichier_modifie:
+    fichier_modifie.writelines(nouvelles_lignes)
+
+#
 
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)

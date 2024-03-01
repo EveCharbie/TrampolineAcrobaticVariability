@@ -1253,7 +1253,7 @@ def get_all_matrice(file_path, interval, model):
         ]
     )
 
-    return rot_mat, articular_joint_center
+    return rot_mat, articular_joint_center, pos_recons
 
 
 def convert_to_local_frame(P1, R1, P2, R2):
@@ -1280,4 +1280,12 @@ def convert_to_local_frame(P1, R1, P2, R2):
     R2_prime = R1.T @ R2
 
     return P2_prime, R2_prime
+
+
+def convert_marker_to_local_frame(P1, R1, P2):
+
+    P2_prime = P2 - P1
+    P2_prime = R1.T @ P2_prime
+
+    return P2_prime
 
