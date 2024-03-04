@@ -732,10 +732,10 @@ def get_all_matrice(file_path, interval, model):
     ) = predictive_hip_joint_center_location(pos_recons, desired_order)
 
     matrices_rotation_hip_right = get_orientation_hip(
-        pos_recons, desired_order, hip_right_joint_center, False
+        pos_recons, desired_order, hip_right_joint_center, True
     )
     matrices_rotation_hip_left = get_orientation_hip(
-        pos_recons, desired_order, hip_left_joint_center, True
+        pos_recons, desired_order, hip_left_joint_center, False
     )
 
     matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(
@@ -839,11 +839,9 @@ def convert_to_local_frame(P1, R1, P2, R2):
     - R2_prime: Rotation matrix of the second point relative to the first point.
     """
 
-    # Calcul de la position relative
     P2_prime = P2 - P1
-    P2_prime = R1.T @ P2_prime  # Applique la rotation inverse de R1 à la différence de position
+    P2_prime = R1.T @ P2_prime
 
-    # Calcul de la matrice de rotation relative
     R2_prime = R1.T @ R2
 
     return P2_prime, R2_prime

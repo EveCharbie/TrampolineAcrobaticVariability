@@ -83,7 +83,7 @@ for index, (joint, parent_info) in enumerate(parent_list.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestMarker.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
