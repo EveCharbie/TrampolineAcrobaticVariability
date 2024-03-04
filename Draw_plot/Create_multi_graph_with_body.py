@@ -18,10 +18,10 @@ from Function_Class_Basics import (
 )
 
 # Chemin du dossier contenant les fichiers .mat
-file_path_mat = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Q/"
+file_path_mat = "/DataTrampo/Sarah/Q/"
 
 # Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Graphique/821_seul/"
+folder_path = "/DataTrampo/Sarah/Graphique/821_seul/"
 
 # Créer le dossier de sortie s'il n'existe pas
 if not os.path.exists(folder_path):

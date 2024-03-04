@@ -11,7 +11,7 @@ from Function_Class_Basics import OrderMatData, load_and_interpolate, calculate_
 file_path_mat = "/home/lim/Documents/StageMathieu/Data_propre/SaMi/Q/"
 
 # Output path for the graph
-folder_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/SaMi/MeanSD"
+folder_path = "/Graph_from_mot/SaMi/MeanSD"
 
 # Create folder path
 if not os.path.exists(folder_path):

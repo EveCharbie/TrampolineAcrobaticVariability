@@ -137,7 +137,7 @@ def create_composite_image(
 ):
     background = Image.new("RGB", bg_size, color="white")
 
-    body_image_path = "/home/lim/Documents/StageMathieu/Graph_from_mot/DALL_E_Body.png"
+    body_image_path = "/Graph_from_mot/DALL_E_Body.png"
     try:
         body_image = Image.open(body_image_path)
         body_image = body_image.resize(body_size, Image.Resampling.LANCZOS)

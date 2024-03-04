@@ -2,7 +2,7 @@ import scipy.io
 import pandas as pd
 import numpy as np
 import biorbd
-from Draw_function import column_names
+from Function_draw import column_names
 from scipy.integrate import simpson
 
 

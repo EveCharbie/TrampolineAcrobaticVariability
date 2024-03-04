@@ -1,6 +1,4 @@
 import numpy as np
-import pickle
-import matplotlib.pyplot as plt
 import os
 import biorbd
 import scipy
@@ -8,7 +6,7 @@ import ezc3d
 import bioviz
 from Function_Class_Basics import recons_kalman, find_index
 import pandas as pd
-from Draw_function import column_names
+from TrampolineAcrobaticVariability.Function.Function_draw import column_names
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Guillaume.s2mMod")
 b = bioviz.Viz(loaded_model=model)

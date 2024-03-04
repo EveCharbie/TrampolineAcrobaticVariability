@@ -2,8 +2,7 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function_Class_Basics import (find_index, trouver_index_parent)
-from Build_model_function import get_all_matrice, convert_to_local_frame, convert_marker_to_local_frame
+from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d

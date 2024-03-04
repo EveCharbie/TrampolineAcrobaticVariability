@@ -1,8 +1,7 @@
 import biorbd
 import numpy as np
 import bioviz
-import matplotlib.pyplot as plt
-from Build_model_function import get_all_matrice
+from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d

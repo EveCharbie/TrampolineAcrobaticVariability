@@ -3,16 +3,14 @@ import matplotlib.pyplot as plt
 import os
 import biorbd
 import ezc3d
-import bioviz
-import pandas as pd
-from Draw_function import dessiner_vecteurs
+from TrampolineAcrobaticVariability.Function.Function_draw import dessiner_vecteurs
 
 from Function_Class_Basics import (
     find_index,
     calculate_rmsd,
 )
 
-from Build_model_function import (
+from TrampolineAcrobaticVariability.Function.Function_build_model import (
     recons_kalman_with_marker,
     get_orientation_knee_left,
     get_orientation_knee_right,
