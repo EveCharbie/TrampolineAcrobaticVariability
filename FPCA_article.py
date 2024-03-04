@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_draw import plot_adjusted_fd
-from Function_Class_Basics import calculate_scores
+from Function.Function_Class_Basics import calculate_scores
 from skfda import FDataGrid
 from skfda.preprocessing.dim_reduction import FPCA
 from skfda.representation.basis import (
@@ -100,7 +100,6 @@ plot_adjusted_fd(axs[1, 1], mean_fd, adjusted_fd_positive_5, adjusted_fd_negativ
 # Répétez pour les autres composantes et ajustez les indices axs[i, j] selon le besoin
 
 plt.tight_layout()
-plt.show()
 
 try_values = fd.data_matrix[0, :, 0]
 try_values = np.array(try_values)
@@ -113,7 +112,21 @@ scores = calculate_scores(fd, fpca.components_.data_matrix, interval)
 
 
 print(scores)
+# Nombre de colonnes
+n_colonnes = scores.shape[1]
 
+# Valeurs en abscisse pour les deux groupes
+x_values = np.array([1] * 5 + [0] * 5)
+
+# Création des graphiques
+for i in range(n_colonnes):
+    plt.figure(figsize=(5, 3))  # Créer une nouvelle figure pour chaque colonne
+    plt.scatter(x_values, scores[:, i])  # Tracer les points pour la colonne i
+    plt.title(f'FPC {i+1}')  # Titre basé sur le numéro de la colonne
+    plt.xlabel('Groupe')  # Axe des abscisses
+    plt.ylabel('Valeur')  # Axe des ordonnées
+    plt.xticks([0, 1], ['Groupe 0', 'Groupe 1'])  # Définir les étiquettes pour les valeurs en abscisse
+    plt.show()  # Afficher le graphique
 ###########
 
 # file_path = "/home/lim/Documents/StageMathieu/XsensData/GuSe/exports_shoulder_height/"
