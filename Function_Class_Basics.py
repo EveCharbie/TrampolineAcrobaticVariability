@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import biorbd
 from Draw_function import column_names
+from scipy.integrate import simpson
 
 
 class OrderMatData:
@@ -247,3 +248,27 @@ def trouver_index_parent(nom_parent):
     index_parent = keys_list.index(nom_parent) if nom_parent in keys_list else None
     return index_parent
 
+
+def calculate_scores(fd, fpca_components, dx):
+    # Nombre d'essais, nombre de points par essai, nombre de FPC
+    n_essais, n_points, _ = fd.data_matrix.shape
+    n_fpc = fpca_components.shape[0]
+
+    # Initialiser un tableau pour stocker les scores
+    scores = np.zeros((n_essais, n_fpc))
+
+    # Itérer sur chaque essai
+    for i in range(n_essais):
+        essai_values = fd.data_matrix[i, :, 0]  # Extraire les valeurs pour l'essai courant
+
+        # Itérer sur chaque FPC
+        for j in range(n_fpc):
+            fpc_values = fpca_components[j, :, 0]  # Extraire les valeurs pour la FPC courante
+
+            # Calculer le produit et intégrer pour obtenir le score
+            produit = essai_values * fpc_values
+            score = simpson(produit, dx=dx)
+
+            scores[i, j] = score  # Stocker le score calculé
+
+    return scores

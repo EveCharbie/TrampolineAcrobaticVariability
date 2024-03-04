@@ -267,3 +267,14 @@ def add_lines_with_arrow_and_circle(
 
     return output_path
 
+
+def plot_adjusted_fd(ax, mean_fd, adjusted_fd_positive, adjusted_fd_negative, title, grid_points, multiple, percentage_variabilite):
+    ax.plot(grid_points, mean_fd.data_matrix[0, :, 0], 'black', label='Moyenne', linewidth=2)
+    ax.plot(grid_points, adjusted_fd_positive.data_matrix[0, :, 0], 'g--', label=f'Moyenne + fPC * {multiple}', linewidth=2)
+    ax.plot(grid_points, adjusted_fd_negative.data_matrix[0, :, 0], 'r--', label=f'Moyenne - fPC * {multiple}', linewidth=2)
+    ax.set_title(f"{title} qui explique {percentage_variabilite} de la variabilite")
+    ax.set_xlabel('Temps')
+    ax.set_ylabel('Vitesse Angulaire')
+    ax.legend()
+
+
