@@ -64,6 +64,16 @@ Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
 Q_complet = np.concatenate((pelv_trans_list[0].T, Q), axis=0)
 
+# Indices des lignes à supprimer
+indices_a_supprimer = [16, 20, 25, 28, 34, 35, 37, 43, 44, 46]
+
+# Suppression des lignes
+# Nous utilisons une compréhension de liste pour créer une liste d'indices à conserver,
+# puis nous indexons l'array original avec cette liste.
+indices_a_conserver = [i for i in range(Q_complet.shape[0]) if i not in indices_a_supprimer]
+Q_good_DoF = Q_complet[indices_a_conserver]
+
+
 # for i in range(nb_mat):
 #     plt.figure(figsize=(5, 3))
 #     for axis in range(3):
@@ -77,6 +87,8 @@ Q_complet = np.concatenate((pelv_trans_list[0].T, Q), axis=0)
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
-b.load_movement(Q_complet)
+b.load_movement(Q_good_DoF)
+# b.load_experimental_markers(pos_mov[:, :, :])
+
 
 b.exec()
