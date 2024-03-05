@@ -1,6 +1,7 @@
 import biorbd
 import numpy as np
 import bioviz
+import matplotlib.pyplot as plt
 from Function.Function_build_model import get_all_matrice
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
@@ -11,7 +12,9 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    (file_path_c3d + "Sa_821_822_5.c3d", (3331, 3637)),
+    # (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3450)),
+    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+
 ]
 
 relax_intervals = [(file_path_c3d + "Relax.c3d", (0, 50))]
@@ -55,38 +58,41 @@ for i_segment in range(nb_mat):
             RotMat_between[2, 1],
             RotMat_between[2, 2],
         )
-        Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-            RotMat_between, "xyz"
-        ).to_array()
+        if i_segment in (3, 4, 6, 7):
+            Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
+                RotMat_between, "zy").to_array()
+        elif i_segment in (10, 13):
+            Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
+                RotMat_between, "x").to_array()
+        else:
+            Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                RotMat_between, "xyz").to_array()
+
 
 Q_corrected = np.unwrap(Q, axis=1)
 Q_degrees = np.degrees(Q_corrected)
-Q_complet = np.concatenate((pelv_trans_list[0].T, Q), axis=0)
+Q_complet = np.concatenate((pelv_trans_list[0].T, Q_corrected), axis=0)
 
-# Indices des lignes à supprimer
-indices_a_supprimer = [16, 20, 25, 28, 34, 35, 37, 43, 44, 46]
+ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
 
-# Suppression des lignes
-# Nous utilisons une compréhension de liste pour créer une liste d'indices à conserver,
-# puis nous indexons l'array original avec cette liste.
-indices_a_conserver = [i for i in range(Q_complet.shape[0]) if i not in indices_a_supprimer]
-Q_good_DoF = Q_complet[indices_a_conserver]
+# Suppression des colonnes où tous les éléments sont zéro
+Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
 
 
-# for i in range(nb_mat):
-#     plt.figure(figsize=(5, 3))
-#     for axis in range(3):
-#         plt.plot(Q_corrected[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-#     plt.title(f'Segment {i+1}')
-#     plt.xlabel('Frame')
-#     plt.ylabel('Angle (rad)')
-#     plt.legend()
-#     plt.show()
+for i in range(nb_mat):
+    plt.figure(figsize=(5, 3))
+    for axis in range(3):
+        plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+    plt.title(f'Segment {i+1}')
+    plt.xlabel('Frame')
+    plt.ylabel('Angle (rad)')
+    plt.legend()
+    plt.show()
 
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
-b.load_movement(Q_good_DoF)
+b.load_movement(Q_complet_good_DOF)
 b.load_experimental_markers(pos_mov[:, :, :])
 
 

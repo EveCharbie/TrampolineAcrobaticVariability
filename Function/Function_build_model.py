@@ -372,7 +372,6 @@ def get_orientation_ankle(pos_marker, marker_name_list, is_right_side):
 
     axe_x_ankle = np.cross(axe_z_ankle, axe_y_ankle)
     axe_x_ankle = normalise_vecteurs(axe_x_ankle)
-    axe_x_ankle = [-i for i in axe_x_ankle]
 
 # reverse x and y to have rot int ext on y
 #     matrices_rotation = np.array(
