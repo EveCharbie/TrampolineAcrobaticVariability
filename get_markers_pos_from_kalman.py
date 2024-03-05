@@ -5,12 +5,12 @@ import biorbd
 import ezc3d
 from TrampolineAcrobaticVariability.Function.Function_draw import dessiner_vecteurs
 
-from Function_Class_Basics import (
+from Function.Function_Class_Basics import (
     find_index,
     calculate_rmsd,
 )
 
-from TrampolineAcrobaticVariability.Function.Function_build_model import (
+from Function.Function_build_model import (
     recons_kalman_with_marker,
     get_orientation_knee_left,
     get_orientation_knee_right,
@@ -33,7 +33,8 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    (file_path_c3d + "Relax.c3d", (0, 50)),
+    # (file_path_c3d + "Relax.c3d", (0, 50)),
+    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
 ]
 
 ##
@@ -226,6 +227,14 @@ for file_path, interval in file_intervals:
         origin_head = head_joint_center[frame]
         origin_acr_left = mid_acr_left[frame]
         origin_acr_right = mid_acr_right[frame]
+
+        dessiner_vecteurs(
+            ax,
+            origin,
+            matrice_origin[frame][:, 0],
+            matrice_origin[frame][:, 1],
+            matrice_origin[frame][:, 2],
+        )
 
         dessiner_vecteurs(
             ax,

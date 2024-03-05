@@ -1,7 +1,7 @@
 import biorbd
 import numpy as np
 import bioviz
-from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice
+from Function.Function_build_model import get_all_matrice
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -11,7 +11,7 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    (file_path_c3d + "Sa_821_822_2.c3d", (3289, 3596)),
+    (file_path_c3d + "Sa_821_822_5.c3d", (3331, 3637)),
 ]
 
 relax_intervals = [(file_path_c3d + "Relax.c3d", (0, 50))]
@@ -87,7 +87,7 @@ chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewS
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.load_movement(Q_good_DoF)
-# b.load_experimental_markers(pos_mov[:, :, :])
+b.load_experimental_markers(pos_mov[:, :, :])
 
 
 b.exec()

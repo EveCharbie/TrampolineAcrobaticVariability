@@ -10,7 +10,7 @@ import biorbd
 import scipy
 import ezc3d
 import bioviz
-from Function_Class_Basics import column_names, recons_kalman, find_index
+from Function.Function_Class_Basics import column_names, recons_kalman, find_index
 import pandas as pd
 
 repertory_path = "/home/lim/Documents/StageMathieu/DataTrampo/"

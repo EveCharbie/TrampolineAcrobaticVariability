@@ -13,7 +13,7 @@ folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
     (file_path_c3d + "Relax.c3d", (0, 50)),
-    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+    # (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
 ]
 
 joint_center_mov = []

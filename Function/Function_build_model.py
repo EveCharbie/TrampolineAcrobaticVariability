@@ -2,7 +2,7 @@ import os
 import numpy as np
 import biorbd
 import ezc3d
-from Function_Class_Basics import find_index, normalise_vecteurs, calculate_rmsd
+from .Function_Class_Basics import find_index, normalise_vecteurs, calculate_rmsd
 
 
 def recons_kalman_with_marker(
@@ -626,12 +626,12 @@ def get_orientation_shoulder(pos_marker, marker_name_list, is_right_side):
     axe_x_shoulder = np.cross(axe_y_shoulder, axe_z_shoulder)
     axe_x_shoulder = normalise_vecteurs(axe_x_shoulder)
 
-    matrices_rotation = np.array(
-        [
-            np.column_stack([x, y, z])
-            for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)
-        ]
-    )
+    # matrices_rotation = np.array(
+    #     [
+    #         np.column_stack([x, y, z])
+    #         for x, y, z in zip(axe_x_shoulder, axe_y_shoulder, axe_z_shoulder)
+    #     ]
+    # )
     matrices_rotation = np.array(
         [
             np.column_stack([x, y, z])
@@ -825,16 +825,11 @@ def get_all_matrice(file_path, interval, model):
 
 def convert_to_local_frame(P1, R1, P2, R2):
     """
-    Converts the position and rotation matrix of a point in the global frame
-    to its position and rotation matrix in the frame of another point.
+    - P1: Position of the first point in the global frame
+    - R1: Rotation matrix of the first point in the global frame
+    - P2: Position of the second point in the global frame
+    - R2: Rotation matrix of the second point in the global frame
 
-    Parameters:
-    - P1: Position of the first point in the global frame (numpy array).
-    - R1: Rotation matrix of the first point in the global frame (numpy array).
-    - P2: Position of the second point in the global frame (numpy array).
-    - R2: Rotation matrix of the second point in the global frame (numpy array).
-
-    Returns:
     - P2_prime: Position of the second point in the frame of the first point.
     - R2_prime: Rotation matrix of the second point relative to the first point.
     """

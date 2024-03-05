@@ -4,7 +4,7 @@ import biorbd
 import scipy
 import ezc3d
 import bioviz
-from Function_Class_Basics import recons_kalman, find_index
+from Function.Function_Class_Basics import recons_kalman, find_index
 import pandas as pd
 from TrampolineAcrobaticVariability.Function.Function_draw import column_names
 
