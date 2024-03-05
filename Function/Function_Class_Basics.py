@@ -4,6 +4,7 @@ import numpy as np
 import biorbd
 from .Function_draw import column_names
 from scipy.integrate import simpson
+from scipy.interpolate import interp1d
 
 
 class OrderMatData:
@@ -272,3 +273,16 @@ def calculate_scores(fd, fpca_components, dx):
             scores[i, j] = score  # Stocker le score calculé
 
     return scores
+
+
+def normaliser_essai(essai, nombre_points=100):
+    # Créer un vecteur linéaire de points basé sur la longueur originale de l'essai
+    x_original = np.linspace(0, 1, num=len(essai))
+    # Créer un vecteur linéaire de points pour la longueur cible
+    x_nouveau = np.linspace(0, 1, num=nombre_points)
+
+    # Interpolation linéaire
+    fonction_interpolation = interp1d(x_original, essai, kind='linear')
+    essai_normalise = fonction_interpolation(x_nouveau)
+
+    return essai_normalise

@@ -5,17 +5,13 @@ import matplotlib.pyplot as plt
 from scipy import signal
 import biorbd
 import os
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import get_q
 
 dossier_graphiques = "/Users/mathieubourgeois/Desktop/Dossier_Graphique"
 
-
-filepath = "/Users/mathieubourgeois/Documents/GitHub/Stage2024/2019-08-29/JeCh/tests/Je_833_1.c3d"
-# filepath = "/Users/mathieubourgeois/Library/Mobile Documents/com~apple~CloudDocs/Desktop/MASTER/M1/STAGE_M1_TRAITEMENT/Analyse/C3DFiles/Sujet_01/Sujet_01_velo_60.c3d"
-
-
-chemin_fichier_pkl = "/Users/mathieubourgeois/Desktop/PickleFiles/a62d4691_0_0-45_796__41__0__eyetracking_metrics.pkl"
-chemin_fichier_pkl = "/Users/mathieubourgeois/Desktop/PickleFiles/a62d4691_0_0-45_796__41__1__eyetracking_metrics.pkl"
-chemin_fichier_pkl = "/Users/mathieubourgeois/Desktop/PickleFiles/a62d4691_0_0-45_796__41__2__eyetracking_metrics.pkl"
+biorbd_model_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod"
+# chemin_fichier_pkl = "/Users/mathieubourgeois/Desktop/PickleFiles/a62d4691_0_0-45_796__41__0__eyetracking_metrics.pkl"
+chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results/AnBe/42/55d81c96_0_0-49_552__42__0__eyetracking_metrics.pkl"
 
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
@@ -66,79 +62,6 @@ print(subject_name)
 # plt.show()
 
 
-def get_q(Xsens_orientation_per_move):
-    """
-    This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation
-    of the Xsens segments.
-    The translation is left empty as it has to be computed otherwise.
-    I am not sure if I would use this for kinematics analysis, but for visualisation it is not that bad.
-    """
-
-    parent_idx_list = {
-        "Pelvis": None,  # 0
-        "L5": [0, "Pelvis"],  # 1
-        "L3": [1, "L5"],  # 2
-        "T12": [2, "L3"],  # 3
-        "T8": [3, "T12"],  # 4
-        "Neck": [4, "T8"],  # 5
-        "Head": [5, "Neck"],  # 6
-        "ShoulderR": [4, "T8"],  # 7
-        "UpperArmR": [7, "ShoulderR"],  # 8
-        "LowerArmR": [8, "UpperArmR"],  # 9
-        "HandR": [9, "LowerArmR"],  # 10
-        "ShoulderL": [4, "T8"],  # 11
-        "UpperArmL": [11, "ShoulderR"],  # 12
-        "LowerArmL": [12, "UpperArmR"],  # 13
-        "HandL": [13, "LowerArmR"],  # 14
-        "UpperLegR": [0, "Pelvis"],  # 15
-        "LowerLegR": [15, "UpperLegR"],  # 16
-        "FootR": [16, "LowerLegR"],  # 17
-        "ToesR": [17, "FootR"],  # 18
-        "UpperLegL": [0, "Pelvis"],  # 19
-        "LowerLegL": [19, "UpperLegL"],  # 20
-        "FootL": [20, "LowerLegL"],  # 21
-        "ToesL": [21, "FootL"],  # 22
-    }
-
-    nb_frames = Xsens_orientation_per_move.shape[0]
-    Q = np.zeros((23 * 3, nb_frames))
-    rotation_matrices = np.zeros((23, nb_frames, 3, 3))
-    for i_segment, key in enumerate(parent_idx_list):
-        for i_frame in range(nb_frames):
-            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
-                Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4]
-            )
-            Quat = biorbd.Quaternion(Quat_normalized[0], Quat_normalized[1], Quat_normalized[2], Quat_normalized[3])
-
-            RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
-            RotMat_current = z_rotation @ RotMat_current
-
-            if parent_idx_list[key] is None:
-                RotMat = np.eye(3)
-            else:
-                RotMat = rotation_matrices[parent_idx_list[key][0], i_frame, :, :]
-
-            RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
-            RotMat_between = biorbd.Rotation(
-                RotMat_between[0, 0],
-                RotMat_between[0, 1],
-                RotMat_between[0, 2],
-                RotMat_between[1, 0],
-                RotMat_between[1, 1],
-                RotMat_between[1, 2],
-                RotMat_between[2, 0],
-                RotMat_between[2, 1],
-                RotMat_between[2, 2],
-            )
-            Q[i_segment * 3 : (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "xyz"
-            ).to_array()
-
-            rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
-    return Q
-
-
 q = get_q(Xsens_orientation_per_move)
 # print(q)
 
@@ -173,10 +96,11 @@ parent_idx_list = {
 nb_frames = q.shape[1]
 time = np.arange(nb_frames)  # Créez une séquence de temps pour l'axe x
 
+q = np.unwrap(q, axis=1)
 
 # Créer le dossier s'il n'existe pas
-if not os.path.exists(dossier_graphiques):
-    os.makedirs(dossier_graphiques)
+# if not os.path.exists(dossier_graphiques):
+#     os.makedirs(dossier_graphiques)
 
 # Parcourez chaque membre de la liste et tracez un graphique
 for member, parent_info in parent_idx_list.items():
@@ -201,8 +125,8 @@ for member, parent_info in parent_idx_list.items():
     plt.legend(["X", "Y", "Z"])
 
     # Enregistrez le graphique dans le dossier spécifié
-    nom_fichier = os.path.join(dossier_graphiques, f"{member}_orientation_degrees.png")
-    plt.savefig(nom_fichier)
+    # nom_fichier = os.path.join(dossier_graphiques, f"{member}_orientation_degrees.png")
+    # plt.savefig(nom_fichier)
 
     # Affichez le graphique
-    # plt.show()
+    plt.show()
