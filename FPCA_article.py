@@ -87,25 +87,18 @@ fig, axs = plt.subplots(3, 2, figsize=(10, 12))
 
 # Exemple d'appel de la fonction pour chaque composante principale et subplot
 plot_adjusted_fd(axs[0, 0], mean_fd, adjusted_fd_positive, adjusted_fd_negative,
-                 'FPC1', fd.grid_points[0], multiple, round(explained_variance_ratio[0], 2))
+                 'FPC1', fd.grid_points[0], round(explained_variance_ratio[0], 2))
 plot_adjusted_fd(axs[1, 0], mean_fd, adjusted_fd_positive_2, adjusted_fd_negative_2,
-                 'FPC2', fd.grid_points[0], multiple,  round(explained_variance_ratio[1], 2))
+                 'FPC2', fd.grid_points[0],  round(explained_variance_ratio[1], 2))
 plot_adjusted_fd(axs[2, 0], mean_fd, adjusted_fd_positive_3, adjusted_fd_negative_3,
-                 'FPC3', fd.grid_points[0], multiple,  round(explained_variance_ratio[2], 2))
+                 'FPC3', fd.grid_points[0],  round(explained_variance_ratio[2], 2))
 plot_adjusted_fd(axs[0, 1], mean_fd, adjusted_fd_positive_4, adjusted_fd_negative_4,
-                 'FPC4', fd.grid_points[0], multiple,  round(explained_variance_ratio[3], 2))
+                 'FPC4', fd.grid_points[0],  round(explained_variance_ratio[3], 2))
 plot_adjusted_fd(axs[1, 1], mean_fd, adjusted_fd_positive_5, adjusted_fd_negative_5,
-                 'FPC5', fd.grid_points[0], multiple,  round(explained_variance_ratio[4], 2))
+                 'FPC5', fd.grid_points[0],  round(explained_variance_ratio[4], 2))
 
-# Répétez pour les autres composantes et ajustez les indices axs[i, j] selon le besoin
 
 plt.tight_layout()
-
-try_values = fd.data_matrix[0, :, 0]
-try_values = np.array(try_values)
-
-valeurs_fpc1 = fpca.components_[0].data_matrix[:, :, 0]
-valeurs_fpc1 = np.array(valeurs_fpc1)
 
 
 scores = calculate_scores(fd, fpca.components_.data_matrix, interval)
