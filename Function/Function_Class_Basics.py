@@ -84,6 +84,15 @@ def calculate_mean_std(data_instances, member, axis):
     return Mean_Data, Std_Dev_Data
 
 
+def calcul_stats(data):
+    # Convertir en array 3D pour faciliter les calculs (participants, essais, temps)
+    data_array = np.array(data)
+    # Moyenne et écart-type sur les essais pour chaque participant et degré de liberté
+    moyenne = np.mean(data_array, axis=0)  # Moyenne sur les participants et les essais
+    ecart_type = np.std(data_array, axis=0)  # Écart-type sur les participants et les essais
+    return moyenne, ecart_type
+
+
 def get_q(Xsens_orientation_per_move):
     """
     This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation

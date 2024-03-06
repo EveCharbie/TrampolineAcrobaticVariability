@@ -275,9 +275,9 @@ def plot_adjusted_fd(ax, mean_fd, adjusted_fd_positive, adjusted_fd_negative, ti
             markersize=5, linewidth=2)
     ax.plot(grid_points, adjusted_fd_negative.data_matrix[0, :, 0], 'r_', linestyle='none', label='Moyenne - fPC',
             markersize=5, linewidth=2)
-    ax.set_title(f"{title} qui explique {percentage_variabilite} de la variabilite")
+    ax.set_title(f"{title} qui explique {round(percentage_variabilite*100,1)} % de la variabilite")
     ax.set_xlabel('Temps')
-    ax.set_ylabel('Vitesse Angulaire')
+    ax.set_ylabel('Angles (°)')
     ax.legend()
 
 

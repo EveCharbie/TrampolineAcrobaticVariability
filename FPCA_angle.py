@@ -6,11 +6,11 @@ from Function.Function_Class_Basics import calculate_scores
 import os
 import scipy
 import pickle
-from Function.Function_Class_Basics import get_q, normaliser_essai
+from Function.Function_Class_Basics import get_q, normaliser_essai, calcul_stats
 from skfda import FDataGrid
 from skfda.preprocessing.dim_reduction import FPCA
 from skfda.representation.basis import (BSplineBasis)
-
+import matplotlib.patches as mpatches
 angular_data_elite = []
 angular_data_subelite = []
 
@@ -29,7 +29,6 @@ for name in enumerate(names):
         file_path_complete = f"{file_path}{files[1]}"
 
         with open(file_path_complete, "rb") as fichier_pkl:
-            # Charger les données à partir du fichier ".pkl"
             eye_tracking_metrics = pickle.load(fichier_pkl)
 
         Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
@@ -52,8 +51,6 @@ nombre_points = 100
 freq_acquisition = 200
 interval = 1 / freq_acquisition
 
-
-# Configuration initiale du graphique
 plt.figure(figsize=(10, 6))
 
 # Tracer les données Elite après normalisation
@@ -68,14 +65,12 @@ for participant in angular_data_subelite:
         essai_normalise = normaliser_essai(essai, nombre_points)
         plt.plot(essai_normalise, color='red', alpha=0.5)
 
-# Ajout des légendes, titres et étiquettes d'axe
 plt.title('Comparaison des performances Elite vs Sub-Elite (Normalisées)')
 plt.xlabel('Point interpolé')
-plt.ylabel('Valeurs normalisées')
-plt.legend(['Elite', 'Sub-Elite'], loc='best')
-
-# Afficher le graphique
-plt.show()
+plt.ylabel('Angles (°)')
+elite_handle = mpatches.Patch(color='blue', label='Elite')
+sub_elite_handle = mpatches.Patch(color='red', label='Sub-Elite')
+plt.legend(handles=[elite_handle, sub_elite_handle], loc='best')
 
 
 grid_points = np.arange(0, nombre_points) * interval
@@ -83,11 +78,32 @@ grid_points = np.arange(0, nombre_points) * interval
 data_elite_normalisees = [normaliser_essai(essai, nombre_points) for participant in angular_data_elite for essai in participant]
 data_subelite_normalisees = [normaliser_essai(essai, nombre_points) for participant in angular_data_subelite for essai in participant]
 
-# Création des étiquettes pour chaque observation
+###
+moyenne_elite, ecart_type_elite = calcul_stats(data_elite_normalisees)
+moyenne_subelite, ecart_type_subelite = calcul_stats(data_subelite_normalisees)
+temps = np.linspace(0, 1, nombre_points)  # Remplacez par vos vrais points temporels si nécessaire
+
+plt.figure(figsize=(10, 6))
+
+# Elite
+plt.plot(temps, moyenne_elite, 'b-', label='Moyenne Elite')
+plt.fill_between(temps, moyenne_elite-ecart_type_elite, moyenne_elite+ecart_type_elite, color='blue', alpha=0.2)
+
+# Sub-Elite
+plt.plot(temps, moyenne_subelite, 'r-', label='Moyenne Sub-Elite')
+plt.fill_between(temps, moyenne_subelite-ecart_type_subelite, moyenne_subelite+ecart_type_subelite, color='red', alpha=0.2)
+
+plt.title('Comparaison des performances Elite vs Sub-Elite (Normalisées)')
+plt.xlabel('Point interpolé')
+plt.ylabel('Angles (°)')
+plt.legend(loc='best')
+
+##
+
+
 ids_elite = ['Elite' for _ in range(len(data_elite_normalisees))]
 ids_subelite = ['Sub-Elite' for _ in range(len(data_subelite_normalisees))]
 
-# Concaténer toutes les données et les étiquettes en un seul array numpy
 data_totale = np.vstack([data_elite_normalisees, data_subelite_normalisees])
 ids_totales = np.array(ids_elite + ids_subelite)
 
@@ -131,9 +147,6 @@ std_scorefpc = []
 for fpc in range(n_fpc):
     std_scorefpc.append(np.std(scores[fpc]))
 
-
-multiple = 10
-
 adjusted_fd_positive = mean_fd + fpca.components_[0] * 2 * std_scorefpc[0]
 adjusted_fd_negative = mean_fd - fpca.components_[0] * 2 * std_scorefpc[0]
 
@@ -165,20 +178,22 @@ plot_adjusted_fd(axs[1, 1], mean_fd, adjusted_fd_positive_5, adjusted_fd_negativ
 plt.tight_layout()
 
 
-# Créer x_values basé sur ids_totales, par exemple 1 pour Elite, 0 pour Sub-Elite
+# Graph with dot
 x_values = np.array([1 if id == 'Elite' else 0 for id in ids_totales])
 
-# Création des graphiques
+plt.figure(figsize=(15, 6))
 for i in range(n_fpc):
-    plt.figure(figsize=(5, 3))
-    plt.scatter(x_values, scores[:, i], c=x_values, cmap='viridis')
-    plt.title(f'FPC {i+1}')
-    plt.xlabel('Groupe')
-    plt.ylabel('Valeur')
-    plt.xticks([0, 1], ['Sub-Elite', 'Elite'])
-    plt.show()
+    # Ajout d'un subplot pour chaque FPC
+    ax = plt.subplot(1, n_fpc, i + 1)
+    scatter = ax.scatter(x_values, scores[:, i], c=x_values, cmap='viridis')
+    ax.set_title(f'FPC {i + 1}')
+    ax.set_xlabel('Groupe')
+    ax.set_ylabel('Valeur')
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(['Sub-Elite', 'Elite'])
+plt.tight_layout()
 
-# Séparer les scores en deux listes basées sur ids_totales pour Elite et Sub-Elite
+# Create BOXPLOT
 scores_elite = []
 scores_subelite = []
 for i, score in enumerate(scores):
@@ -187,24 +202,23 @@ for i, score in enumerate(scores):
     else:
         scores_subelite.append(score)
 
-# Conversion des listes en arrays numpy pour un traitement plus facile
 scores_elite = np.array(scores_elite)
 scores_subelite = np.array(scores_subelite)
 
-# Création des boxplots pour chaque FPC
+plt.figure(figsize=(15, 6))
 for i in range(n_fpc):
-    plt.figure(figsize=(5, 3))
-
-    # Préparation des données pour le boxplot
+    # Ajout d'un subplot pour chaque FPC
+    ax = plt.subplot(1, n_fpc, i + 1)
     data = [scores_subelite[:, i], scores_elite[:, i]]
+    bplot = ax.boxplot(data, patch_artist=True, labels=['Sub-Elite', 'Elite'])
+    colors = ['#FF9999', '#66B3FF']
+    for patch, color in zip(bplot['boxes'], colors):
+        patch.set_facecolor(color)
+    for median in bplot['medians']:
+        median.set_color('black')
+    ax.set_title(f'FPC {i + 1}')
+    ax.set_ylabel('Scores')
+    ax.set_xticklabels(['Sub-Elite', 'Elite'])
 
-    # Création du boxplot
-    plt.boxplot(data, patch_artist=True, labels=['Sub-Elite', 'Elite'])
-
-    # Personnalisation supplémentaire
-    plt.title(f'Boxplot pour la FPC {i + 1}')
-    plt.ylabel('Scores')
-    plt.xticks([1, 2], ['Sub-Elite', 'Elite'])
-
-    # Afficher le graphique
-    plt.show()
+plt.tight_layout()
+plt.show()
