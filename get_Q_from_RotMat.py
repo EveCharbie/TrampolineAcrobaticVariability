@@ -2,7 +2,7 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function.Function_build_model import get_all_matrice, average_rotation_matrix
+from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, average_rotation_matrix
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list, check_matrix_orthogonality
 
 
