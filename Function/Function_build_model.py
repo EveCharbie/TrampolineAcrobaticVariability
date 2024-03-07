@@ -3,6 +3,7 @@ import numpy as np
 import biorbd
 import ezc3d
 from .Function_Class_Basics import find_index, normalise_vecteurs, calculate_rmsd
+from scipy.linalg import svd
 
 
 def recons_kalman_with_marker(
@@ -847,4 +848,14 @@ def convert_marker_to_local_frame(P1, R1, P2):
     P2_prime = R1.T @ P2_prime
 
     return P2_prime
+
+
+def average_rotation_matrix(matrices):
+    # Calcul de la moyenne arithmétique des matrices
+    mean_matrix = np.mean(matrices, axis=0)
+
+    # Application de la SVD pour garantir l'orthogonalité
+    U, _, VT = svd(mean_matrix)
+    return np.dot(U, VT)
+
 

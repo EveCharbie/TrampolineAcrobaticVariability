@@ -2,7 +2,8 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from Function.Function_build_model import get_all_matrice
+from Function.Function_build_model import get_all_matrice, average_rotation_matrix
+from Function.Function_Class_Basics import check_matrix_orthogonality
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -32,11 +33,18 @@ for file_path, interval in relax_intervals:
     rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path, interval, model)
     relax_list.append(rot_mat_relax)
 
-relax_matrix = np.mean(relax_list[0], axis=1)
+# relax_matrix = np.mean(relax_list[0], axis=1)
 
 nb_frames = results_list[0].shape[1]
 nb_mat = results_list[0].shape[0]
 Q = np.zeros((nb_mat * 3, nb_frames))
+
+
+# Calcul de la matrice de rotation moyenne pour chaque articulation
+relax_matrix = np.zeros((nb_mat, 3, 3))
+for i in range(nb_mat):
+    matrices = relax_list[0][i]
+    relax_matrix[i] = average_rotation_matrix(matrices)
 
 movement_mat = results_list[0]
 
@@ -45,6 +53,8 @@ for i_segment in range(nb_mat):
     for i_frame in range(nb_frames):
         RotMat = relax_matrix[i_segment, :, :]
         RotMat_current = movement_mat[i_segment, i_frame, :, :]
+        check_matrix_orthogonality(RotMat, "RotMat")
+        check_matrix_orthogonality(RotMat_current, "RotMat_current")
 
         RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
         RotMat_between = biorbd.Rotation(
@@ -68,18 +78,16 @@ for i_segment in range(nb_mat):
             Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
                 RotMat_between, "xyz").to_array()
 
-
 Q_corrected = np.unwrap(Q, axis=1)
-Q_degrees = np.degrees(Q_corrected)
+Q_degrees = np.degrees(Q)
 Q_complet = np.concatenate((pelv_trans_list[0].T, Q_corrected), axis=0)
 
-ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
-
 # Suppression des colonnes où tous les éléments sont zéro
+ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
 Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
 
 
-for i in range(nb_mat):
+for i in range(nb_mat+1):
     plt.figure(figsize=(5, 3))
     for axis in range(3):
         plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
@@ -87,13 +95,12 @@ for i in range(nb_mat):
     plt.xlabel('Frame')
     plt.ylabel('Angle (rad)')
     plt.legend()
-    plt.show()
+plt.show()
 
 chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.load_movement(Q_complet_good_DOF)
 b.load_experimental_markers(pos_mov[:, :, :])
-
 
 b.exec()
