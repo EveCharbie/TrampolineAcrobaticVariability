@@ -3,6 +3,7 @@ import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -39,23 +40,6 @@ for file_path, interval in file_intervals:
 relax_matrix = np.mean(rotate_matrice_relax[0], axis=1)
 relax_joint_center = np.mean(joint_center_relax[0], axis=1)
 
-parent_list = {
-    "Pelvis": None,  # 0
-    "Thorax": [0, "Pelvis"],  # 1
-    "Tete": [1, "Thorax"],  # 2
-    "BrasD": [1, "Thorax"],  # 3
-    "ABrasD": [3, "BrasD"],  # 4
-    "MainD": [4, "ABrasD"],  # 5
-    "BrasG": [1, "Thorax"],  # 6
-    "ABrasG": [6, "BrasG"],  # 7
-    "MainG": [7, "ABrasG"],  # 8
-    "CuisseD": [0, "Pelvis"],  # 9
-    "JambeD": [9, "CuisseD"],  # 10
-    "PiedD": [10, "JambeD"],  # 11
-    "CuisseG": [0, "Pelvis"],  # 12
-    "JambeG": [12, "CuisseG"],  # 13
-    "PiedG": [13, "JambeG"],  # 14
-}
 
 matrix_in_parent_frame = []
 joint_center_in_parent_frame = []

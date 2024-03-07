@@ -3,7 +3,8 @@ import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
 from Function.Function_build_model import get_all_matrice, average_rotation_matrix
-from Function.Function_Class_Basics import check_matrix_orthogonality
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list, check_matrix_orthogonality
+
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -33,8 +34,6 @@ for file_path, interval in relax_intervals:
     rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path, interval, model)
     relax_list.append(rot_mat_relax)
 
-# relax_matrix = np.mean(relax_list[0], axis=1)
-
 nb_frames = results_list[0].shape[1]
 nb_mat = results_list[0].shape[0]
 Q = np.zeros((nb_mat * 3, nb_frames))
@@ -48,9 +47,9 @@ for i in range(nb_mat):
 
 movement_mat = results_list[0]
 
-
-for i_segment in range(nb_mat):
-    for i_frame in range(nb_frames):
+for i_frame in range(nb_frames):
+    RotMat_between_segment = []
+    for i_segment in range(nb_mat):
         RotMat = relax_matrix[i_segment, :, :]
         RotMat_current = movement_mat[i_segment, i_frame, :, :]
         check_matrix_orthogonality(RotMat, "RotMat")
@@ -68,7 +67,30 @@ for i_segment in range(nb_mat):
             RotMat_between[2, 1],
             RotMat_between[2, 2],
         )
-        if i_segment in (3, 4, 6, 7):
+        RotMat_between_segment.append(RotMat_between)
+
+    for i_segment in range(nb_mat):
+        index_to_key = {i: key for i, key in enumerate(parent_list.keys())}
+        key_for_given_index = index_to_key[i_segment]
+        info_for_given_index = parent_list[key_for_given_index]
+        if info_for_given_index is not None:
+            parent_index, parent_name = info_for_given_index
+            RotMat_between = np.linalg.inv(RotMat_between_segment[parent_index].to_array()) @ RotMat_between_segment[i_segment].to_array()
+            RotMat_between = biorbd.Rotation(
+                RotMat_between[0, 0],
+                RotMat_between[0, 1],
+                RotMat_between[0, 2],
+                RotMat_between[1, 0],
+                RotMat_between[1, 1],
+                RotMat_between[1, 2],
+                RotMat_between[2, 0],
+                RotMat_between[2, 1],
+                RotMat_between[2, 2],
+            )
+        else:
+            RotMat_between = RotMat_between_segment[i_segment]
+
+        if i_segment in (4, 5, 7, 8, 11, 14):
             Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
                 RotMat_between, "zy").to_array()
         elif i_segment in (10, 13):
