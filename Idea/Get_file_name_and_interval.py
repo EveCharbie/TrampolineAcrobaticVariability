@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import biorbd
 
-csv_path = "/DataTrampo/Labelling_trampo.csv"
+csv_path = "/home/lim/Documents/StageMathieu/DataTrampo/Labelling_trampo.csv"
 interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
 valide = ['O']
 interval_name_tab = interval_name_tab[interval_name_tab["Analyse"] == 'O']

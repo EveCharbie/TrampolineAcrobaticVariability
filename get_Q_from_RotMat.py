@@ -4,7 +4,8 @@ import bioviz
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, average_rotation_matrix
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list, check_matrix_orthogonality
-
+# from pyorerun import BiorbdModel, PhaseRerun
+import pyorerun as prr
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -14,8 +15,9 @@ file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
 folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
 
 file_intervals = [
-    # (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3450)),
-    (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+    # (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3850)),
+    # (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+    (file_path_c3d + "Sa_831_831_6.c3d", (4710, 5009)),
 
 ]
 
