@@ -116,6 +116,28 @@ for file_path, interval in file_intervals:
     # b.load_experimental_markers(markers[:, :, :])
     # b.exec()
 
+    ##
+    # from pyorerun import BiorbdModel, PhaseRerun
+    # from pyomeca import Markers
+    #
+    # nb_frames = q_recons.shape[1]
+    # nb_seconds = 10
+    # t_span = np.linspace(0, nb_seconds, nb_frames)
+    # # loading biorbd model
+    # model = BiorbdModel("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
+    # noisy_markers = np.zeros((3, model.nb_markers, nb_frames))
+    #
+    # # running the animation
+    # rerun_biorbd = PhaseRerun(t_span)
+    # rerun_biorbd.add_animated_model(model, q_recons)
+    # markerspyo = Markers(data=pos_recons, channels=list(model.marker_names))
+    # rerun_biorbd.add_xp_markers(
+    #     name="noisy_markers",
+    #     markers=markerspyo,
+    # )
+    # rerun_biorbd.rerun("animation")
+    ##
+
     rmsd_by_frame = calculate_rmsd(markers, pos_recons)
 
     origine = np.zeros((q_recons.shape[1], 3))

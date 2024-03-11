@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, average_rotation_matrix
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list, check_matrix_orthogonality
 # from pyorerun import BiorbdModel, PhaseRerun
-import pyorerun as prr
+# import rerun as rr
+# import pyorerun as prr
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -126,6 +127,7 @@ for i_frame in range(nb_frames):
 
 Q_corrected = np.unwrap(Q, axis=1)
 
+# Ajouter ou soustraire 2 pi si necessaire
 for i in range(Q_corrected.shape[0]):
     subtract_pi = False
     add_pi = False
@@ -166,3 +168,17 @@ b.load_movement(Q_complet_good_DOF)
 b.load_experimental_markers(pos_mov[:, :, :])
 
 b.exec()
+
+# from pyorerun import BiorbdModel, PhaseRerun
+#
+# nb_frames = Q.shape[1]
+# nb_seconds = 10
+# t_span = np.linspace(0, nb_seconds, nb_frames)
+# # loading biorbd model
+# biorbd_model = BiorbdModel(chemin_fichier_modifie)
+#
+# # running the animation
+# rerun_biorbd = PhaseRerun(t_span)
+# rerun_biorbd.add_animated_model(biorbd_model, Q)
+#
+# rerun_biorbd.rerun("yoyo")
