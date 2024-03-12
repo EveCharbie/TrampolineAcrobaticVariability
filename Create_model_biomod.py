@@ -3,7 +3,7 @@ import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
-from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker
 
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
@@ -45,7 +45,7 @@ matrix_in_parent_frame = []
 joint_center_in_parent_frame = []
 rot_trans_matrix = []
 
-for index, (joint, parent_info) in enumerate(parent_list.items()):
+for index, (joint, parent_info) in enumerate(parent_list_marker.items()):
     if parent_info is not None:  # Vérifie si parent_info n'est pas None
         parent_index, parent_name = parent_info
         P2_in_P1, R2_in_R1 = convert_to_local_frame(relax_joint_center[parent_index], relax_matrix[parent_index],
