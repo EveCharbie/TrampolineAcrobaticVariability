@@ -251,6 +251,33 @@ parent_list_marker = {
 }
 
 
+parent_list_xsens = {
+    "Pelvis": None,  # 0
+    # "L5": [0, "Pelvis"],  # delete
+    # "L3": [1, "L5"],  # delete
+    # "T12": [2, "L3"],  # delete
+    "T8": [0, "Pelvis"],  # 1
+    # "Neck": [4, "T8"],  # delete
+    "Head": [1, "T8"],  # 2
+    # "ShoulderR": [4, "T8"],  # delete
+    "UpperArmR": [1, "T8"],  # 3
+    "LowerArmR": [3, "UpperArmR"],  # 4
+    "HandR": [4, "LowerArmR"],  # 5
+    # "ShoulderL": [4, "T8"],  # delete
+    "UpperArmL": [1, "T8"],  # 6
+    "LowerArmL": [6, "UpperArmR"],  # 7
+    "HandL": [7, "LowerArmR"],  # 8
+    "UpperLegR": [0, "Pelvis"],  # 9
+    "LowerLegR": [9, "UpperLegR"],  # 10
+    "FootR": [10, "LowerLegR"],  # 11
+    # "ToesR": [17, "FootR"],  # delete
+    "UpperLegL": [0, "Pelvis"],  # 12
+    "LowerLegL": [12, "UpperLegL"],  # 13
+    "FootL": [13, "LowerLegL"],  # 14
+    # "ToesL": [21, "FootL"],  # delete
+}
+
+
 def trouver_index_parent(nom_parent):
     # Créer une liste des clés de parent_list pour obtenir les index
     keys_list = list(parent_list.keys())

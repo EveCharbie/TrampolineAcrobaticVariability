@@ -8,33 +8,7 @@ import os
 import numpy as np
 import bioviz
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
-# from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
-
-parent_list_xsens = {
-    "Pelvis": None,  # 0
-    # "L5": [0, "Pelvis"],  # delete
-    # "L3": [1, "L5"],  # delete
-    # "T12": [2, "L3"],  # delete
-    "T8": [0, "Pelvis"],  # 1
-    # "Neck": [4, "T8"],  # delete
-    "Head": [1, "T8"],  # 2
-    # "ShoulderR": [4, "T8"],  # delete
-    "UpperArmR": [1, "T8"],  # 3
-    "LowerArmR": [3, "UpperArmR"],  # 4
-    "HandR": [4, "LowerArmR"],  # 5
-    # "ShoulderL": [4, "T8"],  # delete
-    "UpperArmL": [1, "T8"],  # 6
-    "LowerArmL": [6, "UpperArmR"],  # 7
-    "HandL": [7, "LowerArmR"],  # 8
-    "UpperLegR": [0, "Pelvis"],  # 9
-    "LowerLegR": [9, "UpperLegR"],  # 10
-    "FootR": [10, "LowerLegR"],  # 11
-    # "ToesR": [17, "FootR"],  # delete
-    "UpperLegL": [0, "Pelvis"],  # 12
-    "LowerLegL": [12, "UpperLegL"],  # 13
-    "FootL": [13, "LowerLegL"],  # 14
-    # "ToesL": [21, "FootL"],  # delete
-}
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/31a5eaac_0_0-64_489__4-__0__eyetracking_metrics.pkl"
 
@@ -79,7 +53,6 @@ for i_frame in range(nb_frames):
     RotMat_neutre = []
     RotMat_mov = []
 
-## Pour la position neutre
     for i_segment in range(nb_mat):
         z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
 
