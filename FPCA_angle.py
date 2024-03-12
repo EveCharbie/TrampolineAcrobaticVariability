@@ -7,9 +7,9 @@ import os
 import scipy
 import pickle
 from Function.Function_Class_Basics import get_q, normaliser_essai, calcul_stats
-from skfda import FDataGrid
-from skfda.preprocessing.dim_reduction import FPCA
-from skfda.representation.basis import (BSplineBasis)
+# from skfda import FDataGrid
+# from skfda.preprocessing.dim_reduction import FPCA
+# from skfda.representation.basis import (BSplineBasis)
 import matplotlib.patches as mpatches
 angular_data_elite = []
 angular_data_subelite = []

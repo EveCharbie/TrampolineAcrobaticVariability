@@ -87,24 +87,33 @@ def get_q(Xsens_orientation_per_move):
 
 
 joint_labels = [
+    "Pelvs_x",
+    "Pelvs_y",
+    "Pelvs_z",
+
     "jL5S1_x",  # 0
     "jL5S1_y",  # 1
     "jL5S1_z",  # 2
+
     "jL4L3_x",  # 3
     "jL4L3_y",  # 4
     "jL4L3_z",  # 5
+
     "jL1T12_x",  # 6
     "jL1T12_y",  # 7
     "jL1T12_z",  # 8
     "jT9T8_x",  # 9
     "jT9T8_y",  # 10
     "jT9T8_z",  # 11
+
     "jT1C7_x",  # 12
     "jT1C7_y",  # 13
     "jT1C7_z",  # 14
+
     "jC1Head_x",  # 15
     "jC1Head_y",  # 16
     "jC1Head_z",  # 17
+
     "jRightT4Shoulder…",  # 18
     "jRightT4Shoulder…",  # 19
     "jRightT4Shoulder…",  # 20
@@ -117,6 +126,7 @@ joint_labels = [
     "jRightWrist_x",  # 27
     "jRightWrist_y",  # 28
     "jRightWrist_z",  # 29
+
     "jLeftT4Shoulder_x",  # 30
     "jLeftT4Shoulder_y",  # 31
     "jLeftT4Shoulder_z",  # 32
@@ -129,6 +139,7 @@ joint_labels = [
     "jLeftWrist_x",  # 39
     "jLeftWrist_y",  # 40
     "jLeftWrist_z",  # 41
+
     "jRightHip_x",  # 42
     "jRightHip_y",  # 43
     "jRightHip_z",  # 44
@@ -141,6 +152,7 @@ joint_labels = [
     "jRightBallFoot_x",  # 51
     "jRightBallFoot_y",  # 52
     "jRightBallFoot_z",  # 53
+
     "jLeftHip_x",  # 54
     "jLeftHip_y",  # 55
     "jLeftHip_z",  # 56

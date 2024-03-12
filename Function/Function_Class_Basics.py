@@ -232,7 +232,7 @@ def normalise_vecteurs(vecteurs):
     return vecteurs_normalises
 
 
-parent_list = {
+parent_list_marker = {
     "Pelvis": None,  # 0
     "Thorax": [0, "Pelvis"],  # 1
     "Tete": [1, "Thorax"],  # 2

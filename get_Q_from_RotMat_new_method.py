@@ -3,7 +3,7 @@ import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, average_rotation_matrix
-from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list, check_matrix_orthogonality
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker, check_matrix_orthogonality
 # from pyorerun import BiorbdModel, PhaseRerun
 # import rerun as rr
 # import pyorerun as prr
@@ -58,9 +58,9 @@ for i_frame in range(nb_frames):
         check_matrix_orthogonality(RotMat, "RotMat")
         check_matrix_orthogonality(RotMat_current, "RotMat_current")
 
-        index_to_key = {i: key for i, key in enumerate(parent_list.keys())}
+        index_to_key = {i: key for i, key in enumerate(parent_list_marker.keys())}
         key_for_given_index = index_to_key[i_segment]
-        info_for_given_index = parent_list[key_for_given_index]
+        info_for_given_index = parent_list_marker[key_for_given_index]
 
         if info_for_given_index is not None:
             parent_index, parent_name = info_for_given_index
@@ -96,6 +96,7 @@ for i_frame in range(nb_frames):
         else:
             RotMat_between_mvt = movement_mat[i_segment, i_frame]
 
+        # comme le pelvis est exclu des boucles pas besoin de le transformer en array
         if info_for_given_index is not None:
             RotMat_between_relax = RotMat_between_relax.to_array()
             RotMat_between_mvt = RotMat_between_mvt.to_array()
@@ -151,7 +152,7 @@ ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
 Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
 
 
-for i in range(nb_mat):
+for i in range(nb_mat+1):
     plt.figure(figsize=(5, 3))
     for axis in range(3):
         plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
