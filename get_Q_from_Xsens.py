@@ -45,7 +45,6 @@ Xsens_orientation_per_move_modifie = Xsens_orientation_per_move[:, mask_colonnes
 nb_frames = Xsens_orientation_per_move_modifie.shape[0]
 nb_mat = Xsens_orientation_per_move_modifie.shape[1]//4
 Q = np.zeros((nb_mat * 3, nb_frames))
-rotation_matrices = np.zeros((23, nb_frames, 3, 3))
 pelvis_trans = Xsens_jointAngle_per_move[:, :3]
 
 z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()

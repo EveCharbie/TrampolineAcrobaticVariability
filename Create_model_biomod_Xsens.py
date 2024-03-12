@@ -32,27 +32,43 @@ indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
 Xsens_global_JCS_positions = Xsens_global_JCS_positions_reshape[indices_a_conserver, :]
 Xsens_global_JCS_orientations = Xsens_global_JCS_orientations_reshape[indices_a_conserver, :]
 
+# Extraction des coordonnées x, y, z
+x = Xsens_global_JCS_positions_reshape[:, 0]
+y = Xsens_global_JCS_positions_reshape[:, 1]
+z = Xsens_global_JCS_positions_reshape[:, 2]
+
+# Création d'une figure et d'un axe 3D
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Ajout des points à l'axe
+ax.scatter(x, y, z)
+# Ajout des étiquettes à chaque point
+for i, (px, py, pz) in enumerate(zip(x, y, z)):
+    ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
+
+# Étiquetage des axes
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+
+# Affichage de la figure
+plt.show()
+
 
 nb_mat = Xsens_global_JCS_positions.shape[0]
-Q = np.zeros((nb_mat * 3, nb_frames))
-rotation_matrices = np.zeros((23, nb_frames, 3, 3))
-pelvis_trans = Xsens_jointAngle_per_move[:, :3]
 
-for i_frame in range(nb_frames):
-    RotMat_between_total = []
-    RotMat_neutre = []
-    RotMat_mov = []
 
-    for i_segment in range(nb_mat):
-        z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
+for i_segment in range(nb_mat):
+    z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
 
-        Quat_normalized_neutre = Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
-            Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4]
-        )
-        Quat_neutre = biorbd.Quaternion(Quat_normalized_neutre[0], Quat_normalized_neutre[1], Quat_normalized_neutre[2], Quat_normalized_neutre[3])
-        RotMat_neutre_segment = biorbd.Quaternion.toMatrix(Quat_neutre).to_array()
-        RotMat_neutre_segment = z_rotation @ RotMat_neutre_segment
-        RotMat_neutre.append(RotMat_neutre_segment)
+    Quat_normalized_neutre = Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
+        Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4]
+    )
+    Quat_neutre = biorbd.Quaternion(Quat_normalized_neutre[0], Quat_normalized_neutre[1], Quat_normalized_neutre[2], Quat_normalized_neutre[3])
+    RotMat_neutre_segment = biorbd.Quaternion.toMatrix(Quat_neutre).to_array()
+    RotMat_neutre_segment = z_rotation @ RotMat_neutre_segment
+    RotMat_neutre.append(RotMat_neutre_segment)
 
 
 
