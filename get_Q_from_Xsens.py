@@ -7,7 +7,7 @@ import biorbd
 import os
 import numpy as np
 import bioviz
-from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
+from TrampolineAcrobaticVariability.Function.Function_build_model import calculer_rotation_et_angle, calculer_rotation_relative
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/31a5eaac_0_0-64_489__4-__0__eyetracking_metrics.pkl"
@@ -48,29 +48,19 @@ Q = np.zeros((nb_mat * 3, nb_frames))
 rotation_matrices = np.zeros((23, nb_frames, 3, 3))
 pelvis_trans = Xsens_jointAngle_per_move[:, :3]
 
+z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
+
 for i_frame in range(nb_frames):
     RotMat_between_total = []
     RotMat_neutre = []
     RotMat_mov = []
 
+    # Calcul initial des matrices de rotation pour neutre et mouvement
     for i_segment in range(nb_mat):
-        z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
-
-        Quat_normalized_neutre = Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
-            Xsens_global_JCS_orientations_modifie[0, i_segment * 4 : (i_segment + 1) * 4]
-        )
-        Quat_neutre = biorbd.Quaternion(Quat_normalized_neutre[0], Quat_normalized_neutre[1], Quat_normalized_neutre[2], Quat_normalized_neutre[3])
-        RotMat_neutre_segment = biorbd.Quaternion.toMatrix(Quat_neutre).to_array()
-        RotMat_neutre_segment = z_rotation @ RotMat_neutre_segment
-        RotMat_neutre.append(RotMat_neutre_segment)
-
-        Quat_normalized_mov = Xsens_orientation_per_move_modifie[i_frame, i_segment * 4: (i_segment + 1) * 4] / np.linalg.norm(
-            Xsens_orientation_per_move_modifie[i_frame, i_segment * 4: (i_segment + 1) * 4]
-        )
-        Quat_mov = biorbd.Quaternion(Quat_normalized_mov[0], Quat_normalized_mov[1], Quat_normalized_mov[2], Quat_normalized_mov[3])
-        RotMat_mov_segment = biorbd.Quaternion.toMatrix(Quat_mov).to_array()
-        RotMat_mov_segment = z_rotation @ RotMat_mov_segment
-        RotMat_mov.append(RotMat_mov_segment)
+        rot_neutre = calculer_rotation_et_angle(i_segment, Xsens_global_JCS_orientations_modifie[0, :], z_rotation)
+        rot_mov = calculer_rotation_et_angle(i_segment, Xsens_orientation_per_move_modifie[i_frame, :], z_rotation)
+        RotMat_neutre.append(rot_neutre)
+        RotMat_mov.append(rot_mov)
 
     for i_segment in range(nb_mat):
         index_to_key = {i: key for i, key in enumerate(parent_list_xsens.keys())}
@@ -79,37 +69,11 @@ for i_frame in range(nb_frames):
 
         if info_for_given_index is not None:
             parent_index, parent_name = info_for_given_index
-            RotMat_between_neutre = np.linalg.inv(RotMat_neutre[parent_index]) @ RotMat_neutre[i_segment]
-            RotMat_between_neutre = biorbd.Rotation(
-                RotMat_between_neutre[0, 0],
-                RotMat_between_neutre[0, 1],
-                RotMat_between_neutre[0, 2],
-                RotMat_between_neutre[1, 0],
-                RotMat_between_neutre[1, 1],
-                RotMat_between_neutre[1, 2],
-                RotMat_between_neutre[2, 0],
-                RotMat_between_neutre[2, 1],
-                RotMat_between_neutre[2, 2],
-            )
-            RotMat_between_mov = np.linalg.inv(RotMat_mov[parent_index]) @ RotMat_mov[i_segment]
-            RotMat_between_mov = biorbd.Rotation(
-                RotMat_between_mov[0, 0],
-                RotMat_between_mov[0, 1],
-                RotMat_between_mov[0, 2],
-                RotMat_between_mov[1, 0],
-                RotMat_between_mov[1, 1],
-                RotMat_between_mov[1, 2],
-                RotMat_between_mov[2, 0],
-                RotMat_between_mov[2, 1],
-                RotMat_between_mov[2, 2],
-            )
-        else:
-            RotMat_between_neutre = RotMat_neutre[i_segment]
-            RotMat_between_mov = RotMat_mov[i_segment]
 
-        if info_for_given_index is not None:
-            RotMat_between_neutre = RotMat_between_neutre.to_array()
-            RotMat_between_mov = RotMat_between_mov.to_array()
+        RotMat_between_neutre = calculer_rotation_relative(RotMat_neutre[parent_index], RotMat_neutre[i_segment]) \
+            if info_for_given_index is not None else RotMat_neutre[i_segment]
+        RotMat_between_mov = calculer_rotation_relative(RotMat_mov[parent_index], RotMat_mov[i_segment]) \
+            if info_for_given_index is not None else RotMat_mov[i_segment]
 
         RotMat_between = np.linalg.inv(RotMat_between_neutre) @ RotMat_between_mov
         RotMat_between = biorbd.Rotation(
@@ -156,4 +120,4 @@ model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.load_movement(Q_complet_good_DOF)
 
-b.exec()
+# b.exec()
