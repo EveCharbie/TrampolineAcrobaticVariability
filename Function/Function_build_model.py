@@ -823,6 +823,18 @@ def get_all_matrice(file_path, interval, model):
     return rot_mat, articular_joint_center, pos_recons
 
 
+def convert_marker_to_local_frame(P1, R1, P2):
+
+    P2_prime = P2 - P1
+    P2_prime = R1.T @ P2_prime
+
+    return P2_prime
+
+
+def calculer_rotation_relative2(R1, R2):
+    return R1.T @ R2
+
+
 def convert_to_local_frame(P1, R1, P2, R2):
     """
     - P1: Position of the first point in the global frame
@@ -834,20 +846,11 @@ def convert_to_local_frame(P1, R1, P2, R2):
     - R2_prime: Rotation matrix of the second point relative to the first point.
     """
 
-    P2_prime = P2 - P1
-    P2_prime = R1.T @ P2_prime
+    P2_prime = convert_marker_to_local_frame(P1, R1, P2)
 
-    R2_prime = R1.T @ R2
+    R2_prime = calculer_rotation_relative2(R1, R2)
 
     return P2_prime, R2_prime
-
-
-def convert_marker_to_local_frame(P1, R1, P2):
-
-    P2_prime = P2 - P1
-    P2_prime = R1.T @ P2_prime
-
-    return P2_prime
 
 
 def average_rotation_matrix(matrices):
@@ -869,5 +872,5 @@ def calculer_rotation_et_angle(i_segment, quat_array, z_rotation):
     return z_rotation @ rot_mat_segment
 
 
-def calculer_rotation_relative(rot_mat_parent, rot_mat_child):
-    return np.linalg.inv(rot_mat_parent) @ rot_mat_child
+def calculer_rotation_relative(R1, R2):
+    return np.linalg.inv(R1) @ R2

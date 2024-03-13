@@ -76,8 +76,6 @@ for name in participant_names:
             matrices = rot_mat_relax[i]
             relax_matrix[i] = average_rotation_matrix(matrices)
 
-        # movement_matrix = results_list[0]
-
         for i_frame in range(nb_frames):
             RotMat_between_total = []
             for i_segment in range(nb_mat):
