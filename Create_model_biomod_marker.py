@@ -66,8 +66,8 @@ for index, (joint, parent_info) in enumerate(parent_list_marker.items()):
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestFullDof.s2mMod"
+chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelTestFullDof.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
 desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]

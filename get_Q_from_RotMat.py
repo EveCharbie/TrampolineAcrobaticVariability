@@ -21,7 +21,7 @@ if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
 file_intervals = [
-    (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3950)),
+    # (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3950)),
     (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
     (file_path_c3d + "Sa_831_831_6.c3d", (4710, 5009)),
 
@@ -84,10 +84,10 @@ for file_path, interval in file_intervals:
             )
             RotMat_between_total.append(RotMat_between)
 
-            if i_segment in (5, 8, 11, 14):
+            if i_segment in (20, 21):  # 5, 8, 11, 14
                 Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
                     RotMat_between, "zy").to_array()
-            elif i_segment in (10, 13):
+            elif i_segment in (22, 23):  # 10, 13
                 Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
                     RotMat_between, "x").to_array()
             else:
@@ -119,48 +119,44 @@ for file_path, interval in file_intervals:
     ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
     Q_ready_to_use = Q_complet[~ligne_a_supprimer, :]
 
-    # Création d'un dictionnaire pour le stockage
-    mat_data = {
-        "Q_ready_to_use": Q_ready_to_use,
-        "Q_complet": Q_complet,
-        "Q_original": Q
-    }
-    folder_and_file_name_path = folder_path + f"{file_name}.mat"
-    # Enregistrement dans un fichier .mat
-    scipy.io.savemat(folder_and_file_name_path, mat_data)
+    # # Création d'un dictionnaire pour le stockage
+    # mat_data = {
+    #     "Q_ready_to_use": Q_ready_to_use,
+    #     "Q_complet": Q_complet,
+    #     "Q_original": Q
+    # }
+    # folder_and_file_name_path = folder_path + f"{file_name}.mat"
+    # # Enregistrement dans un fichier .mat
+    # scipy.io.savemat(folder_and_file_name_path, mat_data)
 
 
-# for i in range(nb_mat+1):
-#     plt.figure(figsize=(5, 3))
-#     for axis in range(3):
-#         plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-#     plt.title(f'Segment {i+1}')
-#     plt.xlabel('Frame')
-#     plt.ylabel('Angle (rad)')
-#     plt.legend()
-# plt.show()
+    for i in range(nb_mat+1):
+        plt.figure(figsize=(5, 3))
+        for axis in range(3):
+            plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+        plt.title(f'Segment {i+1}')
+        plt.xlabel('Frame')
+        plt.ylabel('Angle (rad)')
+        plt.legend()
+    plt.show()
 
-    # chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
-    # model = biorbd.Model(chemin_fichier_modifie)
-    # b = bioviz.Viz(loaded_model=model)
-    # b.load_movement(Q_ready_to_use)
-    # b.load_experimental_markers(pos_mov[:, :, :])
-    #
-    # b.exec()
+    chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelTestFullDof.s2mMod"
+    model = biorbd.Model(chemin_fichier_modifie)
+    b = bioviz.Viz(loaded_model=model)
+    b.load_movement(Q_ready_to_use)
+    b.load_experimental_markers(pos_mov[:, :, :])
 
+    b.exec()
 
+    from pyorerun import BiorbdModelNoMesh, PhaseRerun
 
+    nb_frames = Q.shape[1]
+    nb_seconds = 10
+    t_span = np.linspace(0, nb_seconds, nb_frames)
+    # loading biorbd model
+    biorbd_model = BiorbdModelNoMesh(chemin_fichier_modifie)
 
-# from pyorerun import BiorbdModel, PhaseRerun
-#
-# nb_frames = Q.shape[1]
-# nb_seconds = 10
-# t_span = np.linspace(0, nb_seconds, nb_frames)
-# # loading biorbd model
-# biorbd_model = BiorbdModel(chemin_fichier_modifie)
-#
-# # running the animation
-# rerun_biorbd = PhaseRerun(t_span)
-# rerun_biorbd.add_animated_model(biorbd_model, Q)
-#
-# rerun_biorbd.rerun("yoyo")
+    # running the animation
+    rerun_biorbd = PhaseRerun(t_span)
+    rerun_biorbd.add_animated_model(biorbd_model, Q_ready_to_use)
+    rerun_biorbd.rerun("yoyo")

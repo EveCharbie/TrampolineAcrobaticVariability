@@ -4,9 +4,9 @@ import bioviz
 import pickle
 import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
-from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
-chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/31a5eaac_0_0-64_489__4-__0__eyetracking_metrics.pkl"
+chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__1__eyetracking_metrics.pkl"
 
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
@@ -19,7 +19,6 @@ Xsens_global_JCS_positions_full = eye_tracking_metrics["Xsens_global_JCS_positio
 Xsens_global_JCS_orientations_full = eye_tracking_metrics["Xsens_global_JCS_orientations"]
 
 Xsens_global_JCS_positions_reshape = Xsens_global_JCS_positions_full.reshape(23, 3)
-Xsens_global_JCS_orientations_reshape = Xsens_global_JCS_orientations_full.reshape(23, 4)
 
 # Ne selectionner que les articulations necessaire
 indices_a_supprimer = [1, 2, 3, 5, 7, 11, 18, 22]
@@ -27,37 +26,35 @@ indices_a_supprimer = [1, 2, 3, 5, 7, 11, 18, 22]
 # Calculer les indices à conserver pour le tableau NumPy
 indices_total = range(Xsens_global_JCS_positions_reshape.shape[0])
 indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
-
-# Sélectionner les lignes à conserver dans le tableau
 Xsens_global_JCS_positions = Xsens_global_JCS_positions_reshape[indices_a_conserver, :]
-Xsens_global_JCS_orientations = Xsens_global_JCS_orientations_reshape[indices_a_conserver, :]
 
-# Extraction des coordonnées x, y, z
-x = Xsens_global_JCS_positions_reshape[:, 0]
-y = Xsens_global_JCS_positions_reshape[:, 1]
-z = Xsens_global_JCS_positions_reshape[:, 2]
+indices_reels_colonnes_a_supprimer = []
+for indice in indices_a_supprimer:
+    indices_reels_colonnes_a_supprimer.extend(range(indice * 4, indice * 4 + 4))
+mask_colonnes = np.ones(Xsens_global_JCS_orientations_full.shape[1], dtype=bool)
+mask_colonnes[indices_reels_colonnes_a_supprimer] = False
+Xsens_global_JCS_orientations_modifie = Xsens_global_JCS_orientations_full[:, mask_colonnes]
 
-# Création d'une figure et d'un axe 3D
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
 
-# Ajout des points à l'axe
-ax.scatter(x, y, z)
-# Ajout des étiquettes à chaque point
-for i, (px, py, pz) in enumerate(zip(x, y, z)):
-    ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
 
-# Étiquetage des axes
-ax.set_xlabel('X Label')
-ax.set_ylabel('Y Label')
-ax.set_zlabel('Z Label')
 
-# Affichage de la figure
-plt.show()
+# x = Xsens_global_JCS_positions_reshape[:, 0]
+# y = Xsens_global_JCS_positions_reshape[:, 1]
+# z = Xsens_global_JCS_positions_reshape[:, 2]
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# ax.scatter(x, y, z)
+# for i, (px, py, pz) in enumerate(zip(x, y, z)):
+#     ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
+# ax.set_xlabel('X Label')
+# ax.set_ylabel('Y Label')
+# ax.set_zlabel('Z Label')
+# plt.show()
 
 
 nb_mat = Xsens_global_JCS_positions.shape[0]
 
+RotMat_neutre = []
 
 for i_segment in range(nb_mat):
     z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
@@ -76,11 +73,11 @@ matrix_in_parent_frame = []
 joint_center_in_parent_frame = []
 rot_trans_matrix = []
 
-for index, (joint, parent_info) in enumerate(parent_list_marker.items()):
+for index, (joint, parent_info) in enumerate(parent_list_xsens.items()):
     if parent_info is not None:  # Vérifie si parent_info n'est pas None
         parent_index, parent_name = parent_info
-        P2_in_P1, R2_in_R1 = convert_to_local_frame(relax_joint_center[parent_index], relax_matrix[parent_index],
-                                                    relax_joint_center[index], relax_matrix[index])
+        P2_in_P1, R2_in_R1 = convert_to_local_frame(Xsens_global_JCS_positions[parent_index], RotMat_neutre[parent_index],
+                                                    Xsens_global_JCS_positions[index], RotMat_neutre[index])
         matrix_in_parent_frame.append(R2_in_R1)
         joint_center_in_parent_frame.append(P2_in_P1)
         RT_mat = np.eye(4)
@@ -89,16 +86,16 @@ for index, (joint, parent_info) in enumerate(parent_list_marker.items()):
         rot_trans_matrix.append(RT_mat)
 
     else:
-        matrix_in_parent_frame.append(relax_matrix[index])
-        joint_center_in_parent_frame.append(relax_joint_center[index])
+        matrix_in_parent_frame.append(RotMat_neutre[index])
+        joint_center_in_parent_frame.append(Xsens_global_JCS_positions[index])
         RT_mat = np.eye(4)
-        RT_mat[:3, :3] = relax_matrix[index]
+        RT_mat[:3, :3] = RotMat_neutre[index]
         RT_mat[:3, 3] = [0.0, 0.0, 0.0]
         rot_trans_matrix.append(RT_mat)
 
 
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTest.s2mMod"
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
+chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestFullDof.s2mMod"
+chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
 desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
@@ -123,7 +120,7 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         else:
             fichier_modifie.write(lignes[i])
             i += 1
-#
+
 
 #
 # informations_marqueurs = []

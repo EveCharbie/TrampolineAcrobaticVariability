@@ -25,15 +25,18 @@ Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
 Xsens_global_JCS_positions = eye_tracking_metrics["Xsens_global_JCS_positions"]
 Xsens_global_JCS_orientations = eye_tracking_metrics["Xsens_global_JCS_orientations"]
 
-Xsens_global_JCS_positions = Xsens_global_JCS_positions.reshape(23, 3)
+Xsens_global_JCS_positions_reshape = Xsens_global_JCS_positions.reshape(23, 3)
 
 # Ne selectionner que les articulations necessaire
 indices_a_supprimer = [1, 2, 3, 5, 7, 11, 18, 22]
 
+indices_total = range(Xsens_global_JCS_positions_reshape.shape[0])
+indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
+Xsens_global_JCS_positions_complet = Xsens_global_JCS_positions_reshape[indices_a_conserver, :]
+
 indices_reels_colonnes_a_supprimer = []
 for indice in indices_a_supprimer:
     indices_reels_colonnes_a_supprimer.extend(range(indice * 4, indice * 4 + 4))
-
 mask_colonnes = np.ones(Xsens_global_JCS_orientations.shape[1], dtype=bool)
 mask_colonnes[indices_reels_colonnes_a_supprimer] = False
 
@@ -88,10 +91,10 @@ for i_frame in range(nb_frames):
         )
         RotMat_between_total.append(RotMat_between)
 
-        if i_segment in (5, 8, 11, 14):
+        if i_segment in (20, 21):  # 5, 8, 11, 14
             Q[i_segment * 3: (i_segment + 1) * 3 - 1, i_frame] = biorbd.Rotation.toEulerAngles(
                 RotMat_between, "zy").to_array()
-        elif i_segment in (10, 13):
+        elif i_segment in (22, 23):  # 10, 13
             Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
                 RotMat_between, "x").to_array()
         else:
@@ -100,10 +103,12 @@ for i_frame in range(nb_frames):
 
 Q_corrected = np.unwrap(Q, axis=1)
 
-for i in range(nb_mat):
+Q_complet = np.concatenate((pelvis_trans.T, Q_corrected), axis=0)
+
+for i in range(nb_mat+1):
     plt.figure(figsize=(5, 3))
     for axis in range(3):
-        plt.plot(Q_corrected[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+        plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
     plt.title(f'Segment {i+1}')
     plt.xlabel('Frame')
     plt.ylabel('Angle (rad)')
@@ -111,12 +116,13 @@ for i in range(nb_mat):
 plt.show()
 
 # Suppression des colonnes où tous les éléments sont zéro
-ligne_a_supprimer = np.all(Q_corrected == 0, axis=1)
-Q_complet_good_DOF = Q_corrected[~ligne_a_supprimer, :]
+ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
+Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
 
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModel.s2mMod"
+chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.load_movement(Q_complet_good_DOF)
 
-# b.exec()
+b.exec()
+
