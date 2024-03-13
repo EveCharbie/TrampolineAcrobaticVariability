@@ -646,7 +646,7 @@ def get_all_matrice(file_path, interval, model):
     file_name = os.path.basename(file_path).split(".")[0]
     print(f"{file_name} is running")
     c = ezc3d.c3d(file_path)
-    point_data = c["data"]["points"][:, :, interval[0] : interval[1]]
+    point_data = c["data"]["points"][:, :, int(interval[0]): int(interval[1])]
     n_markers = point_data.shape[1]
     nf_mocap = point_data.shape[2]
     f_mocap = c["parameters"]["POINT"]["RATE"]["value"][0]

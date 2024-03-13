@@ -2,24 +2,32 @@ import biorbd
 import numpy as np
 import bioviz
 import matplotlib.pyplot as plt
-from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
+from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame, average_rotation_matrix
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
-participant_name = "Sarah"
+participant_name = "Guillaume"
+DoF = True
 
-model_kalman = f"{home_path}{participant_name}/Sarah.s2mMod"
+
+##
+
+if DoF is True:
+    modelDof = "FullDof"
+else:
+    modelDof = ""
+
+model_kalman = f"{home_path}{participant_name}/{participant_name}.s2mMod"
 
 model = biorbd.Model(model_kalman)
 # Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = f"{home_path}{participant_name}/Tests/"
+file_path_relax = f"{home_path}{participant_name}/Score/"
 
-chemin_fichier_original = f"{home_path}{participant_name}/SarahModelTestFullDof.s2mMod"
-chemin_fichier_modifie = f"{home_path}{participant_name}/NewSarahModelFullDof.s2mMod"
+chemin_fichier_original = f"{home_path}{participant_name}/{participant_name}ModelTest{modelDof}.s2mMod"
+chemin_fichier_modifie = f"{home_path}{participant_name}/New{participant_name}Model{modelDof}.s2mMod"
 
-file_intervals = [
-    (file_path_c3d + "Relax.c3d", (0, 50)),
-    # (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
+relax_intervals = [
+    (file_path_relax + "Relax.c3d", (0, 50)),
 ]
 
 joint_center_mov = []
@@ -30,20 +38,16 @@ rotate_matrice_relax = []
 
 pos_marker_relax = []
 
-for file_path, interval in file_intervals:
-    rot_mat, articular_joint_center, pos_marker = get_all_matrice(file_path, interval, model)
+file_path_relax, interval_relax = relax_intervals[0]
+rot_mat, articular_joint_center, pos_marker_relax = get_all_matrice(file_path_relax, interval_relax, model)
 
-    if "Relax" in file_path:
-        joint_center_relax.append(articular_joint_center)
-        rotate_matrice_relax.append(rot_mat)
-        pos_marker_relax.append(pos_marker)
-    else:
-        joint_center_mov.append(articular_joint_center)
-        rotate_matrice_mov.append(rot_mat)
+nb_mat = rot_mat.shape[0]
+relax_matrix = np.zeros((nb_mat, 3, 3))
+for i in range(nb_mat):
+    matrices = rot_mat[i]
+    relax_matrix[i] = average_rotation_matrix(matrices)
 
-
-relax_matrix = np.mean(rotate_matrice_relax[0], axis=1)
-relax_joint_center = np.mean(joint_center_relax[0], axis=1)
+relax_joint_center = np.mean(articular_joint_center, axis=1)
 
 
 matrix_in_parent_frame = []

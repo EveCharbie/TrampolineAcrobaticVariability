@@ -42,18 +42,18 @@ mask_colonnes[indices_reels_colonnes_a_supprimer] = False
 Xsens_global_JCS_orientations_modifie = Xsens_global_JCS_orientations_full[:, mask_colonnes]
 
 
-# x = Xsens_global_JCS_positions_reshape[:, 0]
-# y = Xsens_global_JCS_positions_reshape[:, 1]
-# z = Xsens_global_JCS_positions_reshape[:, 2]
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# ax.scatter(x, y, z)
-# for i, (px, py, pz) in enumerate(zip(x, y, z)):
-#     ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
-# ax.set_xlabel('X Label')
-# ax.set_ylabel('Y Label')
-# ax.set_zlabel('Z Label')
-# plt.show()
+x = Xsens_global_JCS_positions_reshape[:, 0]
+y = Xsens_global_JCS_positions_reshape[:, 1]
+z = Xsens_global_JCS_positions_reshape[:, 2]
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(x, y, z)
+for i, (px, py, pz) in enumerate(zip(x, y, z)):
+    ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+plt.show()
 
 
 nb_mat = Xsens_global_JCS_positions.shape[0]
