@@ -5,12 +5,17 @@ import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker
 
-model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
-# Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
+home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+participant_name = "Sarah"
 
-# Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/"
+model_kalman = f"{home_path}{participant_name}/Sarah.s2mMod"
+
+model = biorbd.Model(model_kalman)
+# Chemin du dossier contenant les fichiers .c3d
+file_path_c3d = f"{home_path}{participant_name}/Tests/"
+
+chemin_fichier_original = f"{home_path}{participant_name}/SarahModelTestFullDof.s2mMod"
+chemin_fichier_modifie = f"{home_path}{participant_name}/NewSarahModelFullDof.s2mMod"
 
 file_intervals = [
     (file_path_c3d + "Relax.c3d", (0, 50)),
@@ -65,10 +70,6 @@ for index, (joint, parent_info) in enumerate(parent_list_marker.items()):
         RT_mat[:3, 3] = [0.0, 0.0, 0.0]
         rot_trans_matrix.append(RT_mat)
 
-
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestFullDof.s2mMod"
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelTestFullDof.s2mMod"
-
 model = biorbd.Model(chemin_fichier_original)
 desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
 
@@ -92,7 +93,6 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         else:
             fichier_modifie.write(lignes[i])
             i += 1
-#
 
 #
 # informations_marqueurs = []
@@ -131,13 +131,11 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
 # with open(chemin_fichier_modifie, 'w') as fichier_modifie:
 #     fichier_modifie.writelines(nouvelles_lignes)
 
-#
 
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
 b.exec()
 
-goodmodel = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod"
-model = biorbd.Model(goodmodel)
+model = biorbd.Model(model_kalman)
 b = bioviz.Viz(loaded_model=model)
 b.exec()

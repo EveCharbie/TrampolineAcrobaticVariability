@@ -11,6 +11,9 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import calcule
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/31a5eaac_0_0-64_489__4-__0__eyetracking_metrics.pkl"
+model_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
+
+select_dof = "FullDof" in model_path
 
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
@@ -91,15 +94,19 @@ for i_frame in range(nb_frames):
         )
         RotMat_between_total.append(RotMat_between)
 
-        if i_segment in (20, 21):  # 5, 8, 11, 14
-            Q[i_segment * 3: (i_segment + 1) * 3 - 1, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "zy").to_array()
-        elif i_segment in (22, 23):  # 10, 13
-            Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "x").to_array()
-        else:
+        if select_dof is True:
             Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
                 RotMat_between, "xyz").to_array()
+        else:
+            if i_segment in (5, 8, 11, 14):
+                Q[i_segment * 3: (i_segment + 1) * 3 - 1, i_frame] = biorbd.Rotation.toEulerAngles(
+                    RotMat_between, "zy").to_array()
+            elif i_segment in (10, 13):
+                Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
+                    RotMat_between, "x").to_array()
+            else:
+                Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                    RotMat_between, "xyz").to_array()
 
 Q_corrected = np.unwrap(Q, axis=1)
 
@@ -119,8 +126,7 @@ plt.show()
 ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
 Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
 
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
-model = biorbd.Model(chemin_fichier_modifie)
+model = biorbd.Model(model_path)
 b = bioviz.Viz(loaded_model=model)
 b.load_movement(Q_complet_good_DOF)
 

@@ -9,16 +9,22 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent
 # from pyorerun import BiorbdModel, PhaseRerun
 # import rerun as rr
 # import pyorerun as prr
+home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+participant_name = "Sarah"
 
-model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
-# Chemin du dossier contenant les fichiers .c3d
-file_path_c3d = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Tests/"
+model_path = f"{home_path}{participant_name}/NewSarahModelFullDof.s2mMod"
+model_kalman = f"{home_path}{participant_name}/Sarah.s2mMod"
 
-# Chemin du dossier de sortie pour les graphiques
-folder_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Q/"
+model_kalman = biorbd.Model(model_kalman)
+
+file_path_c3d = f"{home_path}{participant_name}/Tests/"
+folder_path = f"{home_path}{participant_name}/Q/"
 
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
+
+select_dof = "FullDof" in model_path
+
 
 file_intervals = [
     # (file_path_c3d + "Sa_bras_volant_1.c3d", (3349, 3950)),
@@ -30,10 +36,10 @@ file_intervals = [
 relax_intervals = [(file_path_c3d + "Relax.c3d", (0, 50))]
 
 file_path_relax, interval_relax = relax_intervals[0]
-rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path_relax, interval_relax, model)
+rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path_relax, interval_relax, model_kalman)
 
 for file_path, interval in file_intervals:
-    movement_matrix, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model)
+    movement_matrix, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model_kalman)
     pelv_trans_list = articular_joint_center[0]
 
     file_name, _ = os.path.splitext(os.path.basename(file_path))
@@ -84,15 +90,19 @@ for file_path, interval in file_intervals:
             )
             RotMat_between_total.append(RotMat_between)
 
-            if i_segment in (20, 21):  # 5, 8, 11, 14
-                Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "zy").to_array()
-            elif i_segment in (22, 23):  # 10, 13
-                Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "x").to_array()
-            else:
+            if select_dof is True:
                 Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "xyz").to_array()
+                        RotMat_between, "xyz").to_array()
+            else:
+                if i_segment in (5, 8, 11, 14):
+                    Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
+                        RotMat_between, "zy").to_array()
+                elif i_segment in (10, 13):
+                    Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
+                        RotMat_between, "x").to_array()
+                else:
+                    Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                        RotMat_between, "xyz").to_array()
 
     Q_corrected = np.unwrap(Q, axis=1)
 
@@ -129,7 +139,6 @@ for file_path, interval in file_intervals:
     # # Enregistrement dans un fichier .mat
     # scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-
     for i in range(nb_mat+1):
         plt.figure(figsize=(5, 3))
         for axis in range(3):
@@ -140,8 +149,7 @@ for file_path, interval in file_intervals:
         plt.legend()
     plt.show()
 
-    chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelTestFullDof.s2mMod"
-    model = biorbd.Model(chemin_fichier_modifie)
+    model = biorbd.Model(model_path)
     b = bioviz.Viz(loaded_model=model)
     b.load_movement(Q_ready_to_use)
     b.load_experimental_markers(pos_mov[:, :, :])
@@ -154,7 +162,7 @@ for file_path, interval in file_intervals:
     nb_seconds = 10
     t_span = np.linspace(0, nb_seconds, nb_frames)
     # loading biorbd model
-    biorbd_model = BiorbdModelNoMesh(chemin_fichier_modifie)
+    biorbd_model = BiorbdModelNoMesh(model_path)
 
     # running the animation
     rerun_biorbd = PhaseRerun(t_span)

@@ -8,6 +8,12 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__1__eyetracking_metrics.pkl"
 
+home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+participant_name = "Sarah"
+
+chemin_fichier_original = f"{home_path}{participant_name}/SarahModelTestFullDof.s2mMod"
+chemin_fichier_modifie = f"{home_path}{participant_name}/NewSarahModelFullDof.s2mMod"
+
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
     eye_tracking_metrics = pickle.load(fichier_pkl)
@@ -34,8 +40,6 @@ for indice in indices_a_supprimer:
 mask_colonnes = np.ones(Xsens_global_JCS_orientations_full.shape[1], dtype=bool)
 mask_colonnes[indices_reels_colonnes_a_supprimer] = False
 Xsens_global_JCS_orientations_modifie = Xsens_global_JCS_orientations_full[:, mask_colonnes]
-
-
 
 
 # x = Xsens_global_JCS_positions_reshape[:, 0]
@@ -93,9 +97,6 @@ for index, (joint, parent_info) in enumerate(parent_list_xsens.items()):
         RT_mat[:3, 3] = [0.0, 0.0, 0.0]
         rot_trans_matrix.append(RT_mat)
 
-
-chemin_fichier_original = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/SarahModelTestFullDof.s2mMod"
-chemin_fichier_modifie = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
 
 model = biorbd.Model(chemin_fichier_original)
 desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
@@ -162,10 +163,5 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
 #
 
 model = biorbd.Model(chemin_fichier_modifie)
-b = bioviz.Viz(loaded_model=model)
-b.exec()
-
-goodmodel = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod"
-model = biorbd.Model(goodmodel)
 b = bioviz.Viz(loaded_model=model)
 b.exec()
