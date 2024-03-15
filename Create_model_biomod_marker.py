@@ -8,7 +8,7 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 csv_path = f"{home_path}Labelling_trampo.csv"
-DoF = True
+DoF = False
 is_y_up = True
 
 

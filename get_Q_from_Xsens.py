@@ -1,10 +1,6 @@
 import pickle
-import ezc3d
-import numpy as np
 import matplotlib.pyplot as plt
-from scipy import signal
 import biorbd
-import os
 import numpy as np
 import bioviz
 from TrampolineAcrobaticVariability.Function.Function_build_model import (calculer_rotation_et_angle,
@@ -12,7 +8,7 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (calcul
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__0__eyetracking_metrics.pkl"
-model_path = "/home/lim/Downloads/SoMe_Xsens_Model_rotated.bioMod"
+model_path = "/home/lim/Documents/StageMathieu/Xsens_Model.bioMod"
 
 # select_dof = "FullDof" in model_path
 select_dof = True
@@ -102,7 +98,7 @@ for i_frame in range(nb_frames):
         else:
             if i_segment in (5, 8, 11, 14):
                 Q[i_segment * 3: (i_segment + 1) * 3 - 1, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "zy").to_array()
+                    RotMat_between, "xz").to_array()
             elif i_segment in (10, 13):
                 Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
                     RotMat_between, "x").to_array()

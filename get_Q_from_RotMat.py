@@ -13,7 +13,7 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker, check_matrix_orthogonality
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
-is_y_up = True
+is_y_up = False
 
 csv_path = f"{home_path}Labelling_trampo.csv"
 interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
@@ -41,7 +41,7 @@ for name in participant_names:
         file_intervals.append((file_path_complet, interval))
 
 #
-    model_path = f"{home_path}{name}/New{name}ModelFullDof.s2mMod"
+    model_path = f"{home_path}{name}/New{name}Model.s2mMod"
     model_kalman = f"{home_path}{name}/{name}.s2mMod"
 
     model_kalman = biorbd.Model(model_kalman)
@@ -115,7 +115,7 @@ for name in participant_names:
                     Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
                             RotMat_between, "xyz").to_array()
                 else:
-                    if i_segment in (5, 8, 11, 14):
+                    if i_segment in (3, 4, 5, 6, 7, 8, 11, 14):
                         Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
                             RotMat_between, "zy").to_array()
                     elif i_segment in (10, 13):
@@ -160,22 +160,22 @@ for name in participant_names:
         # Enregistrement dans un fichier .mat
         scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-        # for i in range(nb_mat+1):
-        #     plt.figure(figsize=(5, 3))
-        #     for axis in range(3):
-        #         plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-        #     plt.title(f'Segment {i+1}')
-        #     plt.xlabel('Frame')
-        #     plt.ylabel('Angle (rad)')
-        #     plt.legend()
-        #plt.show()
+        for i in range(nb_mat+1):
+            plt.figure(figsize=(5, 3))
+            for axis in range(3):
+                plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+            plt.title(f'Segment {i+1}')
+            plt.xlabel('Frame')
+            plt.ylabel('Angle (rad)')
+            plt.legend()
+        plt.show()
 
-        # model = biorbd.Model(model_path)
-        # b = bioviz.Viz(loaded_model=model)
-        # b.load_movement(Q_ready_to_use)
-        # b.load_experimental_markers(pos_mov[:, :, :])
-        #
-        # b.exec()
+        model = biorbd.Model(model_path)
+        b = bioviz.Viz(loaded_model=model)
+        b.load_movement(Q_ready_to_use)
+        b.load_experimental_markers(pos_mov[:, :, :])
+
+        b.exec()
 
     # from pyorerun import BiorbdModelNoMesh, PhaseRerun
     #

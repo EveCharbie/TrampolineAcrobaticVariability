@@ -8,7 +8,7 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/9884f602_0_0-52_451__4-__2__eyetracking_metrics.pkl"
 
-home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+home_path = "/DataTrampo/"
 participant_name = "Sarah"
 DoF = True
 
