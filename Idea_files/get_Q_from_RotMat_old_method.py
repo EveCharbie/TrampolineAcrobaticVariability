@@ -10,7 +10,7 @@ import pyorerun as prr
 model = biorbd.Model("/home/lim/Documents/StageMathieu/DataTrampo/Sarah/Sarah.s2mMod")
 # Chemin du dossier contenant les fichiers .c3d
 file_path_c3d = "/DataTrampo/Sarah/Tests/"
-
+is_y_up = True
 # Chemin du dossier de sortie pour les graphiques
 folder_path = "/DataTrampo/Sarah/"
 
@@ -28,12 +28,12 @@ relax_list = []
 pelv_trans_list = []
 
 for file_path, interval in file_intervals:
-    rot_mat, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model)
+    rot_mat, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model, is_y_up)
     results_list.append(rot_mat)
     pelv_trans_list.append(articular_joint_center[0])
 
 for file_path, interval in relax_intervals:
-    rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path, interval, model)
+    rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path, interval, model, is_y_up)
     relax_list.append(rot_mat_relax)
 
 nb_frames = results_list[0].shape[1]
@@ -54,8 +54,8 @@ for i_frame in range(nb_frames):
     for i_segment in range(nb_mat):
         RotMat = relax_matrix[i_segment, :, :]
         RotMat_current = movement_mat[i_segment, i_frame, :, :]
-        check_matrix_orthogonality(RotMat, "RotMat")
-        check_matrix_orthogonality(RotMat_current, "RotMat_current")
+        check_matrix_orthogonality(RotMat, i_segment, "RotMat")
+        check_matrix_orthogonality(RotMat_current, i_segment, "RotMat_current")
 
         RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
         RotMat_between = biorbd.Rotation(

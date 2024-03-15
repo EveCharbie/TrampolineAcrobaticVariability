@@ -37,6 +37,8 @@ file_intervals = [
     (file_path_c3d + "Sa_821_seul_2.c3d", (3431, 3736)),
 ]
 
+is_y_up = True
+
 ##
 for file_path, interval in file_intervals:
     file_name = os.path.basename(file_path).split(".")[0]
@@ -151,51 +153,51 @@ for file_path, interval in file_intervals:
     ) = predictive_hip_joint_center_location(pos_recons, desired_order)
 
     matrices_rotation_hip_right = get_orientation_hip(
-        pos_recons, desired_order, hip_right_joint_center, True
+        pos_recons, desired_order, hip_right_joint_center, True, is_y_up
     )
     matrices_rotation_hip_left = get_orientation_hip(
-        pos_recons, desired_order, hip_left_joint_center, False
+        pos_recons, desired_order, hip_left_joint_center, False, is_y_up
     )
 
     matrices_rotation_knee_right, mid_cond_right = get_orientation_knee_right(
-        pos_recons, desired_order
+        pos_recons, desired_order, is_y_up
     )
     matrices_rotation_knee_left, mid_cond_left = get_orientation_knee_left(
-        pos_recons, desired_order
+        pos_recons, desired_order, is_y_up
     )
 
     matrices_rotation_ankle_right, mid_mal_right = get_orientation_ankle(
-        pos_recons, desired_order, True
+        pos_recons, desired_order, True, is_y_up
     )
     matrices_rotation_ankle_left, mid_mal_left = get_orientation_ankle(
-        pos_recons, desired_order, False
+        pos_recons, desired_order, False, is_y_up
     )
 
-    matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order)
+    matrices_rotation_thorax, manu = get_orientation_thorax(pos_recons, desired_order, is_y_up)
 
     matrices_rotation_head, head_joint_center = get_orientation_head(
-        pos_recons, desired_order
+        pos_recons, desired_order, is_y_up
     )
 
     matrices_rotation_shoulder_right, mid_acr_right = get_orientation_shoulder(
-        pos_recons, desired_order, True
+        pos_recons, desired_order, True, is_y_up
     )
     matrices_rotation_shoulder_left, mid_acr_left = get_orientation_shoulder(
-        pos_recons, desired_order, False
+        pos_recons, desired_order, False, is_y_up
     )
 
     matrices_rotation_elbow_right, mid_epi_right = get_orientation_elbow(
-        pos_recons, desired_order, True
+        pos_recons, desired_order, True, is_y_up
     )
     matrices_rotation_elbow_left, mid_epi_left = get_orientation_elbow(
-        pos_recons, desired_order, False
+        pos_recons, desired_order, False, is_y_up
     )
 
     matrices_rotation_wrist_right, mid_ul_rad_right = get_orientation_wrist(
-        pos_recons, desired_order, True
+        pos_recons, desired_order, True, is_y_up
     )
     matrices_rotation_wrist_left, mid_ul_rad_left = get_orientation_wrist(
-        pos_recons, desired_order, False
+        pos_recons, desired_order, False, is_y_up
     )
 
     rot_mat = np.stack(

@@ -11,8 +11,9 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (
     calculer_rotation_relative
 )
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker, check_matrix_orthogonality
-#
+
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
+is_y_up = True
 
 csv_path = f"{home_path}Labelling_trampo.csv"
 interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
@@ -58,10 +59,10 @@ for name in participant_names:
     relax_intervals = [(file_path_relax + "Relax.c3d", (0, 50))]
 
     file_path_relax, interval_relax = relax_intervals[0]
-    rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path_relax, interval_relax, model_kalman)
+    rot_mat_relax, relax_articular_joint_center, pos_relax = get_all_matrice(file_path_relax, interval_relax, model_kalman, is_y_up)
 
     for file_path, interval in file_intervals:
-        movement_matrix, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model_kalman)
+        movement_matrix, articular_joint_center, pos_mov = get_all_matrice(file_path, interval, model_kalman, is_y_up)
         pelv_trans_list = articular_joint_center[0]
 
         file_name, _ = os.path.splitext(os.path.basename(file_path))
@@ -81,8 +82,8 @@ for name in participant_names:
             for i_segment in range(nb_mat):
                 RotMat = relax_matrix[i_segment, :, :]
                 RotMat_current = movement_matrix[i_segment, i_frame, :, :]
-                check_matrix_orthogonality(RotMat, "RotMat")
-                check_matrix_orthogonality(RotMat_current, "RotMat_current")
+                check_matrix_orthogonality(RotMat, i_segment, "RotMat")
+                check_matrix_orthogonality(RotMat_current, i_segment, "RotMat_current")
 
                 index_to_key = {i: key for i, key in enumerate(parent_list_marker.keys())}
                 key_for_given_index = index_to_key[i_segment]

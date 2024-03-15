@@ -324,21 +324,22 @@ def normaliser_essai(essai, nombre_points=100):
     return essai_normalise
 
 
-def check_matrix_orthogonality(matrix, matrix_name="Matrix"):
-    """
-    Vérifie si une matrice est orthogonale et affiche un message d'erreur si ce n'est pas le cas.
+def check_matrix_orthogonality(matrix, i_segment="segment", matrix_name="Matrix"):
+    if matrix.ndim == 3:  # Si ensemble de matrices
+        for i in range(matrix.shape[2]):
+            single_matrix = matrix[:, :, i]
+            is_transpose_inverse = np.allclose(single_matrix.T, np.linalg.inv(single_matrix))
+            is_determinant_one = np.isclose(np.linalg.det(single_matrix), 1)
+            if not (is_transpose_inverse and is_determinant_one):
+                print(
+                    f"Erreur : {matrix_name} {i} pour le segment {i_segment} n'est pas orthogonale ou son déterminant n'est pas 1.")
+                return False
+    else:  # Si une seule matrice
+        is_transpose_inverse = np.allclose(matrix.T, np.linalg.inv(matrix))
+        is_determinant_one = np.isclose(np.linalg.det(matrix), 1)
+        if not (is_transpose_inverse and is_determinant_one):
+            print(
+                f"Erreur : {matrix_name} pour le segment {i_segment} n'est pas orthogonale ou son déterminant n'est pas 1.")
+            return False
 
-    Une matrice est orthogonale si son inverse est égal à sa transposée,
-    et son déterminant est égal à 1. Ne fait rien si la matrice est orthogonale.
-
-    :param matrix: Matrice numpy 2D.
-    :param matrix_name: Nom optionnel de la matrice pour personnaliser le message d'erreur.
-    """
-    # Vérifier si la transposée est égale à l'inverse
-    is_transpose_inverse = np.allclose(matrix.T, np.linalg.inv(matrix))
-
-    # Vérifier si le déterminant est égal à 1
-    is_determinant_one = np.isclose(np.linalg.det(matrix), 1)
-
-    if not (is_transpose_inverse and is_determinant_one):
-        print(f"Erreur : {matrix_name} n'est pas orthogonale ou son déterminant n'est pas 1.")
+    return True

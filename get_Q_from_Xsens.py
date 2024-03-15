@@ -7,11 +7,12 @@ import biorbd
 import os
 import numpy as np
 import bioviz
-from TrampolineAcrobaticVariability.Function.Function_build_model import calculer_rotation_et_angle, calculer_rotation_relative
+from TrampolineAcrobaticVariability.Function.Function_build_model import (calculer_rotation_et_angle,
+                                                                          calculer_rotation_relative)
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
-chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/31a5eaac_0_0-64_489__4-__0__eyetracking_metrics.pkl"
-model_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsensFullDof.s2mMod"
+chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__0__eyetracking_metrics.pkl"
+model_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsens.s2mMod"
 
 select_dof = "FullDof" in model_path
 

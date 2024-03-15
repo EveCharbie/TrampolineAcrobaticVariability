@@ -6,13 +6,22 @@ import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import get_all_matrice, convert_to_local_frame
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
-chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__1__eyetracking_metrics.pkl"
+chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/9884f602_0_0-52_451__4-__2__eyetracking_metrics.pkl"
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 participant_name = "Sarah"
+DoF = False
 
-chemin_fichier_original = f"{home_path}{participant_name}/SarahModelTestFullDof.s2mMod"
-chemin_fichier_modifie = f"{home_path}{participant_name}/NewSarahModelFullDof.s2mMod"
+
+##
+
+if DoF is True:
+    modelDof = "FullDof"
+else:
+    modelDof = ""
+
+chemin_fichier_original = f"{home_path}{participant_name}/{participant_name}ModelTest{modelDof}.s2mMod"
+chemin_fichier_modifie = f"{home_path}{participant_name}/New{participant_name}ModelXsens{modelDof}.s2mMod"
 
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
@@ -26,10 +35,10 @@ Xsens_global_JCS_orientations_full = eye_tracking_metrics["Xsens_global_JCS_orie
 
 Xsens_global_JCS_positions_reshape = Xsens_global_JCS_positions_full.reshape(23, 3)
 
-# Ne selectionner que les articulations necessaire
+# Selectionner  les articulations inutiles
 indices_a_supprimer = [1, 2, 3, 5, 7, 11, 18, 22]
 
-# Calculer les indices à conserver pour le tableau NumPy
+# Calculer les indices à conserver
 indices_total = range(Xsens_global_JCS_positions_reshape.shape[0])
 indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
 Xsens_global_JCS_positions = Xsens_global_JCS_positions_reshape[indices_a_conserver, :]
@@ -49,7 +58,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(x, y, z)
 for i, (px, py, pz) in enumerate(zip(x, y, z)):
-    ax.text(px, py, pz, f'{i}', color='blue')  # Remplacez '{i}' par toute autre chaîne que vous souhaitez utiliser comme étiquette
+    ax.text(px, py, pz, f'{i}', color='blue')
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
