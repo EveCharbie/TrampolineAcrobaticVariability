@@ -12,10 +12,10 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (calcul
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_xsens
 
 chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/43/31a5eaac_0_0-64_489__43__0__eyetracking_metrics.pkl"
-model_path = "/home/lim/Documents/StageMathieu/DataTrampo/Sarah/NewSarahModelXsens.s2mMod"
+model_path = "/home/lim/Downloads/SoMe_Xsens_Model_rotated.bioMod"
 
-select_dof = "FullDof" in model_path
-
+# select_dof = "FullDof" in model_path
+select_dof = True
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
     eye_tracking_metrics = pickle.load(fichier_pkl)
@@ -76,12 +76,13 @@ for i_frame in range(nb_frames):
         if info_for_given_index is not None:
             parent_index, parent_name = info_for_given_index
 
-        RotMat_between_neutre = calculer_rotation_relative(RotMat_neutre[parent_index], RotMat_neutre[i_segment]) \
-            if info_for_given_index is not None else RotMat_neutre[i_segment]
-        RotMat_between_mov = calculer_rotation_relative(RotMat_mov[parent_index], RotMat_mov[i_segment]) \
-            if info_for_given_index is not None else RotMat_mov[i_segment]
+        # RotMat_between_neutre = calculer_rotation_relative(RotMat_neutre[parent_index], RotMat_neutre[i_segment]) \
+        #     if info_for_given_index is not None else RotMat_neutre[i_segment]
+        # RotMat_between_mov = calculer_rotation_relative(RotMat_mov[parent_index], RotMat_mov[i_segment]) \
+        #     if info_for_given_index is not None else RotMat_mov[i_segment]
 
-        RotMat_between = np.linalg.inv(RotMat_between_neutre) @ RotMat_between_mov
+        RotMat_between = np.linalg.inv(RotMat_mov[parent_index]) @ RotMat_mov[i_segment] \
+            if info_for_given_index is not None else RotMat_mov[i_segment]
         RotMat_between = biorbd.Rotation(
             RotMat_between[0, 0],
             RotMat_between[0, 1],
@@ -121,7 +122,7 @@ for i in range(nb_mat+1):
     plt.xlabel('Frame')
     plt.ylabel('Angle (rad)')
     plt.legend()
-plt.show()
+# plt.show()
 
 # Suppression des colonnes où tous les éléments sont zéro
 ligne_a_supprimer = np.all(Q_complet == 0, axis=1)

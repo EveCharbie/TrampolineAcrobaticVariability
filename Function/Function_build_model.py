@@ -539,10 +539,9 @@ def get_orientation_wrist(pos_marker, marker_name_list, is_right_side, is_y_up):
     axe_z_wrist = normalise_vecteurs(axe_z_wrist)
     # axe_z_wrist = [-i for i in axe_z_wrist]
 
-    axe_y_wrist = np.cross(axe_z_wrist, axe_x_wrist)
-    axe_y_wrist = normalise_vecteurs(axe_y_wrist)
-
     if is_y_up:
+        axe_y_wrist = np.cross(axe_z_wrist, axe_x_wrist)
+        axe_y_wrist = normalise_vecteurs(axe_y_wrist)
         matrices_rotation = np.array(
             [
                 np.column_stack([x, y, z])

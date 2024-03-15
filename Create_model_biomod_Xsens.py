@@ -10,8 +10,7 @@ chemin_fichier_pkl = "/home/lim/disk/Eye-tracking/Results_831/SaMi/4-/9884f602_0
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 participant_name = "Sarah"
-DoF = False
-
+DoF = True
 
 ##
 
@@ -81,7 +80,6 @@ for i_segment in range(nb_mat):
     RotMat_neutre.append(RotMat_neutre_segment)
 
 
-
 matrix_in_parent_frame = []
 joint_center_in_parent_frame = []
 rot_trans_matrix = []
@@ -130,46 +128,6 @@ with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         else:
             fichier_modifie.write(lignes[i])
             i += 1
-
-
-#
-# informations_marqueurs = []
-# nouvelles_lignes = []  # Liste pour stocker les nouvelles lignes avec les positions mises à jour
-# # Parcourir les lignes du fichier pour extraire les informations
-# i = 0  # Index pour parcourir les lignes
-# while i < len(lignes):
-#     if lignes[i].strip().startswith("marker"):  # Vérifie si la ligne commence par "marker"
-#         nouvelles_lignes.append(lignes[i])
-#         nouvelles_lignes.append(lignes[i+1])
-#         nom_marqueur = lignes[i].split()[1]  # Extrait le nom du marqueur
-#         nom_parent = lignes[i+1].split()[1]  # Extrait le nom du parent à la ligne suivante
-#         id_parent = trouver_index_parent(nom_parent)
-#         mat_parent_marker = relax_matrix[id_parent]
-#         pos_parent_marker = relax_joint_center[id_parent]
-#         index_marker = find_index(nom_marqueur, desired_order)
-#         marker_global_pos = pos_marker_relax[0][:, index_marker, :]
-#         mean_marker_global_pos = np.mean(marker_global_pos, axis=1)
-#
-#         marker_local_pos = convert_marker_to_local_frame(pos_parent_marker, mat_parent_marker, mean_marker_global_pos)
-#
-#         pos_str = "\t\t" + "position" + "\t\t" + "\t".join(f"{coord:.6f}" for coord in marker_local_pos) + "\n"
-#         print(pos_str)
-#
-#         # Ajoute la nouvelle position à la liste des nouvelles lignes
-#         nouvelles_lignes.append(pos_str)
-#
-#         # Incrémente i pour passer les lignes déjà traitées, en supposant que 'position' est la ligne i+2
-#         i += 3
-#     else:
-#         # Ajoute les lignes non relatives aux markers directement à nouvelles_lignes
-#         nouvelles_lignes.append(lignes[i])
-#         i += 1
-#
-#
-# with open(chemin_fichier_modifie, 'w') as fichier_modifie:
-#     fichier_modifie.writelines(nouvelles_lignes)
-
-#
 
 model = biorbd.Model(chemin_fichier_modifie)
 b = bioviz.Viz(loaded_model=model)
