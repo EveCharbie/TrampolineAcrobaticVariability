@@ -469,23 +469,42 @@ def get_orientation_elbow(pos_marker, marker_name_list, is_right_side, is_y_up):
         (pos_marker[:, ulna_index, :]).T + (pos_marker[:, radius_index, :]).T
     ) / 2
 
-    axe_z_elbow = (
-        (pos_marker[:, epitro_index, :]).T - (pos_marker[:, epicon_index, :]).T
-        if is_right_side
-        else (pos_marker[:, epicon_index, :].T - pos_marker[:, epitro_index, :].T)
-    )
-    axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+    # axe_z_elbow = (
+    #     (pos_marker[:, epitro_index, :]).T - (pos_marker[:, epicon_index, :]).T
+    #     if is_right_side
+    #     else (pos_marker[:, epicon_index, :].T - pos_marker[:, epitro_index, :].T)
+    # )
+    # axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+    #
+    # axe_y_elbow = mid_epi - mid_ul_rad if is_right_side else mid_ul_rad - mid_epi
+    # axe_y_elbow = normalise_vecteurs(axe_y_elbow)
+    # axe_y_elbow = axe_y_elbow if is_right_side else [-i for i in axe_y_elbow]
+    #
+    # axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
+    # axe_x_elbow = normalise_vecteurs(axe_x_elbow)
+    # axe_x_elbow = [-i for i in axe_x_elbow]
+    #
+    # axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
+    # axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+
+    #
+    V1_elbow = mid_epi - (pos_marker[:, ulna_index, :]).T
+    V2_elbow = mid_epi - (pos_marker[:, radius_index, :]).T
+
+    axe_x_elbow = np.cross(V2_elbow, V1_elbow)
+    axe_x_elbow = normalise_vecteurs(axe_x_elbow)
 
     axe_y_elbow = mid_epi - mid_ul_rad if is_right_side else mid_ul_rad - mid_epi
     axe_y_elbow = normalise_vecteurs(axe_y_elbow)
     axe_y_elbow = axe_y_elbow if is_right_side else [-i for i in axe_y_elbow]
 
-    axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
-    axe_x_elbow = normalise_vecteurs(axe_x_elbow)
-    axe_x_elbow = [-i for i in axe_x_elbow]
-
     axe_z_elbow = np.cross(axe_x_elbow, axe_y_elbow)
     axe_z_elbow = normalise_vecteurs(axe_z_elbow)
+    axe_z_elbow = axe_z_elbow if is_right_side else [-i for i in axe_z_elbow]
+
+    axe_x_elbow = np.cross(axe_y_elbow, axe_z_elbow)
+    axe_x_elbow = normalise_vecteurs(axe_x_elbow)
+    #
 
     if is_y_up:
         matrices_rotation = np.array(

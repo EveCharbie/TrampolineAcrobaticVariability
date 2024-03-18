@@ -6,11 +6,13 @@ import biorbd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Function_Class_Basics import (
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     OrderMatData,
     load_and_interpolate,
     calculate_mean_std,
-    column_names,
+    column_names
+)
+from TrampolineAcrobaticVariability.Function.Function_draw import (
     create_composite_image,
     add_lines_with_arrow_and_circle,
     graph_images_info,

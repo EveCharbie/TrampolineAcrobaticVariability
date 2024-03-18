@@ -9,7 +9,7 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 csv_path = f"{home_path}Labelling_trampo.csv"
 DoF = False
-is_y_up = True
+is_y_up = False
 
 
 ##
@@ -147,6 +147,6 @@ for participant_name in participant_names:
     b = bioviz.Viz(loaded_model=model)
     b.exec()
 
-    model = biorbd.Model(model_kalman)
-    b = bioviz.Viz(loaded_model=model)
-    b.exec()
+    # model = biorbd.Model(model_kalman)
+    # b = bioviz.Viz(loaded_model=model)
+    # b.exec()

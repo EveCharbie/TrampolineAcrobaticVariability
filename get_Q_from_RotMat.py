@@ -115,9 +115,15 @@ for name in participant_names:
                     Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
                             RotMat_between, "xyz").to_array()
                 else:
-                    if i_segment in (3, 4, 5, 6, 7, 8, 11, 14):
+                    # if i_segment in (3, 6):
+                    #     Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
+                    #         RotMat_between, "zy").to_array()
+                    if i_segment in (4, 7):
                         Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
                             RotMat_between, "zy").to_array()
+                    elif i_segment in (5, 8):
+                        Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
+                            RotMat_between, "xyz").to_array()
                     elif i_segment in (10, 13):
                         Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
                             RotMat_between, "x").to_array()
@@ -143,7 +149,7 @@ for name in participant_names:
             if add_pi:
                 Q_corrected[i] = Q_corrected[i] + 2 * np.pi
 
-        Q_degrees = np.degrees(Q)
+        Q_degrees = np.degrees(Q_corrected)
         Q_complet = np.concatenate((pelv_trans_list.T, Q_corrected), axis=0)
 
         # Suppression des colonnes où tous les éléments sont zéro
