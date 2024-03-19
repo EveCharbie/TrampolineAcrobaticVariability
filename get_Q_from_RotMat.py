@@ -19,7 +19,7 @@ csv_path = f"{home_path}Labelling_trampo.csv"
 interval_name_tab = pd.read_csv(csv_path, sep=';', usecols=['Participant', 'Analyse', 'Essai', 'Debut', 'Fin', 'Durée'])
 valide = ['O']
 interval_name_tab = interval_name_tab[interval_name_tab["Analyse"] == 'O']
-interval_name_tab['Essai'] = interval_name_tab['Essai'] + '.c3d'
+interval_name_tab.loc[:, 'Essai'] = interval_name_tab['Essai'] + '.c3d'
 
 # Obtenir la liste des participants
 participant_names = interval_name_tab['Participant'].unique()
@@ -79,6 +79,7 @@ for name in participant_names:
 
         for i_frame in range(nb_frames):
             RotMat_between_total = []
+            euler_sequences = {}
             for i_segment in range(nb_mat):
                 RotMat = relax_matrix[i_segment, :, :]
                 RotMat_current = movement_matrix[i_segment, i_frame, :, :]
@@ -112,24 +113,26 @@ for name in participant_names:
                 RotMat_between_total.append(RotMat_between)
 
                 if select_dof is True:
+                    euler_sequence = "xyz"
+                    euler_sequences[i_segment] = euler_sequence
                     Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                            RotMat_between, "xyz").to_array()
+                            RotMat_between, euler_sequence).to_array()
                 else:
-                    # if i_segment in (3, 6):
-                    #     Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
-                    #         RotMat_between, "zy").to_array()
-                    if i_segment in (4, 7):
-                        Q[i_segment * 3: (i_segment + 1) * 3-1, i_frame] = biorbd.Rotation.toEulerAngles(
-                            RotMat_between, "zy").to_array()
-                    elif i_segment in (5, 8):
-                        Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                            RotMat_between, "xyz").to_array()
+                    if i_segment in (3, 6):
+                        euler_sequence = "zyx"
                     elif i_segment in (10, 13):
-                        Q[i_segment * 3: (i_segment + 1) * 3-2, i_frame] = biorbd.Rotation.toEulerAngles(
-                            RotMat_between, "x").to_array()
+                        euler_sequence = "x"
                     else:
+                        euler_sequence = "xyz"
+
+                    euler_sequences[i_segment] = euler_sequence
+
+                    if euler_sequence == "x":  # Special handling for single axis
+                        Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
+                            RotMat_between, euler_sequence).to_array()
+                    else:  # General case for three axes
                         Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                            RotMat_between, "xyz").to_array()
+                            RotMat_between, euler_sequence).to_array()
 
         Q_corrected = np.unwrap(Q, axis=1)
 
@@ -150,7 +153,17 @@ for name in participant_names:
                 Q_corrected[i] = Q_corrected[i] + 2 * np.pi
 
         Q_degrees = np.degrees(Q_corrected)
+
+        # Ajout pelvis trans
         Q_complet = np.concatenate((pelv_trans_list.T, Q_corrected), axis=0)
+        euler_sequences_complet = {key+1: value for key, value in euler_sequences.items()}
+        euler_sequences_complet[0] = 'xyz'
+
+        names = ["PelvisTranslation", "PelvisRotation", "Thorax", "Head", "RightShoulder",
+                 "RightElbow", "RightWrist", "LeftShoulder", "LeftElbow", "LeftWrist",
+                 "RightHip", "RightKnee", "RightAnkle", "LeftHip", "LeftKnee", "LeftAnkle"]
+        # Update the dictionary to include names
+        named_euler_sequences = [(names[key], euler_sequences_complet[key]) for key in sorted(euler_sequences_complet)]
 
         # Suppression des colonnes où tous les éléments sont zéro
         ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
@@ -160,28 +173,33 @@ for name in participant_names:
         mat_data = {
             "Q_ready_to_use": Q_ready_to_use,
             "Q_complet": Q_complet,
-            "Q_original": Q
+            "Q_original": Q,
+            "Euler_Sequence": named_euler_sequences
         }
         folder_and_file_name_path = folder_path + f"{file_name}.mat"
         # Enregistrement dans un fichier .mat
         scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-        for i in range(nb_mat+1):
-            plt.figure(figsize=(5, 3))
-            for axis in range(3):
-                plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-            plt.title(f'Segment {i+1}')
-            plt.xlabel('Frame')
-            plt.ylabel('Angle (rad)')
-            plt.legend()
-        plt.show()
+        # axis_colors = {'X': 'blue', 'Y': 'green', 'Z': 'red'}
+        # rows = (nb_mat + 1) // 4 + int((nb_mat + 1) % 4 > 0)
+        # plt.figure(figsize=(25, 4 * rows))
+        # for i in range(nb_mat + 1):
+        #     plt.subplot(rows, 4, i + 1)
+        #     segment_name, euler_sequence = named_euler_sequences[i]
+        #     axis_labels = list(euler_sequence.upper())
+        #     for axis, axis_label in enumerate(axis_labels):
+        #         plt.plot(Q_complet[i * 3 + axis, :], label=axis_label, color=axis_colors[axis_label])
+        #     plt.title(f'Segment {i + 1}: {segment_name}')
+        #     plt.legend()
+        # plt.tight_layout()
+        # plt.show()
+        #
+        # model = biorbd.Model(model_path)
+        # b = bioviz.Viz(loaded_model=model)
+        # b.load_movement(Q_ready_to_use)
+        # b.load_experimental_markers(pos_mov[:, :, :])
+        # b.exec()
 
-        model = biorbd.Model(model_path)
-        b = bioviz.Viz(loaded_model=model)
-        b.load_movement(Q_ready_to_use)
-        b.load_experimental_markers(pos_mov[:, :, :])
-
-        b.exec()
 
     # from pyorerun import BiorbdModelNoMesh, PhaseRerun
     #

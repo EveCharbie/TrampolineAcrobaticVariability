@@ -56,7 +56,6 @@ for participant_name in participant_names:
 
     relax_joint_center = np.mean(articular_joint_center, axis=1)
 
-
     matrix_in_parent_frame = []
     joint_center_in_parent_frame = []
     rot_trans_matrix = []
@@ -86,7 +85,6 @@ for participant_name in participant_names:
 
     with open(chemin_fichier_original, 'r') as fichier:
         lignes = fichier.readlines()
-
 
     with open(chemin_fichier_modifie, 'w') as fichier_modifie:
         a = 0
@@ -141,7 +139,6 @@ for participant_name in participant_names:
     #
     # with open(chemin_fichier_modifie, 'w') as fichier_modifie:
     #     fichier_modifie.writelines(nouvelles_lignes)
-
 
     model = biorbd.Model(chemin_fichier_modifie)
     b = bioviz.Viz(loaded_model=model)
