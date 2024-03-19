@@ -176,7 +176,13 @@ for name in participant_names:
             "Q_original": Q,
             "Euler_Sequence": named_euler_sequences
         }
-        folder_and_file_name_path = folder_path + f"{file_name}.mat"
+        new_folder_file = file_name.rsplit('_', 1)[0]
+
+        new_folder_path = f"{folder_path}{new_folder_file}/"
+        folder_and_file_name_path = new_folder_path + f"{file_name}.mat"
+
+        if not os.path.exists(new_folder_path):
+            os.makedirs(new_folder_path)
         # Enregistrement dans un fichier .mat
         scipy.io.savemat(folder_and_file_name_path, mat_data)
 
