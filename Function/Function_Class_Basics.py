@@ -31,11 +31,22 @@ class OrderMatData:
         if index not in self.index_suffix_map:
             raise KeyError(f"Invalid index {index}.")
 
+        # Nettoie la clé en supprimant les espaces de début et de fin, et les espaces multiples
+        cleaned_key = " ".join(key.strip().split())
+
         expected_suffix = self.index_suffix_map[index]
-        column_name = f"{key}_{expected_suffix}"
+        column_name = f"{cleaned_key}_{expected_suffix}"
 
         if column_name not in self.dataframe.columns:
-            raise KeyError(f"Column {column_name} does not exist.")
+            # Essayez de gérer les espaces supplémentaires dans les noms de colonnes du DataFrame
+            matching_columns = [col for col in self.dataframe.columns if
+                                col.replace(" ", "").startswith(cleaned_key.replace(" ", "")) and col.endswith(
+                                    expected_suffix)]
+            if matching_columns:
+                # Si des colonnes correspondantes sont trouvées, utilisez la première correspondance
+                return self.dataframe[matching_columns[0]]
+            else:
+                raise KeyError(f"Column {column_name} does not exist.")
 
         return self.dataframe[column_name]
 
@@ -54,9 +65,19 @@ def load_and_interpolate(file, interval, num_points=100):
     """
     # Load data with the DoF
     data = scipy.io.loadmat(file)
-    df = pd.DataFrame(data["Q2"]).T
+    if "Q2" in data:
+        df = pd.DataFrame(data["Q2"]).T
+    else:
+        df = pd.DataFrame(data["Q_ready_to_use"]).T
 
-    df.columns = column_names
+    # df.columns = column_names
+    Euler_Sequence = data["Euler_Sequence"]
+
+    column_names = []
+    for segment, sequence in Euler_Sequence:
+        segment = segment.strip()
+        for axis in sequence.strip():
+            column_names.append(f"{segment}_{axis.upper()}")
 
     # Select data in specify interval
     df_selected = df.iloc[interval[0] : interval[1]]
@@ -68,8 +89,10 @@ def load_and_interpolate(file, interval, num_points=100):
     # print(df_interpolated.shape)
 
     # Create OrderMatData instance and apply it to df_interpolated
-    my_data_instance = OrderMatData(df_interpolated)
-    return my_data_instance
+    # my_data_instance = OrderMatData(df_interpolated)
+    df_interpolated.columns = column_names
+    my_data = OrderMatData(df_interpolated)
+    return my_data
 
 
 def calculate_mean_std(data_instances, member, axis):
