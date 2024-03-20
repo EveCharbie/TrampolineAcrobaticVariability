@@ -186,25 +186,25 @@ for name in participant_names:
         # Enregistrement dans un fichier .mat
         scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-        # axis_colors = {'X': 'blue', 'Y': 'green', 'Z': 'red'}
-        # rows = (nb_mat + 1) // 4 + int((nb_mat + 1) % 4 > 0)
-        # plt.figure(figsize=(25, 4 * rows))
-        # for i in range(nb_mat + 1):
-        #     plt.subplot(rows, 4, i + 1)
-        #     segment_name, euler_sequence = named_euler_sequences[i]
-        #     axis_labels = list(euler_sequence.upper())
-        #     for axis, axis_label in enumerate(axis_labels):
-        #         plt.plot(Q_complet[i * 3 + axis, :], label=axis_label, color=axis_colors[axis_label])
-        #     plt.title(f'Segment {i + 1}: {segment_name}')
-        #     plt.legend()
-        # plt.tight_layout()
-        # plt.show()
-        #
-        # model = biorbd.Model(model_path)
-        # b = bioviz.Viz(loaded_model=model)
-        # b.load_movement(Q_ready_to_use)
-        # b.load_experimental_markers(pos_mov[:, :, :])
-        # b.exec()
+        axis_colors = {'X': 'blue', 'Y': 'green', 'Z': 'red'}
+        rows = (nb_mat + 1) // 4 + int((nb_mat + 1) % 4 > 0)
+        plt.figure(figsize=(25, 4 * rows))
+        for i in range(nb_mat + 1):
+            plt.subplot(rows, 4, i + 1)
+            segment_name, euler_sequence = named_euler_sequences[i]
+            axis_labels = list(euler_sequence.upper())
+            for axis, axis_label in enumerate(axis_labels):
+                plt.plot(Q_complet[i * 3 + axis, :], label=axis_label, color=axis_colors[axis_label])
+            plt.title(f'Segment {i + 1}: {segment_name}')
+            plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+        model = biorbd.Model(model_path)
+        b = bioviz.Viz(loaded_model=model)
+        b.load_movement(Q_ready_to_use)
+        b.load_experimental_markers(pos_mov[:, :, :])
+        b.exec()
 
 
     # from pyorerun import BiorbdModelNoMesh, PhaseRerun
