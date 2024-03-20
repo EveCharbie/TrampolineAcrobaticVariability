@@ -56,6 +56,7 @@ for i_frame in range(nb_frames):
     RotMat_between_total = []
     RotMat_neutre = []
     RotMat_mov = []
+    euler_sequences = {}
 
     # Calcul initial des matrices de rotation pour neutre et mouvement
     for i_segment in range(nb_mat):
@@ -93,40 +94,91 @@ for i_frame in range(nb_frames):
         RotMat_between_total.append(RotMat_between)
 
         if select_dof is True:
+            euler_sequence = "xyz"
+            euler_sequences[i_segment] = euler_sequence
             Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "xyz").to_array()
+                RotMat_between, euler_sequence).to_array()
         else:
-            if i_segment in (5, 8, 11, 14):
-                Q[i_segment * 3: (i_segment + 1) * 3 - 1, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "xz").to_array()
+            if i_segment in (3, 6):
+                euler_sequence = "zyx"
             elif i_segment in (10, 13):
-                Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "x").to_array()
+                euler_sequence = "x"
             else:
+                euler_sequence = "xyz"
+
+            euler_sequences[i_segment] = euler_sequence
+
+            if euler_sequence == "x":  # Special handling for single axis
+                Q[i_segment * 3: (i_segment + 1) * 3 - 2, i_frame] = biorbd.Rotation.toEulerAngles(
+                    RotMat_between, euler_sequence).to_array()
+            else:  # General case for three axes
                 Q[i_segment * 3: (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                    RotMat_between, "xyz").to_array()
+                    RotMat_between, euler_sequence).to_array()
 
 Q_corrected = np.unwrap(Q, axis=1)
 
 Q_complet = np.concatenate((pelvis_trans.T, Q_corrected), axis=0)
 
-for i in range(nb_mat+1):
-    plt.figure(figsize=(5, 3))
-    for axis in range(3):
-        plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
-    plt.title(f'Segment {i+1}')
-    plt.xlabel('Frame')
-    plt.ylabel('Angle (rad)')
-    plt.legend()
+euler_sequences_complet = {key+1: value for key, value in euler_sequences.items()}
+euler_sequences_complet[0] = 'xyz'
+
+names = ["PelvisTranslation", "PelvisRotation", "Thorax", "Head", "RightShoulder",
+         "RightElbow", "RightWrist", "LeftShoulder", "LeftElbow", "LeftWrist",
+         "RightHip", "RightKnee", "RightAnkle", "LeftHip", "LeftKnee", "LeftAnkle"]
+# Update the dictionary to include names
+named_euler_sequences = [(names[key], euler_sequences_complet[key]) for key in sorted(euler_sequences_complet)]
+
+
+# for i in range(nb_mat+1):
+#     plt.figure(figsize=(5, 3))
+#     for axis in range(3):
+#         plt.plot(Q_complet[i*3+axis, :], label=f'{["X", "Y", "Z"][axis]}')
+#     plt.title(f'Segment {i+1}')
+#     plt.xlabel('Frame')
+#     plt.ylabel('Angle (rad)')
+#     plt.legend()
 # plt.show()
 
 # Suppression des colonnes où tous les éléments sont zéro
 ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
-Q_complet_good_DOF = Q_complet[~ligne_a_supprimer, :]
+Q_ready_to_use = Q_complet[~ligne_a_supprimer, :]
+
+# Création d'un dictionnaire pour le stockage
+mat_data = {
+    "Q_ready_to_use": Q_ready_to_use,
+    "Q_complet": Q_complet,
+    "Q_original": Q,
+    "Euler_Sequence": named_euler_sequences
+}
+
+# new_folder_file = file_name.rsplit('_', 1)[0]
+#
+# new_folder_path = f"{folder_path}{new_folder_file}/"
+# folder_and_file_name_path = new_folder_path + f"{file_name}.mat"
+#
+# if not os.path.exists(new_folder_path):
+#     os.makedirs(new_folder_path)
+# # Enregistrement dans un fichier .mat
+# scipy.io.savemat(folder_and_file_name_path, mat_data)
+
+axis_colors = {'X': 'blue', 'Y': 'green', 'Z': 'red'}
+rows = (nb_mat + 1) // 4 + int((nb_mat + 1) % 4 > 0)
+plt.figure(figsize=(25, 4 * rows))
+for i in range(nb_mat + 1):
+    plt.subplot(rows, 4, i + 1)
+    segment_name, euler_sequence = named_euler_sequences[i]
+    axis_labels = list(euler_sequence.upper())
+    for axis, axis_label in enumerate(axis_labels):
+        plt.plot(Q_complet[i * 3 + axis, :], label=axis_label, color=axis_colors[axis_label])
+    plt.title(f'Segment {i + 1}: {segment_name}')
+    plt.legend()
+plt.tight_layout()
+plt.show()
+
 
 model = biorbd.Model(model_path)
 b = bioviz.Viz(loaded_model=model)
-b.load_movement(Q_complet_good_DOF)
+b.load_movement(Q_ready_to_use)
 
 b.exec()
 
