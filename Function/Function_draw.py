@@ -3,23 +3,23 @@ import math
 
 
 lines_info = {
-    "line1": ((952, 400), (1130, 210)),  # Replace with actual coordinates
-    "line2": ((952, 450), (794, 210)),  # Replace with actual coordinates
-    "line3": ((935, 411), (570, 190)),  # Replace with actual coordinates
-    "line4": ((903, 424), (370, 250)),  # Replace with actual coordinates
-    "line5": ((898, 496), (720, 436)),  # Replace with actual coordinates
-    "line6": ((879, 557), (360, 553)),  # Replace with actual coordinates
-    "line7": ((929, 546), (720, 667)),  # Replace with actual coordinates
-    "line8": ((929, 649), (400, 890)),  # Replace with actual coordinates
-    "line9": ((930, 762), (609, 880)),  # Replace with actual coordinates
-    "line10": ((953, 532), (960, 880)),  # Replace with actual coordinates
-    "line11": ((976, 762), (1319, 880)),  # Replace with actual coordinates
-    "line12": ((976, 649), (1543, 890)),  # Replace with actual coordinates
-    "line13": ((976, 546), (1221, 667)),  # Replace with actual coordinates
-    "line14": ((1024, 557), (1551, 553)),  # Replace with actual coordinates
-    "line15": ((1008, 496), (1222, 436)),  # Replace with actual coordinates
-    "line16": ((1000, 424), (1543, 250)),  # Replace with actual coordinates
-    "line17": ((971, 411), (1410, 190)),  # Replace with actual coordinates
+    "line1": ((952, 400), (1130, 210)),
+    "line2": ((952, 450), (794, 210)),
+    "line3": ((935, 411), (570, 190)),
+    "line4": ((903, 424), (370, 250)),
+    "line5": ((898, 496), (720, 436)),
+    "line6": ((879, 557), (360, 553)),
+    "line7": ((929, 546), (720, 667)),
+    "line8": ((929, 649), (400, 890)),
+    "line9": ((930, 762), (609, 880)),
+    "line10": ((953, 532), (960, 880)),
+    "line11": ((976, 762), (1319, 880)),
+    "line12": ((976, 649), (1543, 890)),
+    "line13": ((976, 546), (1221, 667)),
+    "line14": ((1024, 557), (1551, 553)),
+    "line15": ((1008, 496), (1222, 436)),
+    "line16": ((1000, 424), (1543, 250)),
+    "line17": ((971, 411), (1410, 190)),
 }
 
 graph_images_info = {
@@ -40,6 +40,27 @@ graph_images_info = {
     "PiedG_all_axes_graph.png": (1153, 865),
     "PiedD_all_axes_graph.png": (443, 865),
     "Pelvis_all_axes_graph.png": (793, 865),
+}
+
+
+graph_images_infov2 = {
+    "Thorax_all_axes_graph.png": (623, -10),
+    "Head_all_axes_graph.png": (960, -10),
+    "LeftHip_all_axes_graph.png": (1211, 558),
+    "RightHip_all_axes_graph.png": (358, 558),
+    # "LeftShoulder_all_axes_graph.png": (1298, -10),
+    # "RightShoulder_all_axes_graph.png": (285, -10),
+    "LeftShoulder_all_axes_graph.png": (1554, 186),
+    "RightShoulder_all_axes_graph.png": (16, 186),
+    "LeftElbow_all_axes_graph.png": (1212, 340),
+    "RightElbow_all_axes_graph.png": (358, 340),
+    "LeftWrist_all_axes_graph.png": (1554, 443),
+    "RightWrist_all_axes_graph.png": (16, 443),
+    "LeftKnee_all_axes_graph.png": (1544, 804),
+    "RightKnee_all_axes_graph.png": (53, 804),
+    "LeftAnkle_all_axes_graph.png": (1153, 865),
+    "RightAnkle_all_axes_graph.png": (443, 865),
+    "PelvisRotation_all_axes_graph.png": (793, 865),
 }
 
 
@@ -137,7 +158,7 @@ def create_composite_image(
 ):
     background = Image.new("RGB", bg_size, color="white")
 
-    body_image_path = "/Graph_from_mot/DALL_E_Body.png"
+    body_image_path = "/home/lim/Documents/StageMathieu/DataTrampo/DALL_E_Body.png"
     try:
         body_image = Image.open(body_image_path)
         body_image = body_image.resize(body_size, Image.Resampling.LANCZOS)
@@ -281,3 +302,11 @@ def plot_adjusted_fd(ax, mean_fd, adjusted_fd_positive, adjusted_fd_negative, ti
     ax.legend()
 
 
+def sequence_to_indices(sequence):
+    # Define a mapping from axis characters to their indices
+    axis_mapping = {'x': 0, 'y': 1, 'z': 2}
+
+    # Convert the sequence string to a list of indices
+    indices = [axis_mapping[axis] for axis in sequence.strip().lower()]
+
+    return indices
