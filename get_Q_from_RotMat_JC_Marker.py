@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 from TrampolineAcrobaticVariability.Function.Function_build_model import (
     get_all_matrice,
     average_rotation_matrix,
-    calculer_rotation_relative
+    calculer_rotation_relative,
+    convert_marker_to_local_frame,
 )
-from TrampolineAcrobaticVariability.Function.Function_Class_Basics import parent_list_marker, check_matrix_orthogonality
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
+    parent_list_marker,
+    check_matrix_orthogonality,
+    find_index)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 is_y_up = False
@@ -41,7 +45,7 @@ for name in participant_names:
         file_intervals.append((file_path_complet, interval))
 
 #
-    model_path = f"{home_path}{name}/Model{name}.s2mMod"
+    model_path = f"{home_path}{name}/New{name}Model.s2mMod"
     model_kalman = f"{home_path}{name}/{name}.s2mMod"
 
     model_kalman = biorbd.Model(model_kalman)
@@ -169,23 +173,6 @@ for name in participant_names:
         ligne_a_supprimer = np.all(Q_complet == 0, axis=1)
         Q_ready_to_use = Q_complet[~ligne_a_supprimer, :]
 
-        # Création d'un dictionnaire pour le stockage
-        mat_data = {
-            "Q_ready_to_use": Q_ready_to_use,
-            "Q_complet": Q_complet,
-            "Q_original": Q,
-            "Euler_Sequence": named_euler_sequences
-        }
-        new_folder_file = file_name.rsplit('_', 1)[0]
-
-        new_folder_path = f"{folder_path}{new_folder_file}/"
-        folder_and_file_name_path = new_folder_path + f"{file_name}.mat"
-
-        if not os.path.exists(new_folder_path):
-            os.makedirs(new_folder_path)
-        # Enregistrement dans un fichier .mat
-        scipy.io.savemat(folder_and_file_name_path, mat_data)
-
         # axis_colors = {'X': 'blue', 'Y': 'green', 'Z': 'red'}
         # rows = (nb_mat + 1) // 4 + int((nb_mat + 1) % 4 > 0)
         # plt.figure(figsize=(25, 4 * rows))
@@ -204,23 +191,59 @@ for name in participant_names:
 
         desired_order = [model.markerNames()[i].to_string() for i in range(model.nbMarkers())]
         n_markers = len(desired_order)
-        n_frames = Q_ready_to_use.shape[1]
-        markers_JC = np.ndarray((3, n_markers, n_frames))
+        markers_JC = np.ndarray((3, n_markers, nb_frames))
 
-        for i in range(n_frames):
+        for i in range(nb_frames):
             newQ = biorbd.GeneralizedCoordinates(Q_ready_to_use[:, i])
             markers_reconstructed = model.markers(newQ)
             for m, marker_recons in enumerate(markers_reconstructed):
                 markers_JC[:, m, i] = marker_recons.to_array()
 
+        Jc_in_pelvis_frame = np.ndarray((3, n_markers, nb_frames))
 
+        for i in range(nb_frames):
+            mid_hip_pos = (markers_JC[:, find_index("JC_CuisseD", desired_order), i] + markers_JC[:, find_index("JC_CuisseG", desired_order), i]) / 2
+            for idx, jcname in enumerate(desired_order):
+                if idx == find_index("JC_pelvis", desired_order):
+                    Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+                else:
+                    P2_prime = convert_marker_to_local_frame(mid_hip_pos, movement_matrix[0, i, :, :], markers_JC[:, idx, i])
+                    Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
+        colors = ['r', 'g', 'b']
+        n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
+        plt.figure(figsize=(20, 3 * n_rows))
 
+        for idx, jcname in enumerate(desired_order):
+            ax = plt.subplot(n_rows, 4, idx + 1)
+            for j in range(Jc_in_pelvis_frame.shape[0]):
+                ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
+            ax.set_title(f'Graphique {jcname}')
+            ax.set_xlabel('Frame')
+            ax.set_ylabel('Valeur')
+            if idx == 0:
+                ax.legend()
+        plt.tight_layout()
+        plt.show()
 
+        # Création d'un dictionnaire pour le stockage
+        mat_data = {
+            "Q_ready_to_use": Q_ready_to_use,
+            "Q_complet": Q_complet,
+            "Q_original": Q,
+            "Euler_Sequence": named_euler_sequences,
+            "Jc_in_pelvis_frame": Jc_in_pelvis_frame,
+            "JC_order": desired_order
+        }
+        new_folder_file = file_name.rsplit('_', 1)[0]
 
+        new_folder_path = f"{folder_path}{new_folder_file}/"
+        folder_and_file_name_path = new_folder_path + f"{file_name}.mat"
 
-
-
+        if not os.path.exists(new_folder_path):
+            os.makedirs(new_folder_path)
+        # Enregistrement dans un fichier .mat
+        scipy.io.savemat(folder_and_file_name_path, mat_data)
 
         b = bioviz.Viz(loaded_model=model)
         b.load_movement(Q_ready_to_use)
