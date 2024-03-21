@@ -207,7 +207,7 @@ for name in participant_names:
                 if idx == find_index("JC_pelvis", desired_order):
                     Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
                 else:
-                    P2_prime = convert_marker_to_local_frame(mid_hip_pos, movement_matrix[0, i, :, :], markers_JC[:, idx, i])
+                    P2_prime = convert_marker_to_local_frame(mid_hip_pos, movement_matrix[find_index("JC_pelvis", desired_order), i, :, :], markers_JC[:, idx, i])
                     Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
         colors = ['r', 'g', 'b']

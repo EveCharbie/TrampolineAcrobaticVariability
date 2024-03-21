@@ -119,7 +119,7 @@ for name in participant_names:
                             RotMat_between, euler_sequence).to_array()
                 else:
                     if i_segment in (3, 6):
-                        euler_sequence = "zyx"
+                        euler_sequence = "zyz"
                     elif i_segment in (10, 13):
                         euler_sequence = "x"
                     else:
