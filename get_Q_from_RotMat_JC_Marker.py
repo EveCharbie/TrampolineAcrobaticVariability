@@ -14,7 +14,8 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     parent_list_marker,
     check_matrix_orthogonality,
-    find_index)
+    find_index
+)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/"
 is_y_up = False

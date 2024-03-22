@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import biorbd
 import numpy as np
 import bioviz
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.animation import FuncAnimation
 from TrampolineAcrobaticVariability.Function.Function_build_model import (
     convert_marker_to_local_frame,
     calculer_rotation_et_angle,
@@ -49,51 +51,34 @@ expertise = eye_tracking_metrics["subject_expertise"]
 subject_name = eye_tracking_metrics["subject_name"]
 
 Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
-
-Xsens_CoM_per_move = eye_tracking_metrics["Xsens_position_no_level_CoM_corrected_rotated_per_move"]
 Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
-Xsens_position_rotated = eye_tracking_metrics["Xsens_position_rotated"]
-Xsens_position = eye_tracking_metrics["Xsens_position"]
 
-Xsens_global_JCS_positions = eye_tracking_metrics["Xsens_global_JCS_positions"]
-Xsens_CoM_per_move = Xsens_position_rotated_per_move[0].reshape(3, 23, 334)
 
-# Xsens_global_positions_reshape = Xsens_jointAngle_per_move.reshape(3, 22, 301)
+Xsens_position = Xsens_position_rotated_per_move.reshape(334, 23, 3).transpose(2, 1, 0)
+
 ##
-fig = plt.figure(figsize=(10, 7))
+fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-
-# Supposons que vous avez déjà votre tableau `Xsens_global_JCS_positions` chargé
-# et une liste `list_markers` contenant les noms des markers correspondants.
-
-# Imaginons une liste de noms pour l'exemple
-list_markers = [f'Marker {i+1}' for i in range(22)]
-
-# Plotter les positions des markers dans la première frame
-for i in range(Xsens_CoM_per_move.shape[1]):
-    ax.scatter(Xsens_CoM_per_move[0, i, 0], Xsens_CoM_per_move[1, i, 0], Xsens_CoM_per_move[2, i, 0])
-
-ax.set_title('Position des 22 markers dans la première frame')
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-
+sc = ax.scatter([], [], [])
+def init():
+    sc._offsets3d = ([], [], [])
+    return sc,
+def update(frame):
+    x = Xsens_position[0, :, frame]
+    y = Xsens_position[1, :, frame]
+    z = Xsens_position[2, :, frame]
+    sc._offsets3d = (x, y, z)
+    return sc,
+ani = FuncAnimation(fig, update, frames=range(Xsens_position.shape[2]), init_func=init, blit=False)
 plt.show()
-
-
-
 ##
-pelvis = np.zeros((3, 1, 301))
-
-# Concaténer le tableau de zéros avec le tableau original le long de l'axe 2
-Xsens_global_JCS_positions = np.concatenate((pelvis, Xsens_global_positions_reshape), axis=1)
 
 # Ne selectionner que les articulations necessaire
 indices_a_supprimer = [1, 2, 3, 4, 5, 7, 8, 11, 12, 18, 22]
 
-indices_total = range(Xsens_global_JCS_positions.shape[1])
+indices_total = range(Xsens_position.shape[1])
 indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
-Xsens_global_JCS_positions_complet = Xsens_global_JCS_positions[:, indices_a_conserver, :]
+Xsens_positions_complet = Xsens_position[:, indices_a_conserver, :]
 
 
 indices_reels_colonnes_a_supprimer = []
@@ -108,18 +93,16 @@ Xsens_orientation_per_move_modifie = Xsens_orientation_per_move[:, mask_colonnes
 nb_frames = Xsens_orientation_per_move_modifie.shape[0]
 nb_mat = Xsens_orientation_per_move_modifie.shape[1]//4
 Q = np.zeros((nb_mat * 3, nb_frames))
-pelvis_trans = Xsens_jointAngle_per_move[:, :3]
 
 z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
-
 
 n_markers = len(parent_list_xsens_JC)
 
 Jc_in_pelvis_frame = np.ndarray((3, n_markers, nb_frames))
 
 for i in range(nb_frames):
-    mid_hip_pos = (Xsens_global_JCS_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC), i] +
-                   Xsens_global_JCS_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC), i]) / 2
+    mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC), i] +
+                   Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC), i]) / 2
 
     rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC),
                                          Xsens_orientation_per_move_modifie[i, :],
@@ -130,7 +113,7 @@ for i in range(nb_frames):
         if idx == find_index("Pelvis", parent_list_xsens_JC):
             Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
         else:
-            P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_global_JCS_positions_complet[:, idx, i])
+            P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
             Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
 colors = ['r', 'g', 'b']
@@ -139,8 +122,8 @@ plt.figure(figsize=(20, 3 * n_rows))
 
 for idx, jcname in enumerate(parent_list_xsens_JC):
     ax = plt.subplot(n_rows, 4, idx + 1)
-    for j in range(Xsens_global_JCS_positions_complet.shape[0]):
-        ax.plot(Xsens_global_JCS_positions_complet[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
+    for j in range(Xsens_positions_complet.shape[0]):
+        ax.plot(Xsens_positions_complet[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
     ax.set_title(f'Graphique {jcname}')
     ax.set_xlabel('Frame')
     ax.set_ylabel('Valeur')
