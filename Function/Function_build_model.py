@@ -902,14 +902,17 @@ def average_rotation_matrix(matrices):
     return np.dot(U, VT)
 
 
-def calculer_rotation_et_angle(i_segment, quat_array, z_rotation):
-    # Normalisation et conversion des quaternions en matrices de rotation
+def calculer_rotation_et_angle(i_segment, quat_array, z_rotation=None):
     quat_normalized = quat_array[i_segment * 4: (i_segment + 1) * 4] / np.linalg.norm(
         quat_array[i_segment * 4: (i_segment + 1) * 4]
     )
     quat = biorbd.Quaternion(quat_normalized[0], quat_normalized[1], quat_normalized[2], quat_normalized[3])
     rot_mat_segment = biorbd.Quaternion.toMatrix(quat).to_array()
-    return z_rotation @ rot_mat_segment
+
+    if z_rotation is not None:
+        return z_rotation @ rot_mat_segment
+    else:
+        return rot_mat_segment
 
 
 def calculer_rotation_relative(R1, R2):

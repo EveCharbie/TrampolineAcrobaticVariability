@@ -227,6 +227,22 @@ for name in participant_names:
         plt.tight_layout()
         plt.show()
 
+        from matplotlib.animation import FuncAnimation
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        sc = ax.scatter([], [], [])
+        def init():
+            sc._offsets3d = ([], [], [])
+            return sc,
+        def update(frame):
+            x = Jc_in_pelvis_frame[0, :, frame]
+            y = Jc_in_pelvis_frame[1, :, frame]
+            z = Jc_in_pelvis_frame[2, :, frame]
+            sc._offsets3d = (x, y, z)
+            return sc,
+        ani = FuncAnimation(fig, update, frames=nb_frames, init_func=init, blit=False)
+        plt.show()
+
         # Création d'un dictionnaire pour le stockage
         mat_data = {
             "Q_ready_to_use": Q_ready_to_use,

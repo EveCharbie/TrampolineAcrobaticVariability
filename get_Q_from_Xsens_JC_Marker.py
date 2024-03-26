@@ -13,28 +13,28 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import find_i
 
 parent_list_xsens_JC = [
     "Pelvis",  # 0
-    # "L5",  # delete
-    # "L3",  # delete
-    # "T12",  # delete
-    # "T8",  # delete
-    # "Neck",  # delete
+    "L5",  # delete
+    "L3",  # delete
+    "T12",  # delete
+    "T8",  # delete
+    "Neck",  # delete
     "Head",  # 1
-    # "ShoulderR",  # delete
-    # "UpperArmR",  # delete
+    "ShoulderR",  # delete
+    "UpperArmR",  # delete
     "LowerArmR",  # 2
     "HandR",  # 3
-    # "ShoulderL",  # delete
-    # "UpperArmL",  # delete
+    "ShoulderL",  # delete
+    "UpperArmL",  # delete
     "LowerArmL",  # 4
     "HandL",  # 5
     "UpperLegR",  # 6
     "LowerLegR",  # 7
     "FootR",  # 8
-    # "ToesR",  # delete
+    "ToesR",  # delete
     "UpperLegL",  # 9
     "LowerLegL",  # 10
     "FootL",  # 11
-    # "ToesL",  # delete
+    "ToesL",  # delete
 ]
 
 
@@ -79,7 +79,7 @@ indices_a_supprimer = [1, 2, 3, 4, 5, 7, 8, 11, 12, 18, 22]
 indices_total = range(Xsens_position.shape[1])
 indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
 Xsens_positions_complet = Xsens_position[:, indices_a_conserver, :]
-
+parent_list_xsens_JC_complet = [jc for i, jc in enumerate(parent_list_xsens_JC) if i not in indices_a_supprimer]
 
 indices_reels_colonnes_a_supprimer = []
 for indice in indices_a_supprimer:
@@ -87,30 +87,27 @@ for indice in indices_a_supprimer:
 mask_colonnes = np.ones(Xsens_orientation_per_move.shape[1], dtype=bool)
 mask_colonnes[indices_reels_colonnes_a_supprimer] = False
 
-Xsens_orientation_per_move_modifie = Xsens_orientation_per_move[:, mask_colonnes]
+Xsens_orientation_per_move_complet = Xsens_orientation_per_move[:, mask_colonnes]
 
 
-nb_frames = Xsens_orientation_per_move_modifie.shape[0]
-nb_mat = Xsens_orientation_per_move_modifie.shape[1]//4
+nb_frames = Xsens_orientation_per_move_complet.shape[0]
+nb_mat = Xsens_orientation_per_move_complet.shape[1]//4
 Q = np.zeros((nb_mat * 3, nb_frames))
 
-z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
-
-n_markers = len(parent_list_xsens_JC)
+n_markers = len(parent_list_xsens_JC_complet)
 
 Jc_in_pelvis_frame = np.ndarray((3, n_markers, nb_frames))
 
 for i in range(nb_frames):
-    mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC), i] +
-                   Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC), i]) / 2
+    mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC_complet), i] +
+                   Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC_complet), i]) / 2
 
-    rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC),
-                                         Xsens_orientation_per_move_modifie[i, :],
-                                         z_rotation)
+    rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
+                                         Xsens_orientation_per_move_complet[i, :])
 
-    for idx, jcname in enumerate(parent_list_xsens_JC):
+    for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
-        if idx == find_index("Pelvis", parent_list_xsens_JC):
+        if idx == find_index("Pelvis", parent_list_xsens_JC_complet):
             Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
         else:
             P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
@@ -120,10 +117,10 @@ colors = ['r', 'g', 'b']
 n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
 plt.figure(figsize=(20, 3 * n_rows))
 
-for idx, jcname in enumerate(parent_list_xsens_JC):
+for idx, jcname in enumerate(parent_list_xsens_JC_complet):
     ax = plt.subplot(n_rows, 4, idx + 1)
-    for j in range(Xsens_positions_complet.shape[0]):
-        ax.plot(Xsens_positions_complet[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
+    for j in range(Jc_in_pelvis_frame.shape[0]):
+        ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
     ax.set_title(f'Graphique {jcname}')
     ax.set_xlabel('Frame')
     ax.set_ylabel('Valeur')
@@ -132,3 +129,43 @@ for idx, jcname in enumerate(parent_list_xsens_JC):
 plt.tight_layout()
 plt.show()
 
+indices = [find_index("Pelvis", parent_list_xsens_JC_complet),
+           find_index("UpperLegR", parent_list_xsens_JC_complet),
+           find_index("UpperLegL", parent_list_xsens_JC_complet)]
+
+fig, axs = plt.subplots(len(indices) + 1, 1, figsize=(14, 12))
+for j, idx in enumerate(indices):
+    axs[j].plot(Xsens_positions_complet[0, idx, :], label='X - x')
+    axs[j].plot(Xsens_positions_complet[1, idx, :], label='X - y')
+    axs[j].plot(Xsens_positions_complet[2, idx, :], label='X - z')
+    axs[j].set_title(f'Positions Xsens pour le marqueur {idx}')
+    axs[j].legend()
+    axs[j].set_xlabel('Frame')
+    axs[j].set_ylabel('Position')
+
+axs[-1].plot(Jc_in_pelvis_frame[0, 0, :], label='Jc - x', linestyle='--')
+axs[-1].plot(Jc_in_pelvis_frame[1, 0, :], label='Jc - y', linestyle='--')
+axs[-1].plot(Jc_in_pelvis_frame[2, 0, :], label='Jc - z', linestyle='--')
+axs[-1].set_title('Positions Jc_in_pelvis_frame pour le marqueur 0')
+axs[-1].legend()
+axs[-1].set_xlabel('Frame')
+axs[-1].set_ylabel('Position')
+
+plt.tight_layout()
+plt.show()
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+sc = ax.scatter([], [], [])
+def init():
+    sc._offsets3d = ([], [], [])
+    return sc,
+def update(frame):
+    x = Jc_in_pelvis_frame[0, 1:, frame]
+    y = Jc_in_pelvis_frame[1, 1:, frame]
+    z = Jc_in_pelvis_frame[2, 1:, frame]
+    sc._offsets3d = (x, y, z)
+    return sc,
+ani = FuncAnimation(fig, update, frames=range(Xsens_position.shape[2]), init_func=init, blit=False)
+plt.show()
