@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 # Define the directory path
 directory_path = "/home/lim/disk/Eye-tracking/PupilData/CloudExport"
@@ -52,3 +53,24 @@ in_mp4_not_in_labeled = set(extracted_parts_fils_mp4) - set(extracted_parts_fils
 in_labeled_not_in_mp4 = set(extracted_parts_fils_labeled) - set(extracted_parts_fils_mp4)
 
 print(in_mp4_not_in_labeled)
+print(mp4_names_in_folders_with_one_file)
+
+# Les identifiants des fichiers à chercher
+# Chemin du dossier A
+root_dir = Path('/home/lim/disk/Eye-tracking/PupilData/CloudExport')
+
+def find_files(directory, file_ids):
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for filename in filenames:
+            if any(file_id in filename for file_id in file_ids):
+                # Extrayez le nom des dossiers B et C à partir du chemin
+                relative_path = Path(dirpath).relative_to(root_dir)
+                parts = relative_path.parts
+                if len(parts) >= 2:
+                    # parts[0] est le dossier B et parts[1] est le dossier C
+                    print(f"ID de fichier '{filename}' trouvé dans B: {parts[0]}, C: {parts[1]}")
+
+# Exécutez la fonction
+tolabeling= find_files(root_dir, in_mp4_not_in_labeled)
+
+print(tolabeling)
