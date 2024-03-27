@@ -53,6 +53,8 @@ in_mp4_not_in_labeled = set(extracted_parts_fils_mp4) - set(extracted_parts_fils
 in_labeled_not_in_mp4 = set(extracted_parts_fils_labeled) - set(extracted_parts_fils_mp4)
 
 print(in_mp4_not_in_labeled)
+print(len(in_mp4_not_in_labeled))
+
 print(mp4_names_in_folders_with_one_file)
 
 # Les identifiants des fichiers à chercher

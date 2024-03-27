@@ -215,17 +215,17 @@ for name in participant_names:
         n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
         plt.figure(figsize=(20, 3 * n_rows))
 
-        for idx, jcname in enumerate(desired_order):
-            ax = plt.subplot(n_rows, 4, idx + 1)
-            for j in range(Jc_in_pelvis_frame.shape[0]):
-                ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
-            ax.set_title(f'Graphique {jcname}')
-            ax.set_xlabel('Frame')
-            ax.set_ylabel('Valeur')
-            if idx == 0:
-                ax.legend()
-        plt.tight_layout()
-        plt.show()
+        # for idx, jcname in enumerate(desired_order):
+        #     ax = plt.subplot(n_rows, 4, idx + 1)
+        #     for j in range(Jc_in_pelvis_frame.shape[0]):
+        #         ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
+        #     ax.set_title(f'Graphique {jcname}')
+        #     ax.set_xlabel('Frame')
+        #     ax.set_ylabel('Valeur')
+        #     if idx == 0:
+        #         ax.legend()
+        # plt.tight_layout()
+        # plt.show()
 
         from matplotlib.animation import FuncAnimation
         fig = plt.figure()
@@ -240,8 +240,8 @@ for name in participant_names:
             z = Jc_in_pelvis_frame[2, :, frame]
             sc._offsets3d = (x, y, z)
             return sc,
-        ani = FuncAnimation(fig, update, frames=nb_frames, init_func=init, blit=False)
-        plt.show()
+        # ani = FuncAnimation(fig, update, frames=nb_frames, init_func=init, blit=False)
+        # plt.show()
 
         # Création d'un dictionnaire pour le stockage
         mat_data = {
@@ -262,7 +262,7 @@ for name in participant_names:
         # Enregistrement dans un fichier .mat
         scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-        b = bioviz.Viz(loaded_model=model)
-        b.load_movement(Q_ready_to_use)
-        b.load_experimental_markers(markers_JC[:, :, :])
-        b.exec()
+        # b = bioviz.Viz(loaded_model=model)
+        # b.load_movement(Q_ready_to_use)
+        # b.load_experimental_markers(markers_JC[:, :, :])
+        # b.exec()
