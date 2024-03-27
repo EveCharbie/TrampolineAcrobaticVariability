@@ -19,11 +19,23 @@ class OrderMatData:
         self.index_suffix_map = {0: "X", 1: "Y", 2: "Z"}
 
     def __getitem__(self, key):
-        matching_columns = [
-            col for col in self.dataframe.columns if col.startswith(key)
-        ]
-        if not matching_columns:
-            raise KeyError(f"Variable {key} not found.")
+        if isinstance(key, list):
+            # Initialiser une liste pour stocker tous les noms de colonnes correspondants
+            matching_columns = []
+            for prefix in key:
+                matching_columns += [
+                    col for col in self.dataframe.columns if col.startswith(prefix)
+                ]
+            if not matching_columns:
+                raise KeyError(f"Variables {key} not found.")
+        else:
+            # Traiter key comme une chaîne de caractères unique
+            matching_columns = [
+                col for col in self.dataframe.columns if col.startswith(key)
+            ]
+            if not matching_columns:
+                raise KeyError(f"Variable {key} not found.")
+
         return self.dataframe[matching_columns]
 
     def get_column_by_index(self, key, index):
