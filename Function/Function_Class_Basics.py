@@ -38,6 +38,9 @@ class OrderMatData:
 
         return self.dataframe[matching_columns]
 
+    def get_column_names(self):
+        return self.dataframe.columns.tolist()
+
     def get_column_by_index(self, key, index):
         # Vérifie si l'index est valide
         if index not in self.index_suffix_map:
@@ -98,12 +101,42 @@ def load_and_interpolate(file, interval, num_points=100):
     df_interpolated = df_selected.apply(
         lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
     )
-    # print(df_interpolated.shape)
 
-    # Create OrderMatData instance and apply it to df_interpolated
-    # my_data_instance = OrderMatData(df_interpolated)
     df_interpolated.columns = column_names
     my_data = OrderMatData(df_interpolated)
+    return my_data
+
+
+def load_and_interpolate_for_point(file_path, num_points=100):
+    """
+    Load and interpol the data from a MATLAB file(.mat).
+
+    Args:
+        file (str): Path to the .mat file to load.
+        num_points (int): Number of points for interpolation of data.
+
+    Returns:
+        OrderMatData: An instance of the OrderMatData class containing interpolate data.
+    """
+    data_loaded = scipy.io.loadmat(file_path)
+    JC = data_loaded["Jc_in_pelvis_frame"]
+    Order_JC = data_loaded["JC_order"]
+
+    Xsens_position = pd.DataFrame((JC.transpose(1, 0, 2).reshape(-1, JC.shape[2])).T)
+
+    Xsens_position = Xsens_position.apply(
+        lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
+    )
+
+    complete_order = []
+    for joint_center in Order_JC:
+        complete_order.append(f"{joint_center.strip()}_X")
+        complete_order.append(f"{joint_center.strip()}_Y")
+        complete_order.append(f"{joint_center.strip()}_Z")
+
+    DataFrame_with_colname = pd.DataFrame(Xsens_position)
+    DataFrame_with_colname.columns = complete_order
+    my_data = OrderMatData(DataFrame_with_colname)
     return my_data
 
 
