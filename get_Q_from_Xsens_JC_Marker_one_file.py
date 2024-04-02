@@ -40,7 +40,7 @@ parent_list_xsens_JC = [
     "ToesL",  # delete
 ]
 
-chemin_fichier_pkl = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/822/bbc03433_0_0-32_879__822__0__eyetracking_metrics.pkl"
+chemin_fichier_pkl = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/831</a4ff449f_0_0-120_283__831<__0__eyetracking_metrics.pkl"
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
     eye_tracking_metrics = pickle.load(fichier_pkl)
@@ -104,11 +104,29 @@ for i in range(n_frames):
     for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
         if idx == find_index("Pelvis", parent_list_xsens_JC_complet):
-            Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+            Rotation_pelvis = biorbd.Rotation(
+                rot_mov[0, 0],
+                rot_mov[0, 1],
+                rot_mov[0, 2],
+                rot_mov[1, 0],
+                rot_mov[1, 1],
+                rot_mov[1, 2],
+                rot_mov[2, 0],
+                rot_mov[2, 1],
+                rot_mov[2, 2],
+            )
+            Jc_in_pelvis_frame[:, idx, i] = biorbd.Rotation.toEulerAngles(
+                Rotation_pelvis, "xyz").to_array()
+            # Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+
         else:
             P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
             Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
+# Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
+Jc_in_pelvis_frame[:, 0, :] = np.unwrap(Jc_in_pelvis_frame[:, 0, :])
+Jc_in_pelvis_frame[:, 1, :] = np.unwrap(Jc_in_pelvis_frame[:, 1, :])
+Jc_in_pelvis_frame[:, 2, :] = np.unwrap(Jc_in_pelvis_frame[:, 2, :])
 
 
 colors = ['r', 'g', 'b']
@@ -124,31 +142,6 @@ for idx, jcname in enumerate(parent_list_xsens_JC_complet):
     ax.set_ylabel('Valeur')
     if idx == 0:
         ax.legend()
-plt.tight_layout()
-plt.show()
-
-indices = [find_index("Pelvis", parent_list_xsens_JC_complet),
-           find_index("UpperLegR", parent_list_xsens_JC_complet),
-           find_index("UpperLegL", parent_list_xsens_JC_complet)]
-
-fig, axs = plt.subplots(len(indices) + 1, 1, figsize=(14, 12))
-for j, idx in enumerate(indices):
-    axs[j].plot(Xsens_positions_complet[0, idx, :], label='X - x')
-    axs[j].plot(Xsens_positions_complet[1, idx, :], label='X - y')
-    axs[j].plot(Xsens_positions_complet[2, idx, :], label='X - z')
-    axs[j].set_title(f'Positions Xsens pour le marqueur {idx}')
-    axs[j].legend()
-    axs[j].set_xlabel('Frame')
-    axs[j].set_ylabel('Position')
-
-axs[-1].plot(Jc_in_pelvis_frame[0, 0, :], label='Jc - x', linestyle='--')
-axs[-1].plot(Jc_in_pelvis_frame[1, 0, :], label='Jc - y', linestyle='--')
-axs[-1].plot(Jc_in_pelvis_frame[2, 0, :], label='Jc - z', linestyle='--')
-axs[-1].set_title('Positions Jc_in_pelvis_frame pour le marqueur 0')
-axs[-1].legend()
-axs[-1].set_xlabel('Frame')
-axs[-1].set_ylabel('Position')
-
 plt.tight_layout()
 plt.show()
 

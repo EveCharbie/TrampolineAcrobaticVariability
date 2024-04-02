@@ -206,15 +206,16 @@ for name in participant_names:
             mid_hip_pos = (markers_JC[:, find_index("JC_CuisseD", desired_order), i] + markers_JC[:, find_index("JC_CuisseG", desired_order), i]) / 2
             for idx, jcname in enumerate(desired_order):
                 if idx == find_index("JC_pelvis", desired_order):
-                    Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+                    # Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+                    Jc_in_pelvis_frame[:, idx, i] = Q_complet[3:6, i]
                 else:
                     P2_prime = convert_marker_to_local_frame(mid_hip_pos, movement_matrix[find_index("JC_pelvis", desired_order), i, :, :], markers_JC[:, idx, i])
                     Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
-        colors = ['r', 'g', 'b']
-        n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
-        plt.figure(figsize=(20, 3 * n_rows))
-
+        # colors = ['r', 'g', 'b']
+        # n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
+        # plt.figure(figsize=(20, 3 * n_rows))
+        #
         # for idx, jcname in enumerate(desired_order):
         #     ax = plt.subplot(n_rows, 4, idx + 1)
         #     for j in range(Jc_in_pelvis_frame.shape[0]):
