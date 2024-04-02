@@ -59,9 +59,11 @@ for i in range(max_columns):
         plt.legend(loc='upper right')
 plt.tight_layout()
 
+
+## Plot SD all axes
+
 sd_xsens = []
 sd_vicon = []
-## Plot SD all axes
 plt.figure(figsize=(24, 24))
 for i in range(max_columns):
     if i in columns_to_exclude:
@@ -110,6 +112,7 @@ members = [
     "PiedG",
 ]
 
+
 ## Plot SD on mean axis
 num_points = means_vicon[0].shape[1]
 plt.figure(figsize=(20, num_points * 3))
@@ -130,9 +133,36 @@ for point_index in range(num_points):
     plt.title(f"Écart type - Point {col_name}")
     plt.xlabel("Frame")
     plt.ylabel("Écart Type")
-    plt.legend()
+    if point_index == 0:
+        plt.legend(loc='upper right')
+plt.tight_layout()
 
+
+## Moyennes de l ecart type pour les 3 axes
+result_xsens = np.zeros((10, 100))
+result_vicon = np.zeros((10, 100))
+
+for i in range(10):
+    start_index = i * 3
+    end_index = start_index + 3
+    result_xsens[i] = np.mean(sd_xsens[start_index:end_index], axis=0)
+for i in range(10):
+    start_index = i * 3
+    end_index = start_index + 3
+    result_vicon[i] = np.mean(sd_vicon[start_index:end_index], axis=0)
+
+fig, axs = plt.subplots(5, 2, figsize=(10, 20))
+
+for i in range(10):
+    row = i // 2
+    col = i % 2
+    axs[row, col].plot(result_vicon[i])
+    axs[row, col].plot(result_xsens[i])
+    axs[row, col].set_title(f'Plot {members[i]}')
+    axs[row, col].set_xlabel('Time')
+    axs[row, col].set_ylabel('Value')
+    if i == 0:
+        plt.legend(loc='upper right')
 plt.tight_layout()
 plt.show()
-
 
