@@ -131,10 +131,42 @@ for name in participants_name:
                 for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
                     if idx == find_index("Pelvis", parent_list_xsens_JC_complet):
-                        Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
+                        Rotation_pelvis = biorbd.Rotation(
+                            rot_mov[0, 0],
+                            rot_mov[0, 1],
+                            rot_mov[0, 2],
+                            rot_mov[1, 0],
+                            rot_mov[1, 1],
+                            rot_mov[1, 2],
+                            rot_mov[2, 0],
+                            rot_mov[2, 1],
+                            rot_mov[2, 2],
+                        )
+                        Jc_in_pelvis_frame[:, idx, i] = biorbd.Rotation.toEulerAngles(
+                            Rotation_pelvis, "xyz").to_array()
+                        # Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
                     else:
                         P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
                         Jc_in_pelvis_frame[:, idx, i] = P2_prime
+
+            Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
+
+            # Indices de l'axe 1 à modifier
+            indices_to_swap = [1, 2, 3, 4, 5, 7, 8, 10, 11]
+
+            # Boucler sur les indices spécifiés de l'axe 1
+            for idx in indices_to_swap:
+                # Sauvegarder temporairement la slice pour l'indice 1 de l'axe 0
+                temp = np.copy(Jc_in_pelvis_frame[0, idx, :])
+
+                # Échanger les valeurs entre les indices 1 et 2 de l'axe 0
+                Jc_in_pelvis_frame[0, idx, :] = Jc_in_pelvis_frame[1, idx, :]
+                Jc_in_pelvis_frame[1, idx, :] = temp
+                temp_2 = np.copy(Jc_in_pelvis_frame[0, idx, :])
+                Jc_in_pelvis_frame[0, idx, :] = -temp_2
+                # Jc_in_pelvis_frame[2, idx, :] = Jc_in_pelvis_frame[2, idx, :]
+
+
 
             mat_data = {
                 "Jc_in_pelvis_frame": Jc_in_pelvis_frame,
