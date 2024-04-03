@@ -53,24 +53,31 @@ members = [
 
 
 ## Plot all try
+colors_vicon = plt.cm.Reds(np.linspace(0.5, 1, len(data_vicon)))
+colors_xsens = plt.cm.Blues(np.linspace(0.5, 1, len(data_xsens)))
+
 for i in range(n_columns_all_axes):
     if i in columns_to_exclude:
         continue
     plt.subplot(6, 6, i + 1 - sum(j < i for j in columns_to_exclude))
     jc_name = joint_center_name_all_axes[i]
 
-    for df in data_vicon:
-        plt.plot(df.dataframe.iloc[:, i], label=f"Vicon Essai {data_vicon.index(df) + 1}", alpha=0.7, linewidth=1)
+    # Plot Vicon data
+    for idx, df in enumerate(data_vicon):
+        plt.plot(df.dataframe.iloc[:, i], label=f"Vicon Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_vicon[idx])
 
-    for df in data_xsens:
-        plt.plot(df.dataframe.iloc[:, i], label=f"Xsens Essai {data_xsens.index(df) + 1}", alpha=0.7, linewidth=1)
+    # Plot Xsens data
+    for idx, df in enumerate(data_xsens):
+        plt.plot(df.dataframe.iloc[:, i], label=f"Xsens Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_xsens[idx])
 
     plt.title(f"{jc_name}")
     plt.ylabel("Position")
 
     if i == 0:
         plt.legend(loc='upper right')
+
 plt.tight_layout()
+plt.show()
 
 
 ## Plot SD all axes

@@ -47,6 +47,7 @@ with open(chemin_fichier_pkl, "rb") as fichier_pkl:
 
 expertise = eye_tracking_metrics["subject_expertise"]
 subject_name = eye_tracking_metrics["subject_name"]
+move_orientation = eye_tracking_metrics["move_orientation"]
 
 Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
 Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
@@ -98,8 +99,10 @@ for i in range(n_frames):
     mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC_complet), i] +
                    Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC_complet), i]) / 2
 
-    rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
+    rot_mov_without_zrot = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
                                          Xsens_orientation_per_move_complet[i, :])
+    rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
+                                         Xsens_orientation_per_move_complet[i, :], move_orientation)
 
     for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
@@ -120,7 +123,7 @@ for i in range(n_frames):
             # Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
 
         else:
-            P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
+            P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov_without_zrot, Xsens_positions_complet[:, idx, i])
             Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
 # Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)

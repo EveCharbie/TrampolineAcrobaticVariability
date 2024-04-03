@@ -13,7 +13,7 @@ import os
 import scipy
 
 
-def get_q(Xsens_orientation_per_move):
+def get_q(Xsens_orientation_per_move, move_orientation):
     """
     This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation
     of the Xsens segments.
@@ -21,44 +21,49 @@ def get_q(Xsens_orientation_per_move):
     I am not sure if I would use this for kinematics analysis, but for visualisation it is not that bad.
     """
 
-    parent_idx_list = {
-        "Pelvis": None,  # 0
-        "L5": [0, "Pelvis"],  # 1
-        "L3": [1, "L5"],  # 2
-        "T12": [2, "L3"],  # 3
-        "T8": [3, "T12"],  # 4
-        "Neck": [4, "T8"],  # 5
-        "Head": [5, "Neck"],  # 6
-        "ShoulderR": [4, "T8"],  # 7
-        "UpperArmR": [7, "ShoulderR"],  # 8
-        "LowerArmR": [8, "UpperArmR"],  # 9
-        "HandR": [9, "LowerArmR"],  # 10
-        "ShoulderL": [4, "T8"],  # 11
-        "UpperArmL": [11, "ShoulderR"],  # 12
-        "LowerArmL": [12, "UpperArmR"],  # 13
-        "HandL": [13, "LowerArmR"],  # 14
-        "UpperLegR": [0, "Pelvis"],  # 15
-        "LowerLegR": [15, "UpperLegR"],  # 16
-        "FootR": [16, "LowerLegR"],  # 17
-        "ToesR": [17, "FootR"],  # 18
-        "UpperLegL": [0, "Pelvis"],  # 19
-        "LowerLegL": [19, "UpperLegL"],  # 20
-        "FootL": [20, "LowerLegL"],  # 21
-        "ToesL": [21, "FootL"],  # 22
-    }
+    parent_idx_list = {"Pelvis": None,  # 0
+                       "L5": [0, "Pelvis"],  # 1
+                       "L3": [1, "L5"],  # 2
+                       "T12": [2, "L3"],  # 3
+                       "T8": [3, "T12"],  # 4
+                       "Neck": [4, "T8"],  # 5
+                       "Head": [5, "Neck"],  # 6
+                       "ShoulderR": [4, "T8"],  # 7
+                       "UpperArmR": [7, "ShoulderR"],  # 8
+                       "LowerArmR": [8, "UpperArmR"],  # 9
+                       "HandR": [9, "LowerArmR"],  # 10
+                       "ShoulderL": [4, "T8"],  # 11
+                       "UpperArmL": [11, "ShoulderR"],  # 12
+                       "LowerArmL": [12, "UpperArmR"],  # 13
+                       "HandL": [13, "LowerArmR"],  # 14
+                       "UpperLegR": [0, "Pelvis"],  # 15
+                       "LowerLegR": [15, "UpperLegR"],  # 16
+                       "FootR": [16, "LowerLegR"],  # 17
+                       "ToesR": [17, "FootR"],  # 18
+                       "UpperLegL": [0, "Pelvis"],  # 19
+                       "LowerLegL": [19, "UpperLegL"],  # 20
+                       "FootL": [20, "LowerLegL"],  # 21
+                       "ToesL": [21, "FootL"],  # 22
+                       }
 
     nb_frames = Xsens_orientation_per_move.shape[0]
-    Q = np.zeros((23 * 3, nb_frames))
+    Q = np.zeros((23*3, nb_frames))
     rotation_matrices = np.zeros((23, nb_frames, 3, 3))
     for i_segment, key in enumerate(parent_idx_list):
         for i_frame in range(nb_frames):
-            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4] / np.linalg.norm(
-                Xsens_orientation_per_move[i_frame, i_segment * 4 : (i_segment + 1) * 4]
+            Quat_normalized = Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4] / np.linalg.norm(
+                Xsens_orientation_per_move[i_frame, i_segment*4: (i_segment+1)*4]
             )
-            Quat = biorbd.Quaternion(Quat_normalized[0], Quat_normalized[1], Quat_normalized[2], Quat_normalized[3])
+            Quat = biorbd.Quaternion(Quat_normalized[0],
+                                     Quat_normalized[1],
+                                     Quat_normalized[2],
+                                     Quat_normalized[3])
 
             RotMat_current = biorbd.Quaternion.toMatrix(Quat).to_array()
-            z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi / 2]), "z").to_array()
+            if move_orientation == 1:
+                z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-np.pi/2]), 'z').to_array()
+            else:
+                z_rotation = biorbd.Rotation.fromEulerAngles(np.array([-3*np.pi/2]), 'z').to_array()
             RotMat_current = z_rotation @ RotMat_current
 
             if parent_idx_list[key] is None:
@@ -67,22 +72,12 @@ def get_q(Xsens_orientation_per_move):
                 RotMat = rotation_matrices[parent_idx_list[key][0], i_frame, :, :]
 
             RotMat_between = np.linalg.inv(RotMat) @ RotMat_current
-            RotMat_between = biorbd.Rotation(
-                RotMat_between[0, 0],
-                RotMat_between[0, 1],
-                RotMat_between[0, 2],
-                RotMat_between[1, 0],
-                RotMat_between[1, 1],
-                RotMat_between[1, 2],
-                RotMat_between[2, 0],
-                RotMat_between[2, 1],
-                RotMat_between[2, 2],
-            )
-            Q[i_segment * 3 : (i_segment + 1) * 3, i_frame] = biorbd.Rotation.toEulerAngles(
-                RotMat_between, "xyz"
-            ).to_array()
-
+            RotMat_between = biorbd.Rotation(RotMat_between[0, 0], RotMat_between[0, 1], RotMat_between[0, 2],
+                            RotMat_between[1, 0], RotMat_between[1, 1], RotMat_between[1, 2],
+                            RotMat_between[2, 0], RotMat_between[2, 1], RotMat_between[2, 2])
+            Q[i_segment*3:(i_segment+1)*3, i_frame] = biorbd.Rotation.toEulerAngles(RotMat_between, 'xyz').to_array()
             rotation_matrices[i_segment, i_frame, :, :] = RotMat_current
+
     return Q
 
 

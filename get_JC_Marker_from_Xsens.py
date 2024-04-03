@@ -74,7 +74,7 @@ for name in participants_name:
 
             expertise = eye_tracking_metrics["subject_expertise"]
             subject_name = eye_tracking_metrics["subject_name"]
-
+            move_orientation = eye_tracking_metrics["move_orientation"]
             Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
             Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
 
@@ -122,8 +122,10 @@ for name in participants_name:
                 mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC_complet), i] +
                                Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC_complet), i]) / 2
 
+                rot_mov_without_zrot = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
+                                                                  Xsens_orientation_per_move_complet[i, :])
                 rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
-                                                     Xsens_orientation_per_move_complet[i, :])
+                                                     Xsens_orientation_per_move_complet[i, :], move_orientation)
 
                 for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
@@ -143,7 +145,7 @@ for name in participants_name:
                             Rotation_pelvis, "xyz").to_array()
                         # Jc_in_pelvis_frame[:, idx, i] = mid_hip_pos
                     else:
-                        P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov, Xsens_positions_complet[:, idx, i])
+                        P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov_without_zrot, Xsens_positions_complet[:, idx, i])
                         Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
             Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
@@ -160,8 +162,6 @@ for name in participants_name:
                 temp_2 = np.copy(Jc_in_pelvis_frame[0, idx, :])
                 Jc_in_pelvis_frame[0, idx, :] = -temp_2
                 # Jc_in_pelvis_frame[2, idx, :] = Jc_in_pelvis_frame[2, idx, :]
-
-
 
             mat_data = {
                 "Jc_in_pelvis_frame": Jc_in_pelvis_frame,
@@ -194,7 +194,7 @@ for name in participants_name:
             # indices = [find_index("Pelvis", parent_list_xsens_JC_complet),
             #            find_index("UpperLegR", parent_list_xsens_JC_complet),
             #            find_index("UpperLegL", parent_list_xsens_JC_complet)]
-            #
+
             # fig, axs = plt.subplots(len(indices) + 1, 1, figsize=(14, 12))
             # for j, idx in enumerate(indices):
             #     axs[j].plot(Xsens_positions_complet[0, idx, :], label='X - x')
