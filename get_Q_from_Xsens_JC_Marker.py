@@ -58,7 +58,7 @@ for name in participants_name:
                     fichiers_pkl.append(full_path)
 
         for chemin_fichier_pkl in fichiers_pkl:
-            folder_path = f"{participant_path}Q/{acrobatie}/"
+            folder_path = f"{participant_path}Pos_JC/{acrobatie}/"
 
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
@@ -114,9 +114,6 @@ for name in participants_name:
 
             Xsens_orientation_per_move_complet = Xsens_orientation_per_move[:, mask_colonnes]
 
-            nb_mat = Xsens_orientation_per_move_complet.shape[1]//4
-            Q = np.zeros((nb_mat * 3, n_frames))
-
             n_markers = len(parent_list_xsens_JC_complet)
 
             Jc_in_pelvis_frame = np.ndarray((3, n_markers, n_frames))
@@ -151,12 +148,10 @@ for name in participants_name:
 
             Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
 
-            # Indices de l'axe 1 à modifier
             indices_to_swap = [1, 2, 3, 4, 5, 7, 8, 10, 11]
 
             # Boucler sur les indices spécifiés de l'axe 1
             for idx in indices_to_swap:
-                # Sauvegarder temporairement la slice pour l'indice 1 de l'axe 0
                 temp = np.copy(Jc_in_pelvis_frame[0, idx, :])
 
                 # Échanger les valeurs entre les indices 1 et 2 de l'axe 0

@@ -124,9 +124,10 @@ for i in range(n_frames):
             Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
 # Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
-Jc_in_pelvis_frame[:, 0, :] = np.unwrap(Jc_in_pelvis_frame[:, 0, :])
-Jc_in_pelvis_frame[:, 1, :] = np.unwrap(Jc_in_pelvis_frame[:, 1, :])
-Jc_in_pelvis_frame[:, 2, :] = np.unwrap(Jc_in_pelvis_frame[:, 2, :])
+# Jc_in_pelvis_frame[:, 0, :] = np.unwrap(Jc_in_pelvis_frame[:, 0, :])
+# Jc_in_pelvis_frame[:, 1, :] = np.unwrap(Jc_in_pelvis_frame[:, 1, :])
+# Jc_in_pelvis_frame[:, 2, :] = np.unwrap(Jc_in_pelvis_frame[:, 2, :])
+Jc_in_pelvis_frame = np.unwrap(Jc_in_pelvis_frame)
 
 
 colors = ['r', 'g', 'b']

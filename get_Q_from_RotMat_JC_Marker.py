@@ -54,7 +54,7 @@ for name in participant_names:
     file_path_c3d = f"{home_path}{name}/Tests/"
     file_path_relax = f"{home_path}{name}/Score/"
 
-    folder_path = f"{home_path}{name}/Q/"
+    folder_path = f"{home_path}{name}/Pos_JC/"
 
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -212,21 +212,21 @@ for name in participant_names:
                     P2_prime = convert_marker_to_local_frame(mid_hip_pos, movement_matrix[find_index("JC_pelvis", desired_order), i, :, :], markers_JC[:, idx, i])
                     Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
-        # colors = ['r', 'g', 'b']
-        # n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
-        # plt.figure(figsize=(20, 3 * n_rows))
-        #
-        # for idx, jcname in enumerate(desired_order):
-        #     ax = plt.subplot(n_rows, 4, idx + 1)
-        #     for j in range(Jc_in_pelvis_frame.shape[0]):
-        #         ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
-        #     ax.set_title(f'Graphique {jcname}')
-        #     ax.set_xlabel('Frame')
-        #     ax.set_ylabel('Valeur')
-        #     if idx == 0:
-        #         ax.legend()
-        # plt.tight_layout()
-        # plt.show()
+        colors = ['r', 'g', 'b']
+        n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
+        plt.figure(figsize=(20, 3 * n_rows))
+
+        for idx, jcname in enumerate(desired_order):
+            ax = plt.subplot(n_rows, 4, idx + 1)
+            for j in range(Jc_in_pelvis_frame.shape[0]):
+                ax.plot(Jc_in_pelvis_frame[j, idx, :], color=colors[j], label=f'Composante {["X", "Y", "Z"][j]}')
+            ax.set_title(f'Graphique {jcname}')
+            ax.set_xlabel('Frame')
+            ax.set_ylabel('Valeur')
+            if idx == 0:
+                ax.legend()
+        plt.tight_layout()
+        plt.show()
 
         from matplotlib.animation import FuncAnimation
         fig = plt.figure()

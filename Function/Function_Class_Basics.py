@@ -272,24 +272,6 @@ def find_index(name, list):
     return list.index(name)
 
 
-def calculate_means_for_xyz(data_list):
-    means_list = []
-
-    for df in data_list:
-        num_triplets = df.dataframe.shape[1] // 3
-        triplets_means = []
-
-        for triplet_index in range(num_triplets):
-            triplet_data = df.dataframe.iloc[:, triplet_index * 3:(triplet_index + 1) * 3].values
-            mean_across_frames = np.mean(triplet_data, axis=1)
-            triplets_means.append(mean_across_frames)
-
-        final_means = np.stack(triplets_means, axis=1)
-        means_list.append(final_means)
-
-    return means_list
-
-
 def calculate_rmsd(markers, pos_recons):
     # Vérifier que les formes des tableaux sont identiques
     assert (
