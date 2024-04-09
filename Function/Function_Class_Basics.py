@@ -65,6 +65,15 @@ class OrderMatData:
 
         return self.dataframe[column_name]
 
+    def to_numpy_array(self):
+        """
+        Convert the DataFrame to a NumPy array.
+
+        Returns:
+            numpy.ndarray: The converted NumPy array.
+        """
+        return self.dataframe.to_numpy()
+
 
 def load_and_interpolate(file, interval, num_points=100):
     """

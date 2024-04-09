@@ -2,7 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 import biorbd
 import numpy as np
-import bioviz
+# import bioviz
 import os
 import scipy
 
