@@ -72,11 +72,12 @@ for name in participants_name:
                 # Charger les données à partir du fichier ".pkl"
                 eye_tracking_metrics = pickle.load(fichier_pkl)
 
-            expertise = eye_tracking_metrics["subject_expertise"]
+            subject_expertise = eye_tracking_metrics["subject_expertise"]
             subject_name = eye_tracking_metrics["subject_name"]
             move_orientation = eye_tracking_metrics["move_orientation"]
             Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
             Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
+            laterality = eye_tracking_metrics["laterality"]
 
             n_frames = Xsens_position_rotated_per_move.shape[0]
             Xsens_position = Xsens_position_rotated_per_move.reshape(n_frames, 23, 3).transpose(2, 1, 0)
@@ -165,7 +166,9 @@ for name in participants_name:
 
             mat_data = {
                 "Jc_in_pelvis_frame": Jc_in_pelvis_frame,
-                "JC_order": parent_list_xsens_JC_complet
+                "JC_order": parent_list_xsens_JC_complet,
+                "laterality": laterality,
+                "subject_expertise": subject_expertise
             }
 
             folder_and_file_name_path = folder_path + f"{file_name}.mat"

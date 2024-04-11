@@ -4,11 +4,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
+import spm1d
+import matplotlib.lines as mlines
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     load_and_interpolate_for_point,
 )
 
 home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/831<"
+# home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/4-"
 n_points = 100
 alpha = 0.05
 
@@ -22,6 +25,8 @@ for root, dirs, files in os.walk(home_path_xsens):
 data_xsens = [load_and_interpolate_for_point(file, n_points) for file in fichiers_mat_xsens]
 
 home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Pos_JC/Gui_831_contact"
+# home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/SaMi/Pos_JC/4-"
+
 
 fichiers_mat_vicon = []
 for root, dirs, files in os.walk(home_path_vicon):
@@ -71,13 +76,19 @@ for i in range(n_columns_all_axes):
         plt.plot(df.dataframe.iloc[:, i], label=f"Xsens Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_xsens[idx])
 
     plt.title(f"{jc_name}")
-    plt.ylabel("Position")
+    if i in (0, 1, 2):
+        plt.ylabel("Rotation (rad)")
+    else:
+        plt.ylabel("Position")
 
     if i == 0:
-        plt.legend(loc='upper right')
+        legend_vicon = mlines.Line2D([], [], color='red', markersize=15, label='Vicon')
+        legend_xsens = mlines.Line2D([], [], color='blue', markersize=15, label='Xsens')
+
+        plt.legend(handles=[legend_vicon, legend_xsens], loc='upper right')
 
 plt.tight_layout()
-
+plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
 
 ## Plot SD all axes
 
@@ -103,11 +114,11 @@ for i in range(n_columns_all_axes):
     plt.plot(std_xsens, label=f"Xsens - {col_name}", alpha=0.7, linewidth=1, color="blue")
 
     plt.title(f"SD - {col_name}")
-    plt.xlabel("Frame")
     plt.ylabel("SD")
     if i == 0:
         plt.legend(loc='upper right')
 plt.tight_layout()
+plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
 
 std_xsens_all_data = np.stack(std_xsens_all_data)
 std_vicon_all_data = np.stack(std_vicon_all_data)
@@ -135,15 +146,17 @@ for i in range(10):
     if i == 0:
         plt.legend(loc='upper right')
 plt.tight_layout()
+# plt.show()
 
-
-## SPM plot
+# ## SPM plot
 
 all_data_vicon = []
 all_data_xsens = []
 
 for i in range(len(data_xsens)):
     all_data_vicon.append(data_xsens[i].to_numpy_array())
+
+for i in range(len(data_vicon)):
     all_data_xsens.append(data_vicon[i].to_numpy_array())
 
 all_data_vicon = np.array(all_data_vicon)
@@ -151,55 +164,29 @@ all_data_xsens = np.array(all_data_xsens)
 
 total_dofs = all_data_vicon.shape[2]
 
-n_cols = 6
-n_rows = int(np.ceil(total_dofs / n_cols))
 
-# Préparation de la figure et des axes pour les sous-graphes
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(30, 4 * n_rows))
-axes = axes.flatten()
-
-current_ax_index = 0
+plt.figure(figsize=(30, 24), dpi=100)
 
 for dof in range(total_dofs):
-    if dof in columns_to_exclude:
-        continue
+    ax = plt.subplot(6, 6, dof + 1)
 
-    mean_total_vicon = np.mean(all_data_vicon[:, :, dof], axis=0)
-    std_vicon = np.std(all_data_vicon[:, :, dof], axis=0)
-    mean_total_xsens = np.mean(all_data_xsens[:, :, dof], axis=0)
-    std_xsens = np.std(all_data_xsens[:, :, dof], axis=0)
-    col_name = joint_center_name_all_axes[dof]
+    # T-test pour données indépendantes
+    t = spm1d.stats.ttest2(all_data_vicon[:, :, dof], all_data_xsens[:, :, dof])
+    ti = t.inference(alpha, two_tailed=True, interp=True)
 
-    p_value = np.array([ttest_ind(all_data_vicon[:, i, dof], all_data_xsens[:, i, dof]).pvalue for i in range(n_points)])
-    p_value_ordo = np.sort(p_value)
-    correction = np.array([alpha * (i + 1) / n_points for i in range(n_points)])
-    p_value_threshold = p_value_ordo[p_value_ordo < correction].max()
+    # Plot des résultats
+    ti.plot(ax=ax)
+    ti.plot_threshold_label(ax=ax, fontsize=8)  # Ajoute le seuil de signification sur le graphique
+    ti.plot_p_values(ax=ax, size=8, offsets=[(0, 0.5)])  # Affiche les valeurs p sur le graphique
+    plt.title(f"{joint_center_name_all_axes[dof]}")
 
-    significatif = p_value < p_value_threshold
-    indices_significatifs = np.where(significatif)[0]
+    # Cacher les noms des axes pour les graphiques intérieurs
+    if dof % 6 != 0:  # Cacher les étiquettes de l'axe y sauf pour la première colonne
+        plt.setp(ax.get_yticklabels(), visible=False)
+    if dof < 30:  # Cacher les étiquettes de l'axe x sauf pour la dernière ligne
+        plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = axes[current_ax_index]
-    ax.plot(mean_total_vicon, label=f"Vicon {col_name}", color="red")
-    ax.fill_between(range(n_points), mean_total_vicon - std_vicon, mean_total_vicon + std_vicon, color="red", alpha=0.4)
-    ax.plot(mean_total_xsens, label=f"Xsens {col_name}", color="blue")
-    ax.fill_between(range(n_points), mean_total_xsens - std_xsens, mean_total_xsens + std_xsens, color="blue", alpha=0.4)
-
-    if len(indices_significatifs) > 0:
-        breaks = np.where(np.diff(indices_significatifs) > 1)[0] + 1
-        start_points = np.insert(indices_significatifs[breaks], 0, indices_significatifs[0])
-        end_points = np.append(indices_significatifs[breaks - 1], indices_significatifs[-1])
-        for start, end in zip(start_points, end_points):
-            ax.axvspan(start - 0.5, end + 0.5, color='gray', alpha=0.5)
-
-    ax.set_title(f"{col_name}")
-    if dof == 0:
-        ax.legend(loc='upper right')
-
-    current_ax_index += 1
-
-# Masquer les axes non utilisés
-for ax in axes[current_ax_index:]:
-    ax.set_visible(False)
-
+# Ajustement de l'espacement et affichage
 plt.tight_layout()
+plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5, bottom=0.05)
 plt.show()
