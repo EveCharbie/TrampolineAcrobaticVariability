@@ -3,14 +3,14 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, shapiro, levene
 import spm1d
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 import math
 import matplotlib.lines as mlines
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
-    load_and_interpolate_for_pointv2,
+    load_and_interpolate_for_point,
 )
 
 n_points = 100
@@ -21,10 +21,13 @@ home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 
 liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
 noms_colonnes = ['ID', 'Expertise', 'Timing', 'Std']
-anova_tab = np.zeros((len(liste_name) * 2, 4), dtype=object)
-anova_tab[:] = noms_colonnes
+anova_df = pd.DataFrame(columns=noms_colonnes)
+
+if "ArMa" in liste_name:
+    liste_name.remove("ArMa")
 
 for id_name, name in enumerate(liste_name):
+    print(f"{name} is running")
     home_path_subject1 = f"{home_path}{name}/Pos_JC/43"
 
     fichiers_mat_subject1 = []
@@ -33,9 +36,15 @@ for id_name, name in enumerate(liste_name):
             if file.endswith(".mat"):
                 full_path = os.path.join(root, file)
                 fichiers_mat_subject1.append(full_path)
-    data_subject1 = [load_and_interpolate_for_pointv2(file, n_points) for file in fichiers_mat_subject1]
-    subject_expertise = "Elite"
-    laterality = "D"
+
+    data_subject1 = []
+    subject_info_dict = {}
+    for file in fichiers_mat_subject1:
+        (data_subject,
+         subject_expertise,
+         laterality) = load_and_interpolate_for_point(file, include_expertise_laterality=True)
+        data_subject1.append(data_subject)
+
     joint_center_name_all_axes = data_subject1[0].columns
     n_columns_all_axes = len(joint_center_name_all_axes)
 
@@ -111,7 +120,7 @@ for id_name, name in enumerate(liste_name):
 
     std_subject1_all_data = np.stack(std_subject1_all_data)
 
-    ################ Moyennes de l ecart type pour les 3 axes ################
+    ################ Mean STD for the 3 axes ################
 
     result_subject1 = np.zeros((len(members), n_points))
 
@@ -144,7 +153,7 @@ for id_name, name in enumerate(liste_name):
     for trials in range(all_data_subject1.shape[0]):
         initial_rot = all_data_subject1[trials, 0, 2]
         for timestamp in range(n_points):
-            if laterality =="D":
+            if laterality[0] == "D":
                 threshold = initial_rot - 2.25 * math.pi
                 if threshold > all_data_subject1[trials, timestamp, 2]:
                     timestramp_treshold_subject1.append(timestamp)
@@ -155,63 +164,78 @@ for id_name, name in enumerate(liste_name):
                     timestramp_treshold_subject1.append(timestamp)
                     break
 
-    # treshold_3_4 = round(np.mean(timestramp_treshold_subject1))
-    #
-    # std_at_3_4 = []
-    # std_at_landing = []
-    #
-    # std_3_4 = result_subject1[0, treshold_3_4]
-    # std_landing = result_subject1[0, n_points-1]
-    #
-    # std_at_3_4.append(std_3_4)
-    # std_at_landing.append(std_landing)
-    #
-    # print(std_at_3_4)
-    # print(std_at_landing)
+
+    ########
+
+    treshold_3_4 = round(np.mean(timestramp_treshold_subject1))
+
+    std_at_3_4 = []
+    std_at_landing = []
+
+    std_3_4 = result_subject1[0, treshold_3_4]
+    std_landing = result_subject1[0, n_points-1]
+
+    std_at_3_4.append(std_3_4)
+    std_at_landing.append(std_landing)
+
+    print(std_at_3_4)
+    print(std_at_landing)
 
     ################
-    std_axes_subject1_3_4 = []
-    std_axes_subject1_landing = []
-
-    for axes in range(n_columns_all_axes):
-        values_to_std_3_4 = []
-        values_to_std_landing = []
-
-        for trials in range(all_data_subject1.shape[0]):
-
-            value_to_std_3_4 = all_data_subject1[trials, timestramp_treshold_subject1[trials], axes]
-            values_to_std_3_4.append(value_to_std_3_4)
-
-            value_to_std_landing = all_data_subject1[trials, n_points-1, axes]
-            values_to_std_landing.append(value_to_std_landing)
-
-        std_axe_3_4 = np.std(values_to_std_3_4, axis=0)
-        std_axes_subject1_3_4.append(std_axe_3_4)
-
-        std_axe_landing = np.std(values_to_std_landing, axis=0)
-        std_axes_subject1_landing.append(std_axe_landing)
-
-    mean_std_subject1_3_4 = np.zeros((len(members)))
-    mean_std_subject1_landing = np.zeros((len(members)))
-
-    for i in range(len(members)):
-        start_index = i * 3
-        end_index = start_index + 3
-        mean_std_subject1_3_4[i] = np.mean(std_axes_subject1_3_4[start_index:end_index], axis=0)
-        mean_std_subject1_landing[i] = np.mean(std_axes_subject1_landing[start_index:end_index], axis=0)
+    # std_axes_subject1_3_4 = []
+    # std_axes_subject1_landing = []
+    #
+    # for axes in range(n_columns_all_axes):
+    #     values_to_std_3_4 = []
+    #     values_to_std_landing = []
+    #
+    #     for trials in range(all_data_subject1.shape[0]):
+    #
+    #         value_to_std_3_4 = all_data_subject1[trials, timestramp_treshold_subject1[trials], axes]
+    #         values_to_std_3_4.append(value_to_std_3_4)
+    #
+    #         value_to_std_landing = all_data_subject1[trials, n_points-1, axes]
+    #         values_to_std_landing.append(value_to_std_landing)
+    #
+    #     std_axe_3_4 = np.std(values_to_std_3_4, axis=0)
+    #     std_axes_subject1_3_4.append(std_axe_3_4)
+    #
+    #     std_axe_landing = np.std(values_to_std_landing, axis=0)
+    #     std_axes_subject1_landing.append(std_axe_landing)
+    #
+    # mean_std_subject1_3_4 = np.zeros((len(members)))
+    # mean_std_subject1_landing = np.zeros((len(members)))
+    #
+    # for i in range(len(members)):
+    #     start_index = i * 3
+    #     end_index = start_index + 3
+    #     mean_std_subject1_3_4[i] = np.mean(std_axes_subject1_3_4[start_index:end_index], axis=0)
+    #     mean_std_subject1_landing[i] = np.mean(std_axes_subject1_landing[start_index:end_index], axis=0)
+    #
+    # print(mean_std_subject1_3_4[0])
+    # print(mean_std_subject1_landing[0])
 
     ################
 
-    print(mean_std_subject1_3_4[0])
-    print(mean_std_subject1_landing[0])
-
-    anova_tab[next_index] = [id_name, str(subject_expertise), "75%", mean_std_subject1_3_4[0]]
+    anova_df.loc[next_index] = [name, str(subject_expertise[0]), "75%", std_at_3_4[0]]
     next_index += 1
-    anova_tab[next_index] = [id_name, str(subject_expertise), "landing", mean_std_subject1_landing[0]]
+    anova_df.loc[next_index] = [name, str(subject_expertise[0]), "landing", std_at_landing[0]]
     next_index += 1
 
+expertises = anova_df["Expertise"].unique()
+timings = anova_df["Timing"].unique()
 
-df = pd.DataFrame(anova_tab)
-modele = ols("Std ~ C(Expertise) * C(Timing)", data=df).fit()
+for expertise in expertises:
+    for timing in timings:
+        data_Shapiro = anova_df[(anova_df["Expertise"] == expertise) & (anova_df["Timing"] == timing)]["Std"]
+        stat_Shapiro, p_value_Shapiro = shapiro(data_Shapiro)
+        print(f"Groupe {expertise}, Moment {timing}, p_value Shapiro: {p_value_Shapiro}")
+
+data_Levene = [anova_df[(anova_df["Expertise"] == expertise) & (anova_df["Timing"] == timing)]["Std"]
+               for expertise in expertises for timing in timings]
+stat_Levene, p_value_Levene = levene(*data_Levene)
+print(f"p-value Levene:{p_value_Levene}")
+
+modele = ols("Std ~ C(Expertise) * C(Timing)", data=anova_df).fit()
 result_anova = sm.stats.anova_lm(modele, typ=2)
 print(result_anova)
