@@ -8,11 +8,6 @@ from scipy.interpolate import interp1d
 
 
 class OrderMatData:
-    """
-    A class for organize and access easily to the data of a dataframe, especially those from .mat
-    files in biomechanical contexts
-    """
-
     def __init__(self, dataframe):
         self.dataframe = dataframe
         # Mapping des indices aux suffixes attendus
@@ -66,12 +61,6 @@ class OrderMatData:
         return self.dataframe[column_name]
 
     def to_numpy_array(self):
-        """
-        Convert the DataFrame to a NumPy array.
-
-        Returns:
-            numpy.ndarray: The converted NumPy array.
-        """
         return self.dataframe.to_numpy()
 
 
@@ -116,17 +105,7 @@ def load_and_interpolate(file, interval, num_points=100):
     return my_data
 
 
-def load_and_interpolate_for_point(file_path, num_points=100):
-    """
-    Load and interpol the data from a MATLAB file(.mat).
-
-    Args:
-        file (str): Path to the .mat file to load.
-        num_points (int): Number of points for interpolation of data.
-
-    Returns:
-        OrderMatData: An instance of the OrderMatData class containing interpolate data.
-    """
+def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_laterality=False):
     data_loaded = scipy.io.loadmat(file_path)
     JC = data_loaded["Jc_in_pelvis_frame"]
     Order_JC = data_loaded["JC_order"]
@@ -145,42 +124,13 @@ def load_and_interpolate_for_point(file_path, num_points=100):
 
     DataFrame_with_colname = pd.DataFrame(Xsens_position)
     DataFrame_with_colname.columns = complete_order
-    my_data = OrderMatData(DataFrame_with_colname)
-    return my_data
 
-
-def load_and_interpolate_for_pointv2(file_path, num_points=100):
-    """
-    Load and interpol the data from a MATLAB file(.mat).
-
-    Args:
-        file (str): Path to the .mat file to load.
-        num_points (int): Number of points for interpolation of data.
-
-    Returns:
-        OrderMatData: An instance of the OrderMatData class containing interpolate data.
-    """
-    data_loaded = scipy.io.loadmat(file_path)
-    JC = data_loaded["Jc_in_pelvis_frame"]
-    Order_JC = data_loaded["JC_order"]
-    # subject_expertise = data_loaded["subject_expertise"]
-    # laterality = data_loaded["laterality"]
-
-    Xsens_position = pd.DataFrame((JC.transpose(1, 0, 2).reshape(-1, JC.shape[2])).T)
-
-    Xsens_position = Xsens_position.apply(
-        lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
-    )
-
-    complete_order = []
-    for joint_center in Order_JC:
-        complete_order.append(f"{joint_center.strip()}_X")
-        complete_order.append(f"{joint_center.strip()}_Y")
-        complete_order.append(f"{joint_center.strip()}_Z")
-
-    DataFrame_with_colname = pd.DataFrame(Xsens_position)
-    DataFrame_with_colname.columns = complete_order
-    return DataFrame_with_colname#, subject_expertise, laterality
+    if include_expertise_laterality:
+        subject_expertise = data_loaded["subject_expertise"]
+        laterality = data_loaded["laterality"]
+        return DataFrame_with_colname, subject_expertise, laterality
+    else:
+        return DataFrame_with_colname
 
 
 def calculate_mean_std(data_instances, member, axis):

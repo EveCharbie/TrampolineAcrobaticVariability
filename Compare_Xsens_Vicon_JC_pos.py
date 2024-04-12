@@ -10,8 +10,8 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     load_and_interpolate_for_point,
 )
 
-home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/831<"
-# home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/4-"
+# home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/831<"
+home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/ArMa/Pos_JC/43"
 n_points = 100
 alpha = 0.05
 
@@ -24,8 +24,8 @@ for root, dirs, files in os.walk(home_path_xsens):
 
 data_xsens = [load_and_interpolate_for_point(file, n_points) for file in fichiers_mat_xsens]
 
-home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Pos_JC/Gui_831_contact"
-# home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/SaMi/Pos_JC/4-"
+# home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Pos_JC/Gui_831_contact"
+home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/SaMi/Pos_JC/43"
 
 
 fichiers_mat_vicon = []
@@ -37,7 +37,7 @@ for root, dirs, files in os.walk(home_path_vicon):
 
 data_vicon = [load_and_interpolate_for_point(file, n_points) for file in fichiers_mat_vicon]
 
-joint_center_name_all_axes = data_vicon[0].get_column_names()
+joint_center_name_all_axes = data_vicon[0].columns
 n_columns_all_axes = len(joint_center_name_all_axes)
 
 plt.figure(figsize=(30, 30))
@@ -69,11 +69,11 @@ for i in range(n_columns_all_axes):
 
     # Plot Vicon data
     for idx, df in enumerate(data_vicon):
-        plt.plot(df.dataframe.iloc[:, i], label=f"Vicon Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_vicon[idx])
+        plt.plot(df.iloc[:, i], label=f"Vicon Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_vicon[idx])
 
     # Plot Xsens data
     for idx, df in enumerate(data_xsens):
-        plt.plot(df.dataframe.iloc[:, i], label=f"Xsens Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_xsens[idx])
+        plt.plot(df.iloc[:, i], label=f"Xsens Trial {idx + 1}", alpha=0.7, linewidth=1, color=colors_xsens[idx])
 
     plt.title(f"{jc_name}")
     if i in (0, 1, 2):
@@ -102,11 +102,11 @@ for i in range(n_columns_all_axes):
     plt.subplot(6, 6, i + 1 - sum(j < i for j in columns_to_exclude))
     col_name = joint_center_name_all_axes[i]
 
-    data_vicon_col = [df.dataframe.iloc[:, i].values for df in data_vicon]
+    data_vicon_col = [df.iloc[:, i].values for df in data_vicon]
     std_vicon = np.std(data_vicon_col, axis=0)
     std_vicon_all_data.append(std_vicon)
 
-    data_xsens_col = [df.dataframe.iloc[:, i].values for df in data_xsens]
+    data_xsens_col = [df.iloc[:, i].values for df in data_xsens]
     std_xsens = np.std(data_xsens_col, axis=0)
     std_xsens_all_data.append(std_xsens)
 
@@ -154,10 +154,10 @@ all_data_vicon = []
 all_data_xsens = []
 
 for i in range(len(data_xsens)):
-    all_data_vicon.append(data_xsens[i].to_numpy_array())
+    all_data_vicon.append(data_xsens[i])
 
 for i in range(len(data_vicon)):
-    all_data_xsens.append(data_vicon[i].to_numpy_array())
+    all_data_xsens.append(data_vicon[i])
 
 all_data_vicon = np.array(all_data_vicon)
 all_data_xsens = np.array(all_data_xsens)
