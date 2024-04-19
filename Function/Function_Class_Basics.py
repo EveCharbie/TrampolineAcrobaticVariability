@@ -105,7 +105,7 @@ def load_and_interpolate(file, interval, num_points=100):
     return my_data
 
 
-def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_laterality=False):
+def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_laterality_length=False):
     data_loaded = scipy.io.loadmat(file_path)
     JC = data_loaded["Jc_in_pelvis_frame"]
     Order_JC = data_loaded["JC_order"]
@@ -125,10 +125,11 @@ def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_
     DataFrame_with_colname = pd.DataFrame(Xsens_position)
     DataFrame_with_colname.columns = complete_order
 
-    if include_expertise_laterality:
+    if include_expertise_laterality_length:
         subject_expertise = data_loaded["subject_expertise"]
         laterality = data_loaded["laterality"]
-        return DataFrame_with_colname, subject_expertise, laterality
+        length_segment = data_loaded["length_segment"]
+        return DataFrame_with_colname, subject_expertise, laterality, length_segment
     else:
         return DataFrame_with_colname
 

@@ -12,7 +12,7 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (
     convert_marker_to_local_frame,
     calculer_rotation_et_angle,
 )
-from TrampolineAcrobaticVariability.Function.Function_Class_Basics import find_index
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import find_index, check_matrix_orthogonality
 
 parent_list_xsens_JC = [
     "Pelvis",  # 0
@@ -119,6 +119,8 @@ for name in participants_name:
 
             Jc_in_pelvis_frame = np.ndarray((3, n_markers, n_frames))
 
+            length_segment = np.ndarray((n_frames, 8))
+
             for i in range(n_frames):
                 mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC_complet), i] +
                                Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC_complet), i]) / 2
@@ -127,6 +129,33 @@ for name in participants_name:
                                                                   Xsens_orientation_per_move_complet[i, :])
                 rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
                                                      Xsens_orientation_per_move_complet[i, :], move_orientation)
+                check_matrix_orthogonality(rot_mov_without_zrot)
+                check_matrix_orthogonality(rot_mov)
+
+                length_segment[i, 0] = np.linalg.norm(
+                    Xsens_position[:, find_index("UpperArmR", parent_list_xsens_JC), i] -
+                    Xsens_position[:, find_index("LowerArmR", parent_list_xsens_JC), i])
+                length_segment[i, 1] = (np.linalg.norm(
+                    Xsens_position[:, find_index("LowerArmR", parent_list_xsens_JC), i] -
+                    Xsens_position[:, find_index("HandR", parent_list_xsens_JC), i]))
+                length_segment[i, 2] = (np.linalg.norm(
+                        Xsens_position[:, find_index("UpperArmL", parent_list_xsens_JC), i] -
+                        Xsens_position[:, find_index("LowerArmL", parent_list_xsens_JC), i]))
+                length_segment[i, 3] = (np.linalg.norm(
+                    Xsens_position[:, find_index("LowerArmL", parent_list_xsens_JC), i] -
+                    Xsens_position[:, find_index("HandL", parent_list_xsens_JC), i]))
+                length_segment[i, 4] = (np.linalg.norm(
+                        Xsens_position[:, find_index("UpperLegR", parent_list_xsens_JC), i] -
+                        Xsens_position[:, find_index("LowerLegR", parent_list_xsens_JC), i]))
+                length_segment[i, 5] = (np.linalg.norm(
+                        Xsens_position[:, find_index("LowerLegR", parent_list_xsens_JC), i] -
+                        Xsens_position[:, find_index("FootR", parent_list_xsens_JC), i]))
+                length_segment[i, 6] = (np.linalg.norm(
+                    Xsens_position[:, find_index("UpperLegL", parent_list_xsens_JC), i] -
+                    Xsens_position[:, find_index("LowerLegL", parent_list_xsens_JC), i]))
+                length_segment[i, 7] = (np.linalg.norm(
+                        Xsens_position[:, find_index("LowerLegL", parent_list_xsens_JC), i] -
+                        Xsens_position[:, find_index("FootL", parent_list_xsens_JC), i]))
 
                 for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
@@ -164,11 +193,18 @@ for name in participants_name:
                 Jc_in_pelvis_frame[0, idx, :] = -temp_2
                 # Jc_in_pelvis_frame[2, idx, :] = Jc_in_pelvis_frame[2, idx, :]
 
+            mean_length_segment = np.mean(length_segment, axis=0)
+
+            # Add proximal length member to distal length member to get full length for each member
+            indices_impairs = np.arange(1, len(mean_length_segment), 2)
+            mean_length_segment[indices_impairs] += mean_length_segment[indices_impairs - 1]
+
             mat_data = {
                 "Jc_in_pelvis_frame": Jc_in_pelvis_frame,
                 "JC_order": parent_list_xsens_JC_complet,
                 "laterality": laterality,
-                "subject_expertise": subject_expertise
+                "subject_expertise": subject_expertise,
+                "length_segment": mean_length_segment
             }
 
             folder_and_file_name_path = folder_path + f"{file_name}.mat"
