@@ -22,9 +22,9 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 
-liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
-
+# movement_to_analyse = ['41', '42', '43', '41o', '811<', '822', '831<', '83<']
 movement_to_analyse = ['41', '42', '43']
+
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
 columns_names_anova_rotation = ['ID', 'Expertise', 'Timing', 'Std']
 columns_names_anova_position = ['ID', 'Expertise', 'Timing'] + members[2:]
@@ -32,19 +32,27 @@ columns_names_anova_position = ['ID', 'Expertise', 'Timing'] + members[2:]
 columns_names_area = ['ID', 'Expertise'] + movement_to_analyse
 area_df = pd.DataFrame(columns=columns_names_area)
 
-if "ArMa" in liste_name:
-    liste_name.remove("ArMa")
-    liste_name.remove("MaBo")
-
 
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
+
+    liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
+    if "ArMa" in liste_name:
+        liste_name.remove("ArMa")
+        liste_name.remove("MaBo")
+
+    temp_liste_name = []
+    for name in liste_name:
+        home_path_subject1 = f"{home_path}{name}/Pos_JC/{mvt_name}"
+        if not os.path.exists(home_path_subject1):
+            print(f"SUbejct {name} didn't realize {mvt_name}")
+        else:
+            temp_liste_name.append(name)
+    liste_name = temp_liste_name
 
     anova_rot_df = pd.DataFrame(columns=columns_names_anova_rotation)
     anova_pos_df = pd.DataFrame(columns=columns_names_anova_position)
     anova_time_to75_df = pd.DataFrame(index=range(nombre_lignes_minimum), columns=liste_name)
-    n_half_twist = int(mvt_name[-1])
-
-    n_half_twist = int(mvt_name[-1])
+    n_half_twist = int(mvt_name[1])
 
     for id_name, name in enumerate(liste_name):
         print(f"{name} is running")
@@ -211,6 +219,10 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         serie_nan[:len(timestramp_treshold_subject1)] = timestramp_treshold_subject1
 
         anova_time_to75_df[name] = serie_nan
+
+        if anova_time_to75_df[name].dtype != 'object':
+            anova_time_to75_df[name] = anova_time_to75_df[name].astype('object')
+
         anova_time_to75_df.at[0, name] = str(subject_expertise[0])
 
         # for id_member, member in enumerate(members[2:], start=2):
