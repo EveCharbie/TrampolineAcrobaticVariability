@@ -1,40 +1,114 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import linregress, mannwhitneyu
+import numpy as np
+import matplotlib.patches as mpatches
 
 data = pd.read_csv('/home/lim/Documents/StageMathieu/results_area_under_curve.csv')
+combined_data = pd.melt(data, id_vars=['ID', 'Expertise'], value_vars=['41', '42', '43'], var_name='Difficulty', value_name='Score')
 
-# Setting up Seaborn
-sns.set(style="whitegrid")
 
 # 1. Boxplots for the different difficulty levels without expertise distinction
-plt.figure(figsize=(10, 6))
-sns.boxplot(data=data.loc[:, '41':'43'])
-plt.title('Boxplot of difficulty levels without expertise distinction')
+x_boxplot_centers = [0, 1, 2]
+
+means = [data[col].mean() for col in ['41', '42', '43']]
+slope, intercept, r_value, p_value, std_err = linregress(x_boxplot_centers, means)
+
+x_reg_line = np.array(x_boxplot_centers)
+y_reg_line = slope * x_reg_line + intercept
+
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.boxplot(data=data[['41', '42', '43']], ax=ax, color="skyblue")
+sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
+
+text_str = f'Intercept: {intercept:.2f}\nR-squared: {r_value**2:.2f}'
+# ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+ax.set_title('Boxplot with Regression Line for Each Difficulty Level')
+ax.set_xlabel('Difficulty Level')
+ax.set_ylabel('Area Under Curve')
+ax.set_xticks([0, 1, 2])
+ax.set_xticklabels(['41', '42', '43'])
+ax.legend(loc='lower right')
+
 plt.show()
 
-# 2. Boxplots for each difficulty level by expertise group
-fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True)
-fig.suptitle('Boxplot of difficulty levels by expertise group')
+correlation = data[['41', '42', '43']].corr()
+print(correlation)
 
-sns.boxplot(ax=axes[0], x='Expertise', y='41', data=data)
-axes[0].set_title('Level 41')
 
-sns.boxplot(ax=axes[1], x='Expertise', y='42', data=data)
-axes[1].set_title('Level 42')
 
-sns.boxplot(ax=axes[2], x='Expertise', y='43', data=data)
-axes[2].set_title('Level 43')
+# Calculate Pearson correlation matrix for each expertise group
+correlation_elite = data[data['Expertise'] == 'Elite'][['41', '42', '43']].corr(method='pearson')
+correlation_subelite = data[data['Expertise'] == 'SubElite'][['41', '42', '43']].corr(method='pearson')
 
-plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+elite_data = combined_data[combined_data['Expertise'] == 'Elite']
+subelite_data = combined_data[combined_data['Expertise'] == 'SubElite']
+
+levels = ['41', '42', '43']
+
+positions_elite = [1, 5, 9]
+positions_subelite = [2, 6, 10]
+
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Définir les couleurs des boxplots
+colors = {'Elite': 'lightblue', 'SubElite': 'lightgreen'}
+median_color = 'black'
+
+# Boxplots pour 'Elite'
+for i, level in enumerate(levels):
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
+        'Score'].dropna()
+    ax.boxplot(data_elite, positions=[positions_elite[i]], widths=0.6, patch_artist=True,
+               boxprops=dict(facecolor=colors['Elite']),
+               medianprops=dict(color=median_color))
+
+# Boxplots pour 'SubElite'
+for i, level in enumerate(levels):
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')][
+        'Score'].dropna()
+    ax.boxplot(data_subelite, positions=[positions_subelite[i]], widths=0.6, patch_artist=True,
+               boxprops=dict(facecolor=colors['SubElite']),
+               medianprops=dict(color=median_color))
+
+# Ajouter des annotations et lignes pour le test de Mann-Whitney U
+for i, level in enumerate(levels):
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
+        'Score'].dropna()
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')][
+        'Score'].dropna()
+    stat, pvalue = mannwhitneyu(data_elite, data_subelite)
+    y_max = max(data_elite.max(), data_subelite.max()) + 5
+
+    # Formatter le texte de l'annotation en fonction de la valeur p
+    p_text = f"p < 0.001" if pvalue < 0.001 else f"p = {pvalue:.3f}"
+
+    # Dessiner les lignes horizontales et verticales
+    mid_point = (positions_elite[i] + positions_subelite[i]) / 2
+    line_y = y_max + 1
+    ax.hlines(y=line_y, xmin=positions_elite[i], xmax=positions_subelite[i], colors="black", linestyles='solid', lw=1)
+    ax.vlines(x=positions_elite[i], ymin=line_y - 0.5, ymax=line_y + 0.5, colors="black", linestyles='solid', lw=1)
+    ax.vlines(x=positions_subelite[i], ymin=line_y - 0.5, ymax=line_y + 0.5, colors="black", linestyles='solid', lw=1)
+
+    ax.annotate(p_text, xy=(mid_point, line_y + 0.5), textcoords="offset points", xytext=(0, 5), ha='center')
+
+# Légende pour les couleurs
+legend_patches = [mpatches.Patch(color=colors['Elite'], label='Elite'),
+                  mpatches.Patch(color=colors['SubElite'], label='SubElite')]
+ax.legend(handles=legend_patches, title='Expertise', loc='lower right')
+ax.set_ylim(15, 70)
+ax.set_xticks([1.5, 5.5, 9.5])
+ax.set_xticklabels(['41', '42', '43'])
+ax.set_title('Comparison of AUC by Expertise')
+ax.set_xlabel('Difficulty Level')
+ax.set_ylabel('AUC')
+
 plt.show()
 
-# 3. Analysis of the correlation between obtained values and increasing difficulty
-diff_41_42 = data['42'] - data['41']
-diff_42_43 = data['43'] - data['42']
 
-mean_diff_41_42 = diff_41_42.mean()
-mean_diff_42_43 = diff_42_43.mean()
+####
 
-print(f'Mean score difference between levels 41 and 42: {mean_diff_41_42:.2f}')
-print(f'Mean score difference between levels 42 and 43: {mean_diff_42_43:.2f}')
+print(correlation_elite)
+print(correlation_subelite)
