@@ -30,9 +30,9 @@ def prepare_data(data, dataset_label, body_part):
     return data_subset[['upper_body', 'lower_body', 'Group', 'Dataset']]
 
 
-data_41 = pd.read_csv('/home/lim/Documents/StageMathieu/results_41_position.csv')
-data_42 = pd.read_csv('/home/lim/Documents/StageMathieu/results_42_position.csv')
-data_43 = pd.read_csv('/home/lim/Documents/StageMathieu/results_43_position.csv')
+data_41 = pd.read_csv('/results_41_position.csv')
+data_42 = pd.read_csv('/results_42_position.csv')
+data_43 = pd.read_csv('/results_43_position.csv')
 
 
 # Préparer les données
@@ -40,7 +40,7 @@ data_41_prepared = prepare_data(data_41, 'Dataset 41', 'upper_body')
 data_42_prepared = prepare_data(data_42, 'Dataset 42', 'upper_body')
 data_43_prepared = prepare_data(data_43, 'Dataset 43', 'upper_body')
 
-data_anova = pd.read_csv('/home/lim/Documents/StageMathieu/results_43_position.csv')
+data_anova = pd.read_csv('/results_43_position.csv')
 
 upper_body_colums = data_anova[['AvBrasD', 'MainD', 'AvBrasG', 'MainG']]
 data_anova["upper_body"] = upper_body_colums.mean(axis=1)
