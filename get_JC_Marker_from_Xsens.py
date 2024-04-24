@@ -42,6 +42,8 @@ parent_list_xsens_JC = [
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl"
 participants_name = [dossier for dossier in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, dossier))]
 
+total_length_member = []
+
 for name in participants_name:
     print(f"{name} in process")
     participant_path = f"{home_path}/{name}/"
@@ -206,15 +208,17 @@ for name in participants_name:
                 "subject_expertise": subject_expertise,
                 "length_segment": mean_length_segment
             }
-
+            total_length_member.append(mean_length_segment)
             folder_and_file_name_path = folder_path + f"{file_name}.mat"
 
             # Enregistrement dans un fichier .mat
             scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-
-
-            # colors = ['r', 'g', 'b']
+total_length = np.array(total_length_member)
+mean_total_length = np.mean(total_length, axis=0)
+print(mean_total_length)
+np.savetxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', [mean_total_length], delimiter=',', header='Mean', comments='')
+# colors = ['r', 'g', 'b']
             # n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
             # plt.figure(figsize=(20, 3 * n_rows))
             #
