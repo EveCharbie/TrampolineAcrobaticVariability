@@ -21,7 +21,7 @@ next_index = 0
 time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
-
+mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
 # movement_to_analyse = ['41', '42', '43', '41o', '811<', '822', '831<', '83<']
 movement_to_analyse = ['41', '42', '43']
 
@@ -238,7 +238,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             anova_pos_df.at[next_index, 'ID'] = name
             anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
             anova_pos_df.at[next_index, 'Timing'] = "75%"
-            anova_pos_df.at[next_index, member] = result_subject1[id_member, treshold_3_4] / length_segment_mean[0][id_member-2]
+            anova_pos_df.at[next_index, member] = result_subject1[id_member, treshold_3_4] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
 
         anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "75%", std_3_4]
         next_index += 1
@@ -247,7 +247,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             anova_pos_df.at[next_index, 'ID'] = name
             anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
             anova_pos_df.at[next_index, 'Timing'] = "landing"
-            anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2]
+            anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
 
         anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "landing", std_landing]
         next_index += 1
@@ -262,24 +262,24 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     timings = anova_rot_df["Timing"].unique()
 
     print(anova_rot_df)
-    anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_4{n_half_twist}_rotation.csv', index=False)
-    anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_4{n_half_twist}_position.csv', index=False)
-    anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/results_4{n_half_twist}_times.csv', index=False)
+    anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_rotation.csv', index=False)
+    anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_position.csv', index=False)
+    anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_times.csv', index=False)
 
-    for expertise in expertises:
-        for timing in timings:
-            data_Shapiro = anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
-            stat_Shapiro, p_value_Shapiro = shapiro(data_Shapiro)
-            print(f"Groupe {expertise}, Moment {timing}, p_value Shapiro: {p_value_Shapiro}")
+    # for expertise in expertises:
+    #     for timing in timings:
+    #         data_Shapiro = anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
+    #         stat_Shapiro, p_value_Shapiro = shapiro(data_Shapiro)
+    #         print(f"Groupe {expertise}, Moment {timing}, p_value Shapiro: {p_value_Shapiro}")
+    #
+    # data_Levene = [anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
+    #                for expertise in expertises for timing in timings]
+    # stat_Levene, p_value_Levene = levene(*data_Levene)
+    # print(f"p-value Levene:{p_value_Levene}")
 
-    data_Levene = [anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
-                   for expertise in expertises for timing in timings]
-    stat_Levene, p_value_Levene = levene(*data_Levene)
-    print(f"p-value Levene:{p_value_Levene}")
-
-    modele = ols("Std ~ C(Expertise) * C(Timing)", data=anova_rot_df).fit()
-    result_anova = sm.stats.anova_lm(modele, typ=2)
-    print(result_anova)
+    # modele = ols("Std ~ C(Expertise) * C(Timing)", data=anova_rot_df).fit()
+    # result_anova = sm.stats.anova_lm(modele, typ=2)
+    # print(result_anova)
 
 print(area_df)
 area_df.to_csv(f'/home/lim/Documents/StageMathieu/results_area_under_curve.csv', index=False)
