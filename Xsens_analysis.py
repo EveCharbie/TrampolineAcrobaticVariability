@@ -22,7 +22,7 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
-# movement_to_analyse = ['41', '42', '43', '41o', '811<', '822', '831<', '83<']
+# movement_to_analyse = ['41o', '811<', '822', '831<']
 movement_to_analyse = ['41', '42', '43']
 
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
@@ -118,7 +118,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        # plt.show()
+        plt.show()
         plt.close()
 
 
@@ -225,14 +225,14 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         anova_time_to75_df.at[0, name] = str(subject_expertise[0])
 
-        # for id_member, member in enumerate(members[2:], start=2):
-        #     anova_pos_df.at[next_index, 'ID'] = name
-        #     anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
-        #     anova_pos_df.at[next_index, 'Timing'] = "Takeoff"
-        #     anova_pos_df.at[next_index, member] = result_subject1[id_member, 0] / length_segment_mean[0][id_member-2]
-        #
-        # anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Takeoff", std_takeoff]
-        # next_index += 1
+        for id_member, member in enumerate(members[2:], start=2):
+            anova_pos_df.at[next_index, 'ID'] = name
+            anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
+            anova_pos_df.at[next_index, 'Timing'] = "Takeoff"
+            anova_pos_df.at[next_index, member] = result_subject1[id_member, 0] / length_segment_mean[0][id_member-2]
+
+        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Takeoff", std_takeoff]
+        next_index += 1
 
         for id_member, member in enumerate(members[2:], start=2):
             anova_pos_df.at[next_index, 'ID'] = name
@@ -261,6 +261,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     expertises = anova_rot_df["Expertise"].unique()
     timings = anova_rot_df["Timing"].unique()
 
+
+
     print(anova_rot_df)
     anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_rotation.csv', index=False)
     anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_position.csv', index=False)
@@ -282,4 +284,4 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     # print(result_anova)
 
 print(area_df)
-area_df.to_csv(f'/home/lim/Documents/StageMathieu/results_area_under_curve.csv', index=False)
+area_df.to_csv(f'/home/lim/Documents/StageMathieu/results_area_under_curve2.csv', index=False)
