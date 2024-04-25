@@ -22,8 +22,8 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
-# movement_to_analyse = ['41o', '811<', '822', '831<']
-movement_to_analyse = ['41', '42', '43']
+# movement_to_analyse = ['41o']
+movement_to_analyse = ['41', '42', '43', '41o', '811<', '822', '831<']
 
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
 columns_names_anova_rotation = ['ID', 'Expertise', 'Timing', 'Std']
@@ -118,7 +118,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        plt.show()
+        # plt.show()
         plt.close()
 
 
@@ -246,10 +246,10 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         for id_member, member in enumerate(members[2:], start=2):
             anova_pos_df.at[next_index, 'ID'] = name
             anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
-            anova_pos_df.at[next_index, 'Timing'] = "landing"
+            anova_pos_df.at[next_index, 'Timing'] = "Landing"
             anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
 
-        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "landing", std_landing]
+        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Landing", std_landing]
         next_index += 1
 
     ##########
