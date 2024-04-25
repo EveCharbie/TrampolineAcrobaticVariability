@@ -17,9 +17,9 @@ def prepare_data(data, dataset_label, body_part):
 
     conditions = [
         (data['Timing'] == '75%') & (data['Expertise'] == 'Elite'),
-        (data['Timing'] == 'landing') & (data['Expertise'] == 'Elite'),
+        (data['Timing'] == 'Landing') & (data['Expertise'] == 'Elite'),
         (data['Timing'] == '75%') & (data['Expertise'] == 'SubElite'),
-        (data['Timing'] == 'landing') & (data['Expertise'] == 'SubElite')
+        (data['Timing'] == 'Landing') & (data['Expertise'] == 'SubElite')
     ]
     labels = ['Elite 75%', 'Elite Landing', 'SubElite 75%', 'SubElite Landing']
 
