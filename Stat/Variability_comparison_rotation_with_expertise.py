@@ -7,7 +7,7 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 # data = pd.read_csv('/home/lim/Documents/StageMathieu/results_41_rotation.csv')
 # data = pd.read_csv('/home/lim/Documents/StageMathieu/results_42_rotation.csv')
-data = pd.read_csv('/home/lim/Documents/StageMathieu/results_43_rotation.csv')
+data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_43_rotation.csv')
 
 anova_rot_df = data.pivot_table(index=['ID', 'Expertise'], columns='Timing', values='Std')
 anova_rot_df.reset_index(inplace=True)

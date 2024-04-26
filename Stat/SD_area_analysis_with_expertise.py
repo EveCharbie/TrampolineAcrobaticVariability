@@ -5,7 +5,7 @@ from scipy.stats import linregress, mannwhitneyu
 import numpy as np
 import matplotlib.patches as mpatches
 
-data = pd.read_csv('/results_area_under_curve.csv')
+data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve.csv')
 combined_data = pd.melt(data, id_vars=['ID', 'Expertise'], value_vars=['41', '42', '43'], var_name='Difficulty', value_name='Score')
 
 

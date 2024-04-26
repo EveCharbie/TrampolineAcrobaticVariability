@@ -5,9 +5,9 @@ from scipy.stats import levene, mannwhitneyu
 import matplotlib.patches as mpatches
 import numpy as np
 
-data_41 = pd.read_csv('/results_41_times.csv')
-data_42 = pd.read_csv('/results_42_times.csv')
-data_43 = pd.read_csv('/results_43_times.csv')
+data_41 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_41_times.csv')
+data_42 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_42_times.csv')
+data_43 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_43_times.csv')
 
 levels = ['41', '42', '43']
 
