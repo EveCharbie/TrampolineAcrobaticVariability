@@ -22,8 +22,28 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
-# movement_to_analyse = ['41o']
-movement_to_analyse = ['41', '42', '43', '41o', '811<', '822', '831<']
+# movement_to_analyse = ['41', '42', '43', '41o', '4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
+# movement_to_analyse = ['4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<']
+movement_to_analyse = ['8-3<']
+
+##
+half_twists_per_movement = {
+    '4-': 0,
+    '4-o': 0,
+    '41': 1,
+    '42': 2,
+    '43': 3,
+    '41o': 1,
+    '8-1<': 1,
+    '8-1o': 1,
+    '8-3<': 1,
+    '8--o': 0,
+    '811<': 2,
+    '822': 4,
+    '831<': 4,
+
+}
+##
 
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
 columns_names_anova_rotation = ['ID', 'Expertise', 'Timing', 'Std']
@@ -36,15 +56,15 @@ area_df = pd.DataFrame(columns=columns_names_area)
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
-    if "ArMa" in liste_name:
-        liste_name.remove("ArMa")
-        liste_name.remove("MaBo")
+    # if "ArMa" in liste_name:
+    #     liste_name.remove("ArMa")
+    #     liste_name.remove("MaBo")
 
     temp_liste_name = []
     for name in liste_name:
         home_path_subject1 = f"{home_path}{name}/Pos_JC/{mvt_name}"
         if not os.path.exists(home_path_subject1):
-            print(f"SUbejct {name} didn't realize {mvt_name}")
+            print(f"Subject {name} didn't realize {mvt_name}")
         else:
             temp_liste_name.append(name)
     liste_name = temp_liste_name
@@ -52,7 +72,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     anova_rot_df = pd.DataFrame(columns=columns_names_anova_rotation)
     anova_pos_df = pd.DataFrame(columns=columns_names_anova_position)
     anova_time_to75_df = pd.DataFrame(index=range(nombre_lignes_minimum), columns=liste_name)
-    n_half_twist = int(mvt_name[1])
+    n_half_twist = half_twists_per_movement[mvt_name]
 
     for id_name, name in enumerate(liste_name):
         print(f"{name} is running")
@@ -118,7 +138,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        # plt.show()
+        if name == 'JeCh':
+            plt.show()
         plt.close()
 
 
@@ -173,101 +194,99 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         plt.close()
 
         ################ Get 75% of twist ################
+        if n_half_twist != 0:
 
-        all_data_subject1 = []
-        for i in range(len(data_subject1)):
-            all_data_subject1.append(data_subject1[i])
-        all_data_subject1 = np.array(all_data_subject1)
+            all_data_subject1 = []
+            for i in range(len(data_subject1)):
+                all_data_subject1.append(data_subject1[i])
+            all_data_subject1 = np.array(all_data_subject1)
 
-        total_dofs = all_data_subject1.shape[2]
+            total_dofs = all_data_subject1.shape[2]
 
-        timestramp_treshold_subject1 = []
-        for trials in range(all_data_subject1.shape[0]):
-            initial_rot = all_data_subject1[trials, 0, 2]
-            for timestamp in range(n_points):
-                if laterality[0] == "D":
-                    threshold = initial_rot - n_half_twist * 0.75 * math.pi
-                    if threshold > all_data_subject1[trials, timestamp, 2]:
-                        timestramp_treshold_subject1.append(timestamp)
-                        break
-                else:
-                    threshold = initial_rot + n_half_twist * 0.75 * math.pi
-                    if threshold < all_data_subject1[trials, timestamp, 2]:
-                        timestramp_treshold_subject1.append(timestamp)
-                        break
+            timestramp_treshold_subject1 = []
+            for trials in range(all_data_subject1.shape[0]):
+                initial_rot = all_data_subject1[trials, 0, 2]
+                for timestamp in range(n_points):
+                    if laterality[0] == "D":
+                        threshold = initial_rot - n_half_twist * 0.75 * math.pi
+                        if threshold > all_data_subject1[trials, timestamp, 2]:
+                            timestramp_treshold_subject1.append(timestamp)
+                            break
+                    else:
+                        threshold = initial_rot + n_half_twist * 0.75 * math.pi
+                        if threshold < all_data_subject1[trials, timestamp, 2]:
+                            timestramp_treshold_subject1.append(timestamp)
+                            break
 
-        length_segment_mean = np.mean(length_subject, axis=0)
+            length_segment_mean = np.mean(length_subject, axis=0)
 
-        treshold_3_4 = round(np.mean(timestramp_treshold_subject1))
-        print(f" Treshold value {timestramp_treshold_subject1} and the mean {treshold_3_4}")
+            treshold_3_4 = round(np.mean(timestramp_treshold_subject1))
+            print(f" Treshold value {timestramp_treshold_subject1} and the mean {treshold_3_4}")
 
-        std_takeoff = result_subject1[0, 0]
-        std_3_4 = result_subject1[0, treshold_3_4]
-        std_landing = result_subject1[0, n_points-1]
+            std_takeoff = result_subject1[0, 0]
+            std_3_4 = result_subject1[0, treshold_3_4]
+            std_landing = result_subject1[0, n_points-1]
+
+            print(std_takeoff)
+            print(std_3_4)
+            print(std_landing)
+
+            if len(timestramp_treshold_subject1) > len(anova_time_to75_df):
+                anova_time_to75_df = anova_time_to75_df.reindex(range(len(timestramp_treshold_subject1)))
+
+            serie_nan = pd.Series([np.nan] * len(anova_time_to75_df))
+            serie_nan[:len(timestramp_treshold_subject1)] = timestramp_treshold_subject1
+
+            anova_time_to75_df[name] = serie_nan
+
+            if anova_time_to75_df[name].dtype != 'object':
+                anova_time_to75_df[name] = anova_time_to75_df[name].astype('object')
+
+            anova_time_to75_df.at[0, name] = str(subject_expertise[0])
+
+            for id_member, member in enumerate(members[2:], start=2):
+                anova_pos_df.at[next_index, 'ID'] = name
+                anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
+                anova_pos_df.at[next_index, 'Timing'] = "Takeoff"
+                anova_pos_df.at[next_index, member] = result_subject1[id_member, 0] / length_segment_mean[0][id_member-2]
+
+            anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Takeoff", std_takeoff]
+            next_index += 1
+
+            for id_member, member in enumerate(members[2:], start=2):
+                anova_pos_df.at[next_index, 'ID'] = name
+                anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
+                anova_pos_df.at[next_index, 'Timing'] = "75%"
+                anova_pos_df.at[next_index, member] = result_subject1[id_member, treshold_3_4] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
+
+            anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "75%", std_3_4]
+            next_index += 1
+
+            for id_member, member in enumerate(members[2:], start=2):
+                anova_pos_df.at[next_index, 'ID'] = name
+                anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
+                anova_pos_df.at[next_index, 'Timing'] = "Landing"
+                anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
+
+            anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Landing", std_landing]
+            next_index += 1
 
         area_under_curve = simpson(result_subject1[0], x=time_values)
         print("Area under curves with simpson method :", area_under_curve)
 
-        print(std_takeoff)
-        print(std_3_4)
-        print(std_landing)
-##
-        if len(timestramp_treshold_subject1) > len(anova_time_to75_df):
-            anova_time_to75_df = anova_time_to75_df.reindex(range(len(timestramp_treshold_subject1)))
-
-        serie_nan = pd.Series([np.nan] * len(anova_time_to75_df))
-        serie_nan[:len(timestramp_treshold_subject1)] = timestramp_treshold_subject1
-
-        anova_time_to75_df[name] = serie_nan
-
-        if anova_time_to75_df[name].dtype != 'object':
-            anova_time_to75_df[name] = anova_time_to75_df[name].astype('object')
-
-        anova_time_to75_df.at[0, name] = str(subject_expertise[0])
-
-        for id_member, member in enumerate(members[2:], start=2):
-            anova_pos_df.at[next_index, 'ID'] = name
-            anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
-            anova_pos_df.at[next_index, 'Timing'] = "Takeoff"
-            anova_pos_df.at[next_index, member] = result_subject1[id_member, 0] / length_segment_mean[0][id_member-2]
-
-        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Takeoff", std_takeoff]
-        next_index += 1
-
-        for id_member, member in enumerate(members[2:], start=2):
-            anova_pos_df.at[next_index, 'ID'] = name
-            anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
-            anova_pos_df.at[next_index, 'Timing'] = "75%"
-            anova_pos_df.at[next_index, member] = result_subject1[id_member, treshold_3_4] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
-
-        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "75%", std_3_4]
-        next_index += 1
-
-        for id_member, member in enumerate(members[2:], start=2):
-            anova_pos_df.at[next_index, 'ID'] = name
-            anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
-            anova_pos_df.at[next_index, 'Timing'] = "Landing"
-            anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
-
-        anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Landing", std_landing]
-        next_index += 1
-
-    ##########
         area_df.at[id_name, 'ID'] = name
         area_df.at[id_name, 'Expertise'] = str(subject_expertise[0])
         area_df.at[id_name, mvt_name] = area_under_curve
-    ##########
 
-    expertises = anova_rot_df["Expertise"].unique()
-    timings = anova_rot_df["Timing"].unique()
+    if n_half_twist != 0:
 
+        print(anova_rot_df)
+        anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_rotation.csv', index=False)
+        anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_position.csv', index=False)
+        anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_times.csv', index=False)
 
-
-    print(anova_rot_df)
-    anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_rotation.csv', index=False)
-    anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_position.csv', index=False)
-    anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_times.csv', index=False)
-
+    # expertises = anova_rot_df["Expertise"].unique()
+    # timings = anova_rot_df["Timing"].unique()
     # for expertise in expertises:
     #     for timing in timings:
     #         data_Shapiro = anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
