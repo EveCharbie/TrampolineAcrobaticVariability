@@ -4,27 +4,46 @@ from statsmodels.stats.anova import anova_lm
 import matplotlib.pyplot as plt
 import seaborn as sns
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+from scipy.stats import shapiro, levene
+import os
 
-# List of data files
-files = [
-    '/home/lim/Documents/StageMathieu/results_41_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_42_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_43_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_41o_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_811<_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_822_rotation.csv',
-    '/home/lim/Documents/StageMathieu/results_831<_rotation.csv'
-]
+home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
+
+rotation_files = []  # Renamed variable to avoid conflict
+
+for root, dirs, files in os.walk(home_path):
+    for file in files:
+        if 'rotation' in file:
+            full_path = os.path.join(root, file)
+            rotation_files.append(full_path)  # Use the new list here
+
 
 # DataFrame to store aggregated data for plotting
 all_data = pd.DataFrame()
 
 # Process each file
-for file in files:
+for file in rotation_files:
     data = pd.read_csv(file)
     data_specific = data[data['Timing'].isin(['75%', 'Landing', 'Takeoff'])]
     data_specific['Source'] = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')  # Clean file ID
 
+    ###
+    # Check normality and homogeneity of variances
+    issues = []
+    for timing in data_specific['Timing'].unique():
+        group_data = data_specific[data_specific['Timing'] == timing]['Std']
+        stat, p = shapiro(group_data)
+        if p < 0.05:
+            issues.append(f"Normality issue in {timing} of {file} (P-value: {p:.4f})")
+
+    levene_stat, levene_p = levene(
+        *[data_specific[data_specific['Timing'] == timing]['Std'] for timing in data_specific['Timing'].unique()])
+    if levene_p < 0.05:
+        issues.append(f"Variance homogeneity issue in {file} (P-value: {levene_p:.4f})")
+
+    if issues:
+        print("\n".join(issues))
+    ###
     # ANOVA without considering 'Expertise'
     model = ols('Std ~ C(Timing)', data=data_specific).fit()
     anova_results = anova_lm(model, typ=2)
