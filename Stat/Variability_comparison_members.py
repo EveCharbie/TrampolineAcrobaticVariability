@@ -8,77 +8,79 @@ import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import AnovaRM
 from statsmodels.multivariate.manova import MANOVA
+import os
 
-def prepare_data(data, dataset_label, body_part):
+
+def prepare_data(data):
+    # Calcul des moyennes pour le haut et le bas du corps
     upper_body_columns = data[['AvBrasD', 'MainD', 'AvBrasG', 'MainG']]
     data["upper_body"] = upper_body_columns.mean(axis=1)
     lower_body_columns = data[['JambeD', 'PiedD', 'JambeG', 'PiedG']]
     data["lower_body"] = lower_body_columns.mean(axis=1)
 
+    # Création des groupes basés uniquement sur le Timing
     conditions = [
-        (data['Timing'] == '75%') & (data['Expertise'] == 'Elite'),
-        (data['Timing'] == 'Landing') & (data['Expertise'] == 'Elite'),
-        (data['Timing'] == '75%') & (data['Expertise'] == 'SubElite'),
-        (data['Timing'] == 'Landing') & (data['Expertise'] == 'SubElite')
+        (data['Timing'] == 'Takeoff'),
+        (data['Timing'] == '75%'),
+        (data['Timing'] == 'Landing')
     ]
-    labels = ['Elite 75%', 'Elite Landing', 'SubElite 75%', 'SubElite Landing']
+    labels = ['Takeoff', '75%', 'Landing']
 
-    data['Group'] = np.select(conditions, labels, default='Other')
+    data['Timing'] = np.select(conditions, labels, default='Other')
 
-    data_subset = data[data['Group'] != 'Other']
-    data_subset['Dataset'] = dataset_label
-    return data_subset[['upper_body', 'lower_body', 'Group', 'Dataset']]
-
-
-data_41 = pd.read_csv('/results_41_position.csv')
-data_42 = pd.read_csv('/results_42_position.csv')
-data_43 = pd.read_csv('/results_43_position.csv')
+    data_subset = data[data['Timing'] != 'Other']
+    return data_subset[['upper_body', 'lower_body', 'Timing']]
 
 
-# Préparer les données
-data_41_prepared = prepare_data(data_41, 'Dataset 41', 'upper_body')
-data_42_prepared = prepare_data(data_42, 'Dataset 42', 'upper_body')
-data_43_prepared = prepare_data(data_43, 'Dataset 43', 'upper_body')
+all_data = pd.DataFrame()
 
-data_anova = pd.read_csv('/results_43_position.csv')
+home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
-upper_body_colums = data_anova[['AvBrasD', 'MainD', 'AvBrasG', 'MainG']]
-data_anova["upper_body"] = upper_body_colums.mean(axis=1)
+rotation_files = []  # Renamed variable to avoid conflict
 
-lower_body_colums = data_anova[['JambeD', 'PiedD', 'JambeG', 'PiedG']]
-data_anova["lower_body"] = lower_body_colums.mean(axis=1)
-
-
-modele_upper = ols("upper_body ~ C(Expertise) * C(Timing)", data=data_anova).fit()
-result_anova_upper = sm.stats.anova_lm(modele_upper, typ=2)
-print(result_anova_upper)
-
-modele_lower = ols("lower_body ~ C(Expertise) * C(Timing)", data=data_anova).fit()
-result_anova_lower = sm.stats.anova_lm(modele_lower, typ=2)
-print(result_anova_lower)
-
-maov = MANOVA.from_formula('upper_body + lower_body ~ C(Expertise) * C(Timing)', data=data_anova)
-print(maov.mv_test())
+for root, dirs, files in os.walk(home_path):
+    for file in files:
+        if 'position' in file:
+            full_path = os.path.join(root, file)
+            rotation_files.append(full_path)  # Use the new list here
 
 
-all_data = pd.concat([data_41_prepared, data_42_prepared, data_43_prepared])
+for file in rotation_files:
+    data = pd.read_csv(file)
+    data_prepared = prepare_data(data)
+    data_prepared['Source'] = file.split('/')[-1].replace('results_', '').replace('_position.csv', '')  # Clean file ID
 
-# Créer le boxplot
+    # Modèle ANOVA pour le haut du corps sans tenir compte de l'expertise
+    modele_upper = ols("upper_body ~ C(Timing)", data=data_prepared).fit()
+    result_anova_upper = sm.stats.anova_lm(modele_upper, typ=2)
+    print(result_anova_upper)
+
+    # Modèle ANOVA pour le bas du corps sans tenir compte de l'expertise
+    modele_lower = ols("lower_body ~ C(Timing)", data=data_prepared).fit()
+    result_anova_lower = sm.stats.anova_lm(modele_lower, typ=2)
+    print(result_anova_lower)
+
+    # MANOVA pour les deux mesures sans l'interaction avec l'expertise
+    maov = MANOVA.from_formula('upper_body + lower_body ~ C(Timing)', data=data_prepared)
+    print(maov.mv_test())
+
+    all_data = pd.concat([all_data, data_prepared], ignore_index=True)
+
+
+# Prepare data for plotting
+all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
+
+# Create the plot
 plt.figure(figsize=(12, 8))
-sns.boxplot(x='Group', y='upper_body', hue='Dataset', data=all_data, palette='Set2')
-plt.title('Distribution of Upper Body Measurements Across Expertise, Timing, and Dataset')
-plt.ylabel('Upper Body SD')
-plt.xlabel('Group')
-plt.legend(title='Dataset')
+plot = sns.pointplot(x='Timing', y='lower_body', hue='Source', data=all_data, dodge=True,
+                     capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd')
 
 
-# Créer le boxplot
-plt.figure(figsize=(12, 8))
-sns.boxplot(x='Group', y='lower_body', hue='Dataset', data=all_data, palette='Set2')
-plt.title('Distribution of Lower Body Measurements Across Expertise, Timing, and Dataset')
-plt.ylabel('Lower Body SD')
-plt.xlabel('Group')
-plt.legend(title='Dataset')
+# Adding plot details
+plt.title('Standard Deviation Across Different Timings from Multiple Files')
+plt.xlabel('Timing')
+plt.ylabel('Standard Deviation')
+plt.legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-# Afficher le graphique
+# Display the plot
 plt.show()
