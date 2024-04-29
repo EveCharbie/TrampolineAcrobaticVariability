@@ -22,11 +22,9 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
-# movement_to_analyse = ['41', '42', '43', '41o', '4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
+movement_to_analyse = ['41', '42', '43', '41o', '4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
 # movement_to_analyse = ['4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<']
-movement_to_analyse = ['8-3<']
 
-##
 half_twists_per_movement = {
     '4-': 0,
     '4-o': 0,
@@ -43,7 +41,7 @@ half_twists_per_movement = {
     '831<': 4,
 
 }
-##
+
 
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
 columns_names_anova_rotation = ['ID', 'Expertise', 'Timing', 'Std']
@@ -62,8 +60,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     temp_liste_name = []
     for name in liste_name:
-        home_path_subject1 = f"{home_path}{name}/Pos_JC/{mvt_name}"
-        if not os.path.exists(home_path_subject1):
+        home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
+        if not os.path.exists(home_path_subject):
             print(f"Subject {name} didn't realize {mvt_name}")
         else:
             temp_liste_name.append(name)
@@ -76,19 +74,19 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     for id_name, name in enumerate(liste_name):
         print(f"{name} is running")
-        home_path_subject1 = f"{home_path}{name}/Pos_JC/{mvt_name}"
+        home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
 
-        fichiers_mat_subject1 = []
-        for root, dirs, files in os.walk(home_path_subject1):
+        fichiers_mat_subject = []
+        for root, dirs, files in os.walk(home_path_subject):
             for file in files:
                 if file.endswith(".mat"):
                     full_path = os.path.join(root, file)
-                    fichiers_mat_subject1.append(full_path)
+                    fichiers_mat_subject.append(full_path)
 
         data_subject1 = []
         length_subject = []
         subject_info_dict = {}
-        for file in fichiers_mat_subject1:
+        for file in fichiers_mat_subject:
             (data_subject,
              subject_expertise,
              laterality,
@@ -117,7 +115,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             # Plot subject1 data
             lines = []
             for idx, trial_data in enumerate(data_subject1):
-                trial_name = fichiers_mat_subject1[idx]
+                trial_name = fichiers_mat_subject[idx]
                 trial = trial_data.iloc[:, i]
                 line, = ax.plot(trial, label=f"subject1 Trial {trial_name}", alpha=0.7, linewidth=1,
                                 color=colors_subject1[idx])
@@ -138,8 +136,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        if name == 'JeCh':
-            plt.show()
+        plt.savefig(f"{home_path_subject}/all_data.png")
+        # plt.show()
         plt.close()
 
 
@@ -166,6 +164,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                 plt.legend(loc='upper right')
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
+        plt.savefig(f"{home_path_subject}/all_axes_sd.png")
         plt.close()
 
 
@@ -190,6 +189,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             if i == 0:
                 plt.legend(loc='upper right')
         plt.tight_layout()
+        plt.savefig(f"{home_path_subject}/mean_axes_sd.png")
         # plt.show()
         plt.close()
 
@@ -281,9 +281,9 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     if n_half_twist != 0:
 
         print(anova_rot_df)
-        anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_rotation.csv', index=False)
-        anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_position.csv', index=False)
-        anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/results_{mvt_name}_times.csv', index=False)
+        anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_rotation.csv', index=False)
+        anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_position.csv', index=False)
+        anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_times.csv', index=False)
 
     # expertises = anova_rot_df["Expertise"].unique()
     # timings = anova_rot_df["Timing"].unique()
@@ -303,4 +303,4 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     # print(result_anova)
 
 print(area_df)
-area_df.to_csv(f'/home/lim/Documents/StageMathieu/results_area_under_curve2.csv', index=False)
+area_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve2.csv', index=False)
