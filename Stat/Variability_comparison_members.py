@@ -1,51 +1,29 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import levene, mannwhitneyu, shapiro
-import matplotlib.patches as mpatches
+from scipy.stats import levene, shapiro
 import numpy as np
-import statsmodels.api as sm
 from statsmodels.formula.api import ols
-from statsmodels.stats.anova import AnovaRM
-from statsmodels.multivariate.manova import MANOVA
 import os
-
-
-def prepare_data(data):
-    # Calcul des moyennes pour le haut et le bas du corps
-    upper_body_columns = data[['AvBrasD', 'MainD', 'AvBrasG', 'MainG']]
-    data["upper_body"] = upper_body_columns.mean(axis=1)
-    lower_body_columns = data[['JambeD', 'PiedD', 'JambeG', 'PiedG']]
-    data["lower_body"] = lower_body_columns.mean(axis=1)
-
-    # Création des groupes basés uniquement sur le Timing
-    conditions = [
-        (data['Timing'] == 'Takeoff'),
-        (data['Timing'] == '75%'),
-        (data['Timing'] == 'Landing')
-    ]
-    labels = ['Takeoff', '75%', 'Landing']
-
-    data['Timing'] = np.select(conditions, labels, default='Other')
-
-    data_subset = data[data['Timing'] != 'Other']
-    return data_subset[['upper_body', 'lower_body', 'Timing']]
+from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova_and_tukey,
+                                                                   perform_kruskal_and_dunn,
+                                                                   prepare_data)
 
 
 all_data = pd.DataFrame()
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
-rotation_files = []
+position_files = []
 
 for root, dirs, files in os.walk(home_path):
     for file in files:
         if 'position' in file:
             full_path = os.path.join(root, file)
-            rotation_files.append(full_path)
+            position_files.append(full_path)
 
 
-for file in rotation_files:
+for file in position_files:
     data = pd.read_csv(file)
     data_prepared = prepare_data(data)
     data_prepared['Source'] = file.split('/')[-1].replace('results_', '').replace('_position.csv', '')
@@ -73,20 +51,12 @@ for file in rotation_files:
     if issues:
         print("\n".join(issues))
 
+    perform_anova_and_tukey(data_prepared, 'upper_body', 'Timing')
+    perform_anova_and_tukey(data_prepared, 'lower_body', 'Timing')
 
-    # Parametric test ANOVA for upper_body
-    modele_upper = ols("upper_body ~ C(Timing)", data=data_prepared).fit()
-    result_anova_upper = sm.stats.anova_lm(modele_upper, typ=2)
-    print(result_anova_upper)
+    perform_kruskal_and_dunn(data_prepared, 'upper_body', 'Timing')
+    perform_kruskal_and_dunn(data_prepared, 'lower_body', 'Timing')
 
-    # Parametric test ANOVA for lower_body
-    modele_lower = ols("lower_body ~ C(Timing)", data=data_prepared).fit()
-    result_anova_lower = sm.stats.anova_lm(modele_lower, typ=2)
-    print(result_anova_lower)
-
-    # Parametric test MANOVA for upper and lower body
-    maov = MANOVA.from_formula('upper_body + lower_body ~ C(Timing)', data=data_prepared)
-    print(maov.mv_test())
 
     all_data = pd.concat([all_data, data_prepared], ignore_index=True)
 

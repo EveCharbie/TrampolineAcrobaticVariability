@@ -23,7 +23,7 @@ sns.boxplot(data=data[['41', '42', '43']], ax=ax, color="skyblue")
 sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
 text_str = f'Intercept: {intercept:.2f}\nR-squared: {r_value**2:.2f}'
-# ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 ax.set_title('Boxplot with Regression Line for Each Difficulty Level')
 ax.set_xlabel('Difficulty Level')

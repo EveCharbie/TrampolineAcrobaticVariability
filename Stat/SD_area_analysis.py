@@ -6,11 +6,11 @@ import numpy as np
 import matplotlib.patches as mpatches
 
 
-# movement_to_analyse = ['41', '41o', '811<', '42', '831<', '822', '43']
+movement_to_analyse = ['811<', '41', '41o', '42', '831<', '822', '43']
 # movement_to_analyse = ['41', '41o', '811<', '42', '822', '831<', '43']
-movement_to_analyse = ['41', '42', '43']
+# movement_to_analyse = ['41', '42', '43']
 
-data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve.csv')
+data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve2.csv')
 combined_data = pd.melt(data, id_vars=['ID', 'Expertise'], value_vars=movement_to_analyse, var_name='Difficulty', value_name='Score')
 
 

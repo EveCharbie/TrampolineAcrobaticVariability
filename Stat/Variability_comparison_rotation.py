@@ -8,7 +8,7 @@ from scipy.stats import shapiro, levene
 import os
 from scipy.stats import kruskal
 import scikit_posthocs as sp
-
+from TrampolineAcrobaticVariability.Function.Function_stat import perform_anova_and_tukey, perform_kruskal_and_dunn
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
@@ -47,27 +47,8 @@ for file in rotation_files:
     if issues:
         print("\n".join(issues))
 
-
-    # Parametric-test ANOVA
-    model = ols('Std ~ C(Timing)', data=data_specific).fit()
-    anova_results = anova_lm(model, typ=2)
-    print(f"ANOVA Results for {data_specific['Source'].iloc[0]}:\n", anova_results)
-
-    # Tukey HSD Test
-    tukey = pairwise_tukeyhsd(endog=data_specific['Std'], groups=data_specific['Timing'], alpha=0.05)
-    print(f"Tukey HSD Results for {data_specific['Source'].iloc[0]}:\n", tukey)
-
-
-    # Non_parametric-test Kruskal_Wallis
-    kruskal_data = [data_specific[data_specific['Timing'] == timing]['Std'].values for timing in
-                    data_specific['Timing'].unique()]
-    kruskal_stat, kruskal_p = kruskal(*kruskal_data)
-    print(f"Kruskal-Wallis Test Results for {data_specific['Source'].iloc[0]} (P-value: {kruskal_p:.4f})")
-
-    if kruskal_p < 0.05:
-        posthoc_results = sp.posthoc_dunn(data_specific, val_col='Std', group_col='Timing', p_adjust='bonferroni')
-        print(f"Post-hoc Dunn's Test Results for {data_specific['Source'].iloc[0]}:\n", posthoc_results)
-
+    perform_anova_and_tukey(data_specific, 'Std', 'Timing')
+    perform_kruskal_and_dunn(data_specific, 'Std', 'Timing')
 
     # Append data to the plotting DataFrame
     all_data = pd.concat([all_data, data_specific], ignore_index=True)
