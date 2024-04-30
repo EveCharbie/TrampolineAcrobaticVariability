@@ -9,7 +9,7 @@ import os
 from scipy.stats import kruskal
 import scikit_posthocs as sp
 from TrampolineAcrobaticVariability.Function.Function_stat import perform_anova_and_tukey, perform_kruskal_and_dunn
-
+from TrampolineAcrobaticVariability.Function.Function_Class_Basics import extract_identifier
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
 rotation_files = []
@@ -20,6 +20,9 @@ for root, dirs, files in os.walk(home_path):
             full_path = os.path.join(root, file)
             rotation_files.append(full_path)
 
+order = ['8-1<', '811<', '41', '41o', '42', '831<', '822', '43']
+order_index = {key: index for index, key in enumerate(order)}
+rotation_files = sorted(rotation_files, key=lambda x: order_index.get(extract_identifier(x), float('inf')))
 
 all_data = pd.DataFrame()
 
@@ -56,7 +59,7 @@ for file in rotation_files:
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
 
 plt.figure(figsize=(12, 8))
-plot = sns.pointplot(x='Timing', y='Std', hue='Source', data=all_data, dodge=True,
+plot = sns.pointplot(x='Timing', y='Std', hue='Source', data=all_data, dodge=0.5,
                      capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd')
 
 plt.title('Standard Deviation Across Different Timings from Multiple Files')

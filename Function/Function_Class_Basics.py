@@ -405,3 +405,9 @@ def check_matrix_orthogonality(matrix, i_segment="segment", matrix_name="Matrix"
             return False
 
     return True
+
+
+def extract_identifier(filename):
+    import re
+    match = re.search(r'results_(\d+[^_]*)(?=_rotation)', filename)
+    return match.group(1) if match else ''
