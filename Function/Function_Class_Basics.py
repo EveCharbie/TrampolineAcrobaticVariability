@@ -129,7 +129,9 @@ def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_
         subject_expertise = data_loaded["subject_expertise"]
         laterality = data_loaded["laterality"]
         length_segment = data_loaded["length_segment"]
-        return DataFrame_with_colname, subject_expertise, laterality, length_segment
+        wall_index = data_loaded["wall_index"]
+
+        return DataFrame_with_colname, subject_expertise, laterality, length_segment, wall_index
     else:
         return DataFrame_with_colname
 

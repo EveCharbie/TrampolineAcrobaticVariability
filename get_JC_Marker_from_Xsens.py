@@ -43,8 +43,8 @@ home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl"
 participants_name = [dossier for dossier in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, dossier))]
 
 total_length_member = []
-
 for name in participants_name:
+    name = "JoBu"
     print(f"{name} in process")
     participant_path = f"{home_path}/{name}/"
     acrobatie_type = [dossier for dossier in os.listdir(participant_path) if os.path.isdir(os.path.join(participant_path, dossier))]
@@ -66,9 +66,8 @@ for name in participants_name:
                 os.makedirs(folder_path)
 
             file_name, _ = os.path.splitext(os.path.basename(chemin_fichier_pkl))
-            print(f"{file_name} is running")
-
-            # model_path = "/home/lim/Documents/StageMathieu/Xsens_Model.bioMod"
+            if name == "JoBu":
+                print(f"{file_name} is running")
 
             with open(chemin_fichier_pkl, "rb") as fichier_pkl:
                 # Charger les données à partir du fichier ".pkl"
@@ -80,6 +79,7 @@ for name in participants_name:
             Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
             Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
             laterality = eye_tracking_metrics["laterality"]
+            wall_index = eye_tracking_metrics["wall_index"]
 
             n_frames = Xsens_position_rotated_per_move.shape[0]
             Xsens_position = Xsens_position_rotated_per_move.reshape(n_frames, 23, 3).transpose(2, 1, 0)
@@ -206,7 +206,8 @@ for name in participants_name:
                 "JC_order": parent_list_xsens_JC_complet,
                 "laterality": laterality,
                 "subject_expertise": subject_expertise,
-                "length_segment": mean_length_segment
+                "length_segment": mean_length_segment,
+                "wall_index": wall_index,
             }
             total_length_member.append(mean_length_segment)
             folder_and_file_name_path = folder_path + f"{file_name}.mat"

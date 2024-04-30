@@ -50,6 +50,8 @@ columns_names_anova_position = ['ID', 'Expertise', 'Timing'] + members[2:]
 columns_names_area = ['ID', 'Expertise'] + movement_to_analyse
 area_df = pd.DataFrame(columns=columns_names_area)
 
+mean_SD_pelvis_all_subjects_acrobatics = []
+wall_index_all_subjects_acrobatics = []
 
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
@@ -72,8 +74,11 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     anova_time_to75_df = pd.DataFrame(index=range(nombre_lignes_minimum), columns=liste_name)
     n_half_twist = half_twists_per_movement[mvt_name]
 
+    mean_SD_pelvis_all_subjects = []
+    wall_index_all_subject = []
+
     for id_name, name in enumerate(liste_name):
-        print(f"{name} is running")
+        print(f"{name} {mvt_name} is running")
         home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
 
         fichiers_mat_subject = []
@@ -86,13 +91,18 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         data_subject1 = []
         length_subject = []
         subject_info_dict = {}
+        wall_index_subject = []
+
         for file in fichiers_mat_subject:
+            print(file)
             (data_subject,
              subject_expertise,
              laterality,
-             length_segment) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
+             length_segment,
+             wall_index) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
             data_subject1.append(data_subject)
             length_subject.append(length_segment)
+            wall_index_subject.append(wall_index)
 
         joint_center_name_all_axes = data_subject1[0].columns
         n_columns_all_axes = len(joint_center_name_all_axes)
@@ -271,12 +281,18 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Landing", std_landing]
             next_index += 1
 
+        mean_SD_pelvis_all_subjects.append(result_subject1[0])
+        wall_index_all_subject.append(wall_index_subject)
+
         area_under_curve = simpson(result_subject1[0], x=time_values)
         print("Area under curves with simpson method :", area_under_curve)
 
         area_df.at[id_name, 'ID'] = name
         area_df.at[id_name, 'Expertise'] = str(subject_expertise[0])
         area_df.at[id_name, mvt_name] = area_under_curve
+
+    mean_SD_pelvis_all_subjects_acrobatics.append(mean_SD_pelvis_all_subjects)
+    wall_index_all_subjects_acrobatics.append(wall_index_all_subject)
 
     if n_half_twist != 0:
 
@@ -285,22 +301,14 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_position.csv', index=False)
         anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_times.csv', index=False)
 
-    # expertises = anova_rot_df["Expertise"].unique()
-    # timings = anova_rot_df["Timing"].unique()
-    # for expertise in expertises:
-    #     for timing in timings:
-    #         data_Shapiro = anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
-    #         stat_Shapiro, p_value_Shapiro = shapiro(data_Shapiro)
-    #         print(f"Groupe {expertise}, Moment {timing}, p_value Shapiro: {p_value_Shapiro}")
-    #
-    # data_Levene = [anova_rot_df[(anova_rot_df["Expertise"] == expertise) & (anova_rot_df["Timing"] == timing)]["Std"]
-    #                for expertise in expertises for timing in timings]
-    # stat_Levene, p_value_Levene = levene(*data_Levene)
-    # print(f"p-value Levene:{p_value_Levene}")
-
-    # modele = ols("Std ~ C(Expertise) * C(Timing)", data=anova_rot_df).fit()
-    # result_anova = sm.stats.anova_lm(modele, typ=2)
-    # print(result_anova)
+mat_data = {
+                "mean_SD_pelvis_all_subjects_acrobatics": mean_SD_pelvis_all_subjects_acrobatics,
+                "movement_to_analyse": movement_to_analyse,
+                "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics
+            }
 
 print(area_df)
 area_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve2.csv', index=False)
+
+scipy.io.savemat("/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat", mat_data)
+
