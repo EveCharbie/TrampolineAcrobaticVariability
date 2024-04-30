@@ -115,7 +115,7 @@ for i, mvt_name in enumerate(order):
                       lw=1)
             ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y + 0.01, p_text, ha='center', va='bottom', color=colors[i])
+            ax.text(mid_point, line_y - 0.005, p_text, ha='center', va='bottom', color=colors[i])
 
             i_plot += 1
 
