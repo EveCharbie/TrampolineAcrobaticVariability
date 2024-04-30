@@ -6,6 +6,7 @@ import seaborn as sns
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from scipy.stats import shapiro, levene
 import os
+import numpy as np
 from scipy.stats import kruskal
 import scikit_posthocs as sp
 from TrampolineAcrobaticVariability.Function.Function_stat import perform_anova_and_tukey, perform_kruskal_and_dunn
@@ -13,6 +14,9 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import extrac
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
 rotation_files = []
+index = ['takeoff_75', '75_landing']
+order = ['8-1o', '8-1<', '811<', '41', '41o', '42', '8-3<', '831<', '822', '43']
+
 
 for root, dirs, files in os.walk(home_path):
     for file in files:
@@ -20,51 +24,106 @@ for root, dirs, files in os.walk(home_path):
             full_path = os.path.join(root, file)
             rotation_files.append(full_path)
 
-order = ['8-1<', '811<', '41', '41o', '42', '831<', '822', '43']
 order_index = {key: index for index, key in enumerate(order)}
 rotation_files = sorted(rotation_files, key=lambda x: order_index.get(extract_identifier(x), float('inf')))
 
 all_data = pd.DataFrame()
+significant_value = pd.DataFrame(columns=order, index=index)
 
 for file in rotation_files:
     data = pd.read_csv(file)
     data_specific = data[data['Timing'].isin(['75%', 'Landing', 'Takeoff'])]
-    data_specific['Source'] = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')  # Clean file ID
+    mvt_name = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')  # Clean file ID
+    data_specific['Source'] = mvt_name
 
-    print(f"===== Movement {data_specific['Source'][0]} is running =====")
+    print(f"===== Movement {mvt_name} is running =====")
 
 
-    # Check normality and homogeneity of variances
-    issues = []
-    for timing in data_specific['Timing'].unique():
-        group_data = data_specific[data_specific['Timing'] == timing]['Std']
-        stat, p = shapiro(group_data)
-        if p < 0.05:
-            issues.append(f"Normality issue in {timing} of {file} (P-value: {p:.4f})")
+    # # Check normality and homogeneity of variances
+    # issues = []
+    # for timing in data_specific['Timing'].unique():
+    #     group_data = data_specific[data_specific['Timing'] == timing]['Std']
+    #     stat, p = shapiro(group_data)
+    #     if p < 0.05:
+    #         issues.append(f"Normality issue in {timing} of {file} (P-value: {p:.4f})")
+    #
+    # levene_stat, levene_p = levene(
+    #     *[data_specific[data_specific['Timing'] == timing]['Std'] for timing in data_specific['Timing'].unique()])
+    # if levene_p < 0.05:
+    #     issues.append(f"Variance homogeneity issue in {file} (P-value: {levene_p:.4f})")
+    #
+    # if issues:
+    #     print("\n".join(issues))
 
-    levene_stat, levene_p = levene(
-        *[data_specific[data_specific['Timing'] == timing]['Std'] for timing in data_specific['Timing'].unique()])
-    if levene_p < 0.05:
-        issues.append(f"Variance homogeneity issue in {file} (P-value: {levene_p:.4f})")
+    # perform_anova_and_tukey(data_specific, 'Std', 'Timing')
+    posthoc_results = perform_kruskal_and_dunn(data_specific, 'Std', 'Timing')
 
-    if issues:
-        print("\n".join(issues))
 
-    perform_anova_and_tukey(data_specific, 'Std', 'Timing')
-    perform_kruskal_and_dunn(data_specific, 'Std', 'Timing')
+    significant_value.loc["takeoff_75", mvt_name] = posthoc_results.loc["Takeoff", "75%"]
+    significant_value.loc["75_landing", mvt_name] = posthoc_results.loc["75%", "Landing"]
 
     # Append data to the plotting DataFrame
     all_data = pd.concat([all_data, data_specific], ignore_index=True)
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
 
-plt.figure(figsize=(12, 8))
-plot = sns.pointplot(x='Timing', y='Std', hue='Source', data=all_data, dodge=0.5,
-                     capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd')
 
+# plt.figure(figsize=(12, 8))
+# plot = sns.pointplot(x='Timing', y='Std', hue='Source', data=all_data, dodge=0.5,
+#                      capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd')
+# plt.title('Standard Deviation Across Different Timings from Multiple Files')
+# plt.xlabel('Timing')
+# plt.ylabel('Standard Deviation')
+# plt.legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0)
+
+
+plt.figure(figsize=(12, 8))
+ax = plt.gca()
+
+categories = all_data['Timing'].cat.categories
+pos_plot = np.array([1, 5, 9])
+
+colors = plt.colormaps['tab20b_r'](np.linspace(0, 1, len(all_data['Source'].unique())))
+
+i_plot = 0
+
+for i, mvt_name in enumerate(order):
+    filtered_data = all_data[all_data['Source'].str.contains(mvt_name)]
+
+    means = filtered_data.groupby('Timing', observed=True)['Std'].mean()
+    std_devs = filtered_data.groupby('Timing', observed=True)['Std'].std()
+
+    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=mvt_name,
+                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
+
+    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
+
+    y_max = all_data["Std"].max()
+
+    for j in range(len(pos_plot) - 1):
+        sig_key = f"takeoff_75" if j == 0 else f"75_landing"
+        p_value = significant_value[mvt_name][sig_key]
+
+        if p_value < 0.05:
+            p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
+            mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
+            line_y = y_max + 0.03 * i_plot
+
+            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
+                      linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i], linestyles='solid',
+                      lw=1)
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
+                      linestyles='solid', lw=1)
+            ax.text(mid_point, line_y + 0.01, p_text, ha='center', va='bottom', color=colors[i])
+
+            i_plot += 1
+
+plt.xticks([1.5, 5.5, 9.5], categories)
 plt.title('Standard Deviation Across Different Timings from Multiple Files')
 plt.xlabel('Timing')
 plt.ylabel('Standard Deviation')
+
 plt.legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 plt.show()
