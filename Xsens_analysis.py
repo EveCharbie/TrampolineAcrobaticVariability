@@ -23,7 +23,7 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
 movement_to_analyse = ['41', '42', '43', '41o', '4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
-# movement_to_analyse = ['4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<']
+# movement_to_analyse = ['831<']
 
 half_twists_per_movement = {
     '4-': 0,
@@ -34,11 +34,11 @@ half_twists_per_movement = {
     '41o': 1,
     '8-1<': 1,
     '8-1o': 1,
-    '8-3<': 1,
+    '8-3<': 3,
     '8--o': 0,
-    '811<': 2,
-    '822': 4,
-    '831<': 4,
+    '811<': 1,
+    '822': 2,
+    '831<': 3,
 
 }
 
@@ -46,16 +46,16 @@ half_twists_per_movement = {
 members = ["Pelvis", "Tete", "AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
 columns_names_anova_rotation = ['ID', 'Expertise', 'Timing', 'Std']
 columns_names_anova_position = ['ID', 'Expertise', 'Timing'] + members[2:]
+liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
 
 columns_names_area = ['ID', 'Expertise'] + movement_to_analyse
-area_df = pd.DataFrame(columns=columns_names_area)
+area_df = pd.DataFrame(columns=columns_names_area, index=liste_name)
 
 mean_SD_pelvis_all_subjects_acrobatics = []
 wall_index_all_subjects_acrobatics = []
 
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
-    liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
     # if "ArMa" in liste_name:
     #     liste_name.remove("ArMa")
     #     liste_name.remove("MaBo")
@@ -67,17 +67,16 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             print(f"Subject {name} didn't realize {mvt_name}")
         else:
             temp_liste_name.append(name)
-    liste_name = temp_liste_name
 
     anova_rot_df = pd.DataFrame(columns=columns_names_anova_rotation)
     anova_pos_df = pd.DataFrame(columns=columns_names_anova_position)
-    anova_time_to75_df = pd.DataFrame(index=range(nombre_lignes_minimum), columns=liste_name)
+    anova_time_to75_df = pd.DataFrame(index=range(nombre_lignes_minimum), columns=temp_liste_name)
     n_half_twist = half_twists_per_movement[mvt_name]
 
     mean_SD_pelvis_all_subjects = []
     wall_index_all_subject = []
 
-    for id_name, name in enumerate(liste_name):
+    for id_name, name in enumerate(temp_liste_name):
         print(f"{name} {mvt_name} is running")
         home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
 
@@ -94,7 +93,6 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         wall_index_subject = []
 
         for file in fichiers_mat_subject:
-            print(file)
             (data_subject,
              subject_expertise,
              laterality,
@@ -276,7 +274,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                 anova_pos_df.at[next_index, 'ID'] = name
                 anova_pos_df.at[next_index, 'Expertise'] = str(subject_expertise[0])
                 anova_pos_df.at[next_index, 'Timing'] = "Landing"
-                anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] * mean_length_member[id_member-2]
+                anova_pos_df.at[next_index, member] = result_subject1[id_member, n_points-1] / length_segment_mean[0][id_member-2] # * mean_length_member[id_member-2]
 
             anova_rot_df.loc[next_index] = [name, str(subject_expertise[0]), "Landing", std_landing]
             next_index += 1
@@ -287,9 +285,9 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         area_under_curve = simpson(result_subject1[0], x=time_values)
         print("Area under curves with simpson method :", area_under_curve)
 
-        area_df.at[id_name, 'ID'] = name
-        area_df.at[id_name, 'Expertise'] = str(subject_expertise[0])
-        area_df.at[id_name, mvt_name] = area_under_curve
+        area_df.at[name, 'ID'] = name
+        area_df.at[name, 'Expertise'] = str(subject_expertise[0])
+        area_df.at[name, mvt_name] = area_under_curve
 
     mean_SD_pelvis_all_subjects_acrobatics.append(mean_SD_pelvis_all_subjects)
     wall_index_all_subjects_acrobatics.append(wall_index_all_subject)
@@ -297,18 +295,19 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     if n_half_twist != 0:
 
         print(anova_rot_df)
-        anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_rotation.csv', index=False)
-        anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_position.csv', index=False)
-        anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_{mvt_name}_times.csv', index=False)
+        anova_rot_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result3/results_{mvt_name}_rotation.csv', index=False)
+        anova_pos_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result3/results_{mvt_name}_position.csv', index=False)
+        anova_time_to75_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result3/results_{mvt_name}_times.csv', index=False)
 
 mat_data = {
                 "mean_SD_pelvis_all_subjects_acrobatics": mean_SD_pelvis_all_subjects_acrobatics,
                 "movement_to_analyse": movement_to_analyse,
-                "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics
+                "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics,
+                "liste_name": liste_name
             }
 
 print(area_df)
-area_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve2.csv', index=False)
+area_df.to_csv(f'/home/lim/Documents/StageMathieu/Tab_result3/results_area_under_curve2.csv', index=False)
 
-scipy.io.savemat("/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat", mat_data)
+scipy.io.savemat("/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat", mat_data)
 

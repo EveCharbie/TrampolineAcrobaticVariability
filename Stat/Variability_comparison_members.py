@@ -115,7 +115,7 @@ for i, mvt_name in enumerate(order):
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
 
-    y_max = all_data["upper_body"].max() - 0.3
+    y_max = all_data["upper_body"].max()
 
     for j in range(len(pos_plot) - 1):
         sig_key = f"takeoff_75" if j == 0 else f"75_landing"
@@ -124,7 +124,7 @@ for i, mvt_name in enumerate(order):
         if p_value < 0.05:
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            line_y = y_max + 0.03 * i_plot
+            line_y = y_max + 0.05 * i_plot
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
@@ -132,7 +132,7 @@ for i, mvt_name in enumerate(order):
                       lw=1)
             ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.005, p_text, ha='center', va='bottom', color=colors[i])
+            ax.text(mid_point, line_y - 0.01, p_text, ha='center', va='bottom', color=colors[i])
 
             i_plot += 1
 
@@ -160,7 +160,7 @@ for i, mvt_name in enumerate(order):
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
 
-    y_max = all_data["lower_body"].max() - 0.1
+    y_max = all_data["lower_body"].max()
 
     for j in range(len(pos_plot) - 1):
         sig_key = f"takeoff_75" if j == 0 else f"75_landing"

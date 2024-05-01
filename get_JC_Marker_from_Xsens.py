@@ -44,7 +44,6 @@ participants_name = [dossier for dossier in os.listdir(home_path) if os.path.isd
 
 total_length_member = []
 for name in participants_name:
-    name = "JoBu"
     print(f"{name} in process")
     participant_path = f"{home_path}/{name}/"
     acrobatie_type = [dossier for dossier in os.listdir(participant_path) if os.path.isdir(os.path.join(participant_path, dossier))]
@@ -66,8 +65,7 @@ for name in participants_name:
                 os.makedirs(folder_path)
 
             file_name, _ = os.path.splitext(os.path.basename(chemin_fichier_pkl))
-            if name == "JoBu":
-                print(f"{file_name} is running")
+            print(f"{file_name} is running")
 
             with open(chemin_fichier_pkl, "rb") as fichier_pkl:
                 # Charger les données à partir du fichier ".pkl"

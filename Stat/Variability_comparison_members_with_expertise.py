@@ -95,5 +95,5 @@ for file in files:
         new_labels.append(f'Lower Body - {exp_levels[i % len(exp_levels)]}')
 
     plt.legend(handles, new_labels, title='Expertise and Body Part', bbox_to_anchor=(1, 1), loc='upper left')
-    plt.show()
+plt.show()
 

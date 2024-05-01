@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.patches as mpatches
 
 
-movement_to_analyse = ['4-', '4-o', '8--o', '8-1<', '811<', '41', '41o', '42', '831<', '822', '43']
+movement_to_analyse = ['4-', '4-o', '8--o', '8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
+
 # movement_to_analyse = ['41', '41o', '811<', '42', '822', '831<', '43']
 # movement_to_analyse = ['41', '42', '43']
 
