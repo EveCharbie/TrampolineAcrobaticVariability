@@ -16,6 +16,7 @@ files = [
 
 for file in files:
     data = pd.read_csv(file)
+    mvt_name = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')  # Clean file ID
 
     anova_rot_df = data.pivot_table(index=['ID', 'Expertise'], columns='Timing', values='Std')
     anova_rot_df.reset_index(inplace=True)
@@ -88,12 +89,12 @@ for file in files:
                   capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd')
 
     # Ajout de détails au graphique
-    plt.title('Interaction Between Timing and Expertise on Standard Deviation')
+    plt.title(f"Interaction Between Timing and Expertise on Standard Deviation {mvt_name}")
     plt.xlabel('Timing')
     plt.ylabel('Standard Deviation')
     plt.legend(title='Expertise')
 
     # Afficher le graphique
-    plt.show()
+plt.show()
 
 

@@ -31,9 +31,10 @@ for file in files:
     data = pd.read_csv(file)
     data_prepared = prepare_data(data)
     data_prepared = data[data['Timing'] != 'Other'].copy()
-    data_prepared['Source'] = file.split('/')[-1].replace('results_', '').replace('_position.csv', '')
+    mvt_name = file.split('/')[-1].replace('results_', '').replace('_position.csv', '')  # Clean file ID
+    data_prepared['Source'] = mvt_name
 
-    print(f"===== Movement {data_prepared['Source'][0]} is running =====")
+    print(f"===== Movement {mvt_name} is running =====")
 
     # Check normality and homogeneity of variance for each group
     measurements = ['upper_body', 'lower_body']
@@ -82,7 +83,7 @@ for file in files:
     handles, labels = lower_plot.get_legend_handles_labels()
     plt.legend(handles=handles, labels=labels, title="Expertise")
 
-    plt.title('Interaction Between Timing, Expertise, and Body Part on Standard Deviation')
+    plt.title(f"Interaction Between Timing, Expertise, and Body Part on Standard Deviation {mvt_name}")
     plt.xlabel('Timing')
     plt.ylabel('Standard Deviation')
 
