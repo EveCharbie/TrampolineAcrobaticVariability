@@ -26,32 +26,51 @@ def safe_interpolate(x, num_points):
 
     return interpolated_values
 
-file_path = "/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat"
+file_path = "/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
 movement_to_analyse = data_loaded["movement_to_analyse"]
 wall_index_all_subjects_acrobatics = data_loaded["wall_index_all_subjects_acrobatics"]
 liste_name = data_loaded["liste_name"]
+gaze_position_temporal_evolution_projected_all_subject_acrobatics = data_loaded["gaze_position_temporal_evolution_projected_all_subject_acrobatics"]
+
+X, Y = np.meshgrid([-7 * 0.3048, 7 * 0.3048], [-3.5 * 0.3048, 3.5 * 0.3048])
+
 print(liste_name)
 num_points = 100
 
-for i, mvt in enumerate(movement_to_analyse):
+for idx_mvt, mvt in enumerate(movement_to_analyse):
+
     up_subject = 0.1
     custom_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                      '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
                      '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
                      '#c49c94', '#dbdb8d']
 
-    colors = custom_colors[:len(wall_index_all_subjects_acrobatics[0][i][0])]
-    max_value = np.max(mean_SD_pelvis_all_subjects_acrobatics[0][i].flatten())
+    colors = custom_colors[:len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])]
+    max_value = np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
     fig, ax = plt.subplots(figsize=(10, 10))
 
-    for j in range(len(wall_index_all_subjects_acrobatics[0][i][0])):
-        color = colors[j]
+    for idx_subject in range(len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])):
+        color = colors[idx_subject]
         up_line = max_value + up_subject
 
-        for k in range(len(wall_index_all_subjects_acrobatics[0][i][0][j][0])):
-            data = wall_index_all_subjects_acrobatics[0][i][0][j][0][k]
+        for idx_trials in range(len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
+            gaze_position = gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
+            ##
+            data = np.zeros(len(gaze_position), dtype=int)
+
+            for idx_ligne, ligne in enumerate(gaze_position):
+                if X[0][0] <= ligne[0] <= X[0][1] and \
+                        Y[:, 1][0] <= ligne[1] <= Y[:, 1][1]:
+                    data[idx_ligne] = 0
+                else:
+                    data[idx_ligne] = 1
+
+            ##
+
+
+            # data = wall_index_all_subjects_acrobatics[0][i][0][j][0][k]
             data = pd.DataFrame(data)
             data_norm = data.apply(lambda x: safe_interpolate(x, num_points))
 
@@ -74,7 +93,7 @@ for i, mvt in enumerate(movement_to_analyse):
             ax.set_ylim(0, max_value+0.45)
 
             up_line += 0.0005
-        plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][i][j], label=f'Subject {j + 1}', color=color)
+        plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject], label=f'Subject {idx_subject + 1}', color=color)
         up_subject += 0.02
 
     plt.title(f'Data for {mvt} Acrobatic Movement')
