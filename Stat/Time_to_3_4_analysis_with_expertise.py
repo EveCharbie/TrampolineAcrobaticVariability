@@ -4,26 +4,29 @@ import matplotlib.pyplot as plt
 from scipy.stats import levene, mannwhitneyu
 import matplotlib.patches as mpatches
 import numpy as np
-data_41 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_41_times_10.csv')
-data_42 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_42_times_10.csv')
-data_43 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_43_times_10.csv')
 
 data_41 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_41_times_75.csv')
+data_41o = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_41o_times_75.csv')
 data_42 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_42_times_75.csv')
 data_43 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_43_times_75.csv')
 
-levels = ['41', '42', '43']
+levels = ['41', '41o', '42', '43']
 
 expertise_labels_41 = data_41.iloc[0]
+expertise_labels_41o = data_41o.iloc[0]
 expertise_labels_42 = data_42.iloc[0]
 expertise_labels_43 = data_43.iloc[0]
 
 data_41 = data_41.iloc[1:]
+data_41o = data_41o.iloc[1:]
 data_42 = data_42.iloc[1:]
 data_43 = data_43.iloc[1:]
 
 data_41 = data_41.melt(var_name='Participant', value_name='Score', ignore_index=False)
 data_41['Expertise'] = data_41['Participant'].map(expertise_labels_41)
+
+data_41o = data_41o.melt(var_name='Participant', value_name='Score', ignore_index=False)
+data_41o['Expertise'] = data_41o['Participant'].map(expertise_labels_41o)
 
 data_42 = data_42.melt(var_name='Participant', value_name='Score', ignore_index=False)
 data_42['Expertise'] = data_42['Participant'].map(expertise_labels_42)
@@ -32,10 +35,11 @@ data_43 = data_43.melt(var_name='Participant', value_name='Score', ignore_index=
 data_43['Expertise'] = data_43['Participant'].map(expertise_labels_43)
 
 data_41['Difficulty'] = '41'
+data_41o['Difficulty'] = '41o'
 data_42['Difficulty'] = '42'
 data_43['Difficulty'] = '43'
 
-combined_data = pd.concat([data_41, data_42, data_43], ignore_index=True)
+combined_data = pd.concat([data_41, data_41o, data_42, data_43], ignore_index=True)
 combined_data['Score'] = pd.to_numeric(combined_data['Score'], errors='coerce')
 
 
@@ -78,8 +82,8 @@ for i, level in enumerate(levels):
     std_mean_intra_subelite.append(np.mean(std_intra_participant_subelite)) # Variability intra individu
 
 
-positions_elite = [1, 5, 9]
-positions_subelite = [2, 6, 10]
+positions_elite = [1, 5, 9, 13]
+positions_subelite = [2, 6, 10, 14]
 
 fig, ax = plt.subplots(figsize=(12, 8))
 
@@ -127,9 +131,9 @@ for i, level in enumerate(levels):
 legend_patches = [mpatches.Patch(color=colors['Elite'], label='Elite'),
                   mpatches.Patch(color=colors['SubElite'], label='SubElite')]
 ax.legend(handles=legend_patches, title='Expertise')
-ax.set_ylim(40, 95)
-ax.set_xticks([1.5, 5.5, 9.5])
-ax.set_xticklabels(['41', '42', '43'])
+ax.set_ylim(40, 100)
+ax.set_xticks([1.5, 5.5, 9.5, 13.5])
+ax.set_xticklabels(['41', '41o', '42', '43'])
 ax.set_title('Comparison of % Time to reach 3/4 twist by Expertise')
 ax.set_xlabel('Difficulty Level')
 ax.set_ylabel('Time %')
@@ -141,22 +145,27 @@ ax.set_ylabel('Time %')
 
 
 data_41 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_41_times_10.csv')
+data_41o = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_41o_times_10.csv')
 data_42 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_42_times_10.csv')
 data_43 = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_43_times_10.csv')
 
 
-levels = ['41', '42', '43']
 
 expertise_labels_41 = data_41.iloc[0]
+expertise_labels_41o = data_41o.iloc[0]
 expertise_labels_42 = data_42.iloc[0]
 expertise_labels_43 = data_43.iloc[0]
 
 data_41 = data_41.iloc[1:]
+data_41o = data_41o.iloc[1:]
 data_42 = data_42.iloc[1:]
 data_43 = data_43.iloc[1:]
 
 data_41 = data_41.melt(var_name='Participant', value_name='Score', ignore_index=False)
 data_41['Expertise'] = data_41['Participant'].map(expertise_labels_41)
+
+data_41o = data_41o.melt(var_name='Participant', value_name='Score', ignore_index=False)
+data_41o['Expertise'] = data_41o['Participant'].map(expertise_labels_41o)
 
 data_42 = data_42.melt(var_name='Participant', value_name='Score', ignore_index=False)
 data_42['Expertise'] = data_42['Participant'].map(expertise_labels_42)
@@ -165,10 +174,11 @@ data_43 = data_43.melt(var_name='Participant', value_name='Score', ignore_index=
 data_43['Expertise'] = data_43['Participant'].map(expertise_labels_43)
 
 data_41['Difficulty'] = '41'
+data_41o['Difficulty'] = '41o'
 data_42['Difficulty'] = '42'
 data_43['Difficulty'] = '43'
 
-combined_data = pd.concat([data_41, data_42, data_43], ignore_index=True)
+combined_data = pd.concat([data_41, data_41o, data_42, data_43], ignore_index=True)
 combined_data['Score'] = pd.to_numeric(combined_data['Score'], errors='coerce')
 
 
@@ -210,9 +220,6 @@ for i, level in enumerate(levels):
     std_mean_intra_elite.append(np.mean(std_intra_participant_elite)) # Variability intra individu
     std_mean_intra_subelite.append(np.mean(std_intra_participant_subelite)) # Variability intra individu
 
-
-positions_elite = [1, 5, 9]
-positions_subelite = [2, 6, 10]
 
 fig, ax = plt.subplots(figsize=(12, 8))
 
@@ -260,9 +267,9 @@ for i, level in enumerate(levels):
 legend_patches = [mpatches.Patch(color=colors['Elite'], label='Elite'),
                   mpatches.Patch(color=colors['SubElite'], label='SubElite')]
 ax.legend(handles=legend_patches, title='Expertise')
-ax.set_ylim(5, 60)
-ax.set_xticks([1.5, 5.5, 9.5])
-ax.set_xticklabels(['41', '42', '43'])
+ax.set_ylim(5, 65)
+ax.set_xticks([1.5, 5.5, 9.5, 13.5])
+ax.set_xticklabels(['41', '41o', '42', '43'])
 ax.set_title('Comparison of % Time to reach 1/10 twist by Expertise')
 ax.set_xlabel('Difficulty Level')
 ax.set_ylabel('Time %')
