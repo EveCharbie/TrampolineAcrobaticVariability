@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import levene, mannwhitneyu
+from scipy.stats import levene, mannwhitneyu, shapiro
 import matplotlib.patches as mpatches
 import numpy as np
 
@@ -50,6 +50,34 @@ std_inter_elite = []
 std_inter_subelite = []
 std_mean_intra_elite = []
 std_mean_intra_subelite = []
+
+##
+# Effectuer le test de normalité pour chaque groupe
+for level in levels:
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')]['Score'].dropna()
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')]['Score'].dropna()
+
+    # Test de normalité pour le groupe Elite
+    stat_elite, p_value_elite = shapiro(data_elite)
+    if p_value_elite < 0.05:
+        print(f"Normality issue for Elite group at level {level} (p-value: {p_value_elite:.4f})")
+
+    # Test de normalité pour le groupe SubElite
+    stat_subelite, p_value_subelite = shapiro(data_subelite)
+    if p_value_subelite < 0.05:
+        print(f"Normality issue for SubElite group at level {level} (p-value: {p_value_subelite:.4f})")
+
+# Test d'égalité des variances
+for level in levels:
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')]['Score'].dropna()
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')]['Score'].dropna()
+
+    # Test de Levene pour l'égalité des variances
+    stat_levene, p_value_levene = levene(data_elite, data_subelite)
+    if p_value_levene < 0.05:
+        print(f"Variance equality issue at level {level} (p-value: {p_value_levene:.4f})")
+
+##
 
 for i, level in enumerate(levels):
     data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
@@ -189,6 +217,34 @@ std_inter_elite = []
 std_inter_subelite = []
 std_mean_intra_elite = []
 std_mean_intra_subelite = []
+
+##
+# Effectuer le test de normalité pour chaque groupe
+for level in levels:
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')]['Score'].dropna()
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')]['Score'].dropna()
+
+    # Test de normalité pour le groupe Elite
+    stat_elite, p_value_elite = shapiro(data_elite)
+    if p_value_elite < 0.05:
+        print(f"Normality issue for Elite group at level {level} (p-value: {p_value_elite:.4f})")
+
+    # Test de normalité pour le groupe SubElite
+    stat_subelite, p_value_subelite = shapiro(data_subelite)
+    if p_value_subelite < 0.05:
+        print(f"Normality issue for SubElite group at level {level} (p-value: {p_value_subelite:.4f})")
+
+# Test d'égalité des variances
+for level in levels:
+    data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')]['Score'].dropna()
+    data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')]['Score'].dropna()
+
+    # Test de Levene pour l'égalité des variances
+    stat_levene, p_value_levene = levene(data_elite, data_subelite)
+    if p_value_levene < 0.05:
+        print(f"Variance equality issue at level {level} (p-value: {p_value_levene:.4f})")
+
+##
 
 for i, level in enumerate(levels):
     data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
