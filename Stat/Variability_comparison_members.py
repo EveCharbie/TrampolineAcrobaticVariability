@@ -110,6 +110,21 @@ for i, mvt_name in enumerate(order):
     means = filtered_data.groupby('Timing', observed=True)["upper_body"].mean()
     std_devs = filtered_data.groupby('Timing', observed=True)["upper_body"].std()
 
+    # #
+    # print(mvt_name)
+    # pourcentages = {}
+    # keys = list(means.keys())
+    # for i in range(len(keys) - 1):
+    #     key1, key2 = keys[i], keys[i + 1]
+    #     valeur1, valeur2 = means[key1], means[key2]
+    #     pourcentage = ((valeur2 - valeur1) / valeur1) * 100
+    #     pourcentages[f"{key1} to {key2}"] = pourcentage
+    #
+    # # Affichage des pourcentages
+    # for key, value in pourcentages.items():
+    #     print(f"{key}: {value:.2f}%")
+    # #
+
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=mvt_name,
                  color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
 
@@ -154,6 +169,21 @@ for i, mvt_name in enumerate(order):
 
     means = filtered_data.groupby('Timing', observed=True)["lower_body"].mean()
     std_devs = filtered_data.groupby('Timing', observed=True)["lower_body"].std()
+
+    # #
+    # print(mvt_name)
+    # pourcentages = {}
+    # keys = list(means.keys())
+    # for i in range(len(keys) - 1):
+    #     key1, key2 = keys[i], keys[i + 1]
+    #     valeur1, valeur2 = means[key1], means[key2]
+    #     pourcentage = ((valeur2 - valeur1) / valeur1) * 100
+    #     pourcentages[f"{key1} to {key2}"] = pourcentage
+    #
+    # # Affichage des pourcentages
+    # for key, value in pourcentages.items():
+    #     print(f"{key}: {value:.2f}%")
+    # #
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=mvt_name,
                  color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
