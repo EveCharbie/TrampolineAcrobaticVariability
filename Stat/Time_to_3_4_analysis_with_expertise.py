@@ -263,7 +263,7 @@ ax.legend(handles=legend_patches, title='Expertise')
 ax.set_ylim(5, 60)
 ax.set_xticks([1.5, 5.5, 9.5])
 ax.set_xticklabels(['41', '42', '43'])
-ax.set_title('Comparison of % Time to reach 3/4 twist by Expertise')
+ax.set_title('Comparison of % Time to reach 1/10 twist by Expertise')
 ax.set_xlabel('Difficulty Level')
 ax.set_ylabel('Time %')
 

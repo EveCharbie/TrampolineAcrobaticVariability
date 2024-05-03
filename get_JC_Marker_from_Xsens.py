@@ -78,6 +78,7 @@ for name in participants_name:
             Xsens_position_rotated_per_move = eye_tracking_metrics["Xsens_position_rotated_per_move"]
             laterality = eye_tracking_metrics["laterality"]
             wall_index = eye_tracking_metrics["wall_index"]
+            gaze_position_temporal_evolution_projected = eye_tracking_metrics["gaze_position_temporal_evolution_projected"]
 
             n_frames = Xsens_position_rotated_per_move.shape[0]
             Xsens_position = Xsens_position_rotated_per_move.reshape(n_frames, 23, 3).transpose(2, 1, 0)
@@ -206,6 +207,7 @@ for name in participants_name:
                 "subject_expertise": subject_expertise,
                 "length_segment": mean_length_segment,
                 "wall_index": wall_index,
+                "gaze_position_temporal_evolution_projected": gaze_position_temporal_evolution_projected,
             }
             total_length_member.append(mean_length_segment)
             folder_and_file_name_path = folder_path + f"{file_name}.mat"

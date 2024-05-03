@@ -130,8 +130,8 @@ def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_
         laterality = data_loaded["laterality"]
         length_segment = data_loaded["length_segment"]
         wall_index = data_loaded["wall_index"]
-
-        return DataFrame_with_colname, subject_expertise, laterality, length_segment, wall_index
+        gaze_position_temporal_evolution_projected = data_loaded["gaze_position_temporal_evolution_projected"]
+        return DataFrame_with_colname, subject_expertise, laterality, length_segment, wall_index, gaze_position_temporal_evolution_projected
     else:
         return DataFrame_with_colname
 

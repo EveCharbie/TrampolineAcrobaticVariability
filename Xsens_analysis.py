@@ -53,6 +53,7 @@ area_df = pd.DataFrame(columns=columns_names_area, index=liste_name)
 
 mean_SD_pelvis_all_subjects_acrobatics = []
 wall_index_all_subjects_acrobatics = []
+gaze_position_temporal_evolution_projected_all_subject_acrobatics = []
 
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
@@ -77,6 +78,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     mean_SD_pelvis_all_subjects = []
     wall_index_all_subject = []
+    gaze_position_temporal_evolution_projected_all_subject = []
 
     for id_name, name in enumerate(temp_liste_name):
         print(f"{name} {mvt_name} is running")
@@ -93,16 +95,19 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         length_subject = []
         subject_info_dict = {}
         wall_index_subject = []
+        gaze_position_temporal_evolution_projected_subject = []
 
         for file in fichiers_mat_subject:
             (data,
              subject_expertise,
              laterality,
              length_segment,
-             wall_index) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
+             wall_index,
+             gaze_position_temporal_evolution_projected) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
             data_subject.append(data)
             length_subject.append(length_segment)
             wall_index_subject.append(wall_index)
+            gaze_position_temporal_evolution_projected_subject.append(gaze_position_temporal_evolution_projected)
 
         joint_center_name_all_axes = data_subject[0].columns
         n_columns_all_axes = len(joint_center_name_all_axes)
@@ -315,6 +320,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         mean_SD_pelvis_all_subjects.append(result_subject[0])
         wall_index_all_subject.append(wall_index_subject)
+        gaze_position_temporal_evolution_projected_all_subject.append(gaze_position_temporal_evolution_projected_subject)
 
         area_under_curve = simpson(result_subject[0], x=time_values)
         print("Area under curves with simpson method :", area_under_curve)
@@ -325,6 +331,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     mean_SD_pelvis_all_subjects_acrobatics.append(mean_SD_pelvis_all_subjects)
     wall_index_all_subjects_acrobatics.append(wall_index_all_subject)
+    gaze_position_temporal_evolution_projected_all_subject_acrobatics.append(gaze_position_temporal_evolution_projected_all_subject)
+
 
     if n_half_twist != 0:
 
@@ -338,6 +346,7 @@ mat_data = {
                 "mean_SD_pelvis_all_subjects_acrobatics": mean_SD_pelvis_all_subjects_acrobatics,
                 "movement_to_analyse": movement_to_analyse,
                 "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics,
+                "gaze_position_temporal_evolution_projected_all_subject_acrobatics": gaze_position_temporal_evolution_projected_all_subject_acrobatics,
                 "liste_name": liste_name
             }
 
