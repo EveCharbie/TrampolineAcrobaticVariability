@@ -14,6 +14,7 @@ from TrampolineAcrobaticVariability.Function.Function_build_model import (
 )
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import find_index, check_matrix_orthogonality
 
+shoulder_include = False
 parent_list_xsens_JC = [
     "Pelvis",  # 0
     "L5",  # delete
@@ -100,8 +101,18 @@ for name in participants_name:
             # plt.show()
             ##
 
-            # Ne selectionner que les articulations necessaire
-            indices_a_supprimer = [1, 2, 3, 4, 5, 7, 8, 11, 12, 18, 22]
+            indices_a_supprimer = []
+            if shoulder_include == True:
+                elements_to_remove = ["L5", "L3", "T12", "T8", "Neck", "ShoulderR", "ShoulderL", "ToesR", "ToesL"]
+
+            else:
+                elements_to_remove = ["L5", "L3", "T12", "T8", "Neck", "ShoulderR", "UpperArmR",
+                                      "ShoulderL", "UpperArmL", "ToesR", "ToesL"]
+
+            for element in elements_to_remove:
+                element_index = find_index(element, parent_list_xsens_JC)
+                if element_index is not None:
+                    indices_a_supprimer.append(element_index)
 
             indices_total = range(Xsens_position.shape[1])
             indices_a_conserver = [i for i in indices_total if i not in indices_a_supprimer]
@@ -181,7 +192,14 @@ for name in participants_name:
 
             Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
 
-            indices_to_swap = [1, 2, 3, 4, 5, 7, 8, 10, 11]
+            indices_to_swap = []
+            elements_to_find = ["Head", "UpperArmR", "LowerArmR", "HandR", "UpperArmL", "LowerArmL",
+                                    "HandL", "LowerLegR", "FootR", "LowerLegL", "FootL"]
+
+            for element in elements_to_find:
+                element_index = find_index(element, parent_list_xsens_JC_complet)
+                if element_index is not None:
+                    indices_to_swap.append(element_index)
 
             # Boucler sur les indices spécifiés de l'axe 1
             for idx in indices_to_swap:
@@ -192,7 +210,6 @@ for name in participants_name:
                 Jc_in_pelvis_frame[1, idx, :] = temp
                 temp_2 = np.copy(Jc_in_pelvis_frame[0, idx, :])
                 Jc_in_pelvis_frame[0, idx, :] = -temp_2
-                # Jc_in_pelvis_frame[2, idx, :] = Jc_in_pelvis_frame[2, idx, :]
 
             mean_length_segment = np.mean(length_segment, axis=0)
 
@@ -209,17 +226,13 @@ for name in participants_name:
                 "wall_index": wall_index,
                 "gaze_position_temporal_evolution_projected": gaze_position_temporal_evolution_projected,
             }
-            total_length_member.append(mean_length_segment)
             folder_and_file_name_path = folder_path + f"{file_name}.mat"
 
             # Enregistrement dans un fichier .mat
             scipy.io.savemat(folder_and_file_name_path, mat_data)
 
-total_length = np.array(total_length_member)
-mean_total_length = np.mean(total_length, axis=0)
-print(mean_total_length)
-np.savetxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', [mean_total_length], delimiter=',', header='Mean', comments='')
-# colors = ['r', 'g', 'b']
+
+            # colors = ['r', 'g', 'b']
             # n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
             # plt.figure(figsize=(20, 3 * n_rows))
             #
@@ -238,7 +251,7 @@ np.savetxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', [mean_total
             # indices = [find_index("Pelvis", parent_list_xsens_JC_complet),
             #            find_index("UpperLegR", parent_list_xsens_JC_complet),
             #            find_index("UpperLegL", parent_list_xsens_JC_complet)]
-
+            #
             # fig, axs = plt.subplots(len(indices) + 1, 1, figsize=(14, 12))
             # for j, idx in enumerate(indices):
             #     axs[j].plot(Xsens_positions_complet[0, idx, :], label='X - x')

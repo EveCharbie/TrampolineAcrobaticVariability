@@ -264,8 +264,11 @@ def recons_kalman(n_frames, num_markers, markers_xsens, model, initial_guess):
     return q_recons, qdot_recons
 
 
-def find_index(name, list):
-    return list.index(name)
+def find_index(column_name, column_list):
+    if column_name in column_list:
+        return column_list.index(column_name)
+    else:
+        return None
 
 
 def calculate_rmsd(markers, pos_recons):

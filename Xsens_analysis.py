@@ -14,7 +14,9 @@ import mplcursors
 import matplotlib.lines as mlines
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     load_and_interpolate_for_point,
+    find_index
 )
+
 nombre_lignes_minimum = 10
 n_points = 100
 next_index = 0
@@ -112,8 +114,16 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         joint_center_name_all_axes = data_subject[0].columns
         n_columns_all_axes = len(joint_center_name_all_axes)
 
-        columns_to_exclude = [18, 19, 20, 27, 28, 29]
-        columns_to_excludev2 = [6, 9]
+        name_to_exclude = ["UpperLegR_X", "UpperLegR_Y", "UpperLegR_Z",
+                              "UpperLegL_X", "UpperLegL_Y", "UpperLegL_Z",
+                              "UpperArmR_X", "UpperArmR_Y", "UpperArmR_Z",
+                              "UpperArmL_X", "UpperArmL_Y", "UpperArmL_Z"]
+
+        columns_to_exclude = []
+        for column_name in columns_to_exclude:
+            column_index = find_index(column_name, joint_center_name_all_axes.tolist())
+            if column_index is not None:
+                columns_to_exclude.append(column_index)
 
 
         ################ Plot all try ################
