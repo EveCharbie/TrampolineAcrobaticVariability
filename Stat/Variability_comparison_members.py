@@ -216,4 +216,81 @@ plt.xlabel('Timing')
 plt.ylabel('Standard Deviation')
 plt.legend(title='File ID', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 
+
+print("Statistical test for all acrobatics")
+posthoc_results_total = perform_kruskal_and_dunn(all_data, 'upper_body', 'Timing')
+significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
+significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
+
+plt.figure(figsize=(12, 8))
+ax = plt.gca()
+pos_plot = np.array([1, 5, 9])
+
+means = all_data.groupby('Timing', observed=True)['upper_body'].mean()
+std_devs = all_data.groupby('Timing', observed=True)['upper_body'].std()
+
+plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black")
+plt.plot(pos_plot, means, '-', color="black")
+
+y_max = all_data["upper_body"].max() - 0.4
+
+for j in range(len(pos_plot) - 1):
+    p_value = significant_value_takeoff_75 if j == 0 else significant_value_75_landing
+
+    if p_value < 0.05:
+        p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
+        mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
+        line_y = y_max + 0.03 * i_plot
+
+        ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
+                  linestyles='solid', lw=1, color="black")
+        ax.vlines(x=pos_plot[j] + 0.1, ymin=line_y - 0.01, ymax=line_y, linestyles='solid',
+                  lw=1, color="black")
+        ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
+                  linestyles='solid', lw=1, color="black")
+        ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
+
+plt.xticks([1, 5, 9], categories)
+plt.title('Mean Upper Body Standard Deviation')
+plt.xlabel('Timing')
+plt.ylabel('Standard Deviation')
+
+
+print("Statistical test for all acrobatics")
+posthoc_results_total = perform_kruskal_and_dunn(all_data, 'lower_body', 'Timing')
+significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
+significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
+
+plt.figure(figsize=(12, 8))
+ax = plt.gca()
+pos_plot = np.array([1, 5, 9])
+
+means = all_data.groupby('Timing', observed=True)['lower_body'].mean()
+std_devs = all_data.groupby('Timing', observed=True)['lower_body'].std()
+
+plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black")
+plt.plot(pos_plot, means, '-', color="black")
+
+y_max = all_data["lower_body"].max() - 0.4
+
+for j in range(len(pos_plot) - 1):
+    p_value = significant_value_takeoff_75 if j == 0 else significant_value_75_landing
+
+    if p_value < 0.05:
+        p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
+        mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
+        line_y = y_max + 0.03 * i_plot
+
+        ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
+                  linestyles='solid', lw=1, color="black")
+        ax.vlines(x=pos_plot[j] + 0.1, ymin=line_y - 0.01, ymax=line_y, linestyles='solid',
+                  lw=1, color="black")
+        ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
+                  linestyles='solid', lw=1, color="black")
+        ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
+
+plt.xticks([1, 5, 9], categories)
+plt.title('Mean Lower Body Standard Deviation')
+plt.xlabel('Timing')
+plt.ylabel('Standard Deviation')
 plt.show()
