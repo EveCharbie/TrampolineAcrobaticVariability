@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
-import spm1d
+# import spm1d
 import matplotlib.lines as mlines
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     load_and_interpolate_for_point,
+    find_index
 )
 
-# home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/831<"
-home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/ArMa/Pos_JC/43"
+home_path_xsens = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/Pos_JC/831<"
 n_points = 100
 alpha = 0.05
 
@@ -24,8 +24,7 @@ for root, dirs, files in os.walk(home_path_xsens):
 
 data_xsens = [load_and_interpolate_for_point(file, n_points) for file in fichiers_mat_xsens]
 
-# home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Pos_JC/Gui_831_contact"
-home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/SaMi/Pos_JC/43"
+home_path_vicon = "/home/lim/Documents/StageMathieu/DataTrampo/Guillaume/Pos_JC/Gui_831_contact"
 
 
 fichiers_mat_vicon = []
@@ -37,24 +36,34 @@ for root, dirs, files in os.walk(home_path_vicon):
 
 data_vicon = [load_and_interpolate_for_point(file, n_points) for file in fichiers_mat_vicon]
 
-joint_center_name_all_axes = data_vicon[0].columns
+joint_center_name_all_axes = data_xsens[0].columns
 n_columns_all_axes = len(joint_center_name_all_axes)
 
 plt.figure(figsize=(30, 30))
 
-columns_to_exclude = [18, 19, 20, 27, 28, 29]
-columns_to_excludev2 = [6, 9]
+name_to_exclude = ['UpperLegR_X', 'UpperLegR_Y', 'UpperLegR_Z',
+                   'UpperLegL_X', 'UpperLegL_Y', 'UpperLegL_Z',
+                   'UpperArmR_X', 'UpperArmR_Y', 'UpperArmR_Z',
+                   'UpperArmL_X', 'UpperArmL_Y', 'UpperArmL_Z',
+                   ]
+
+columns_to_exclude = []
+for column_name in name_to_exclude:
+    column_index = find_index(column_name, joint_center_name_all_axes.tolist())
+    if column_index is not None:
+        columns_to_exclude.append(column_index)
+
 members = [
-    "Pelvis",
-    "Tete",
-    "AvBrasD",
-    "MainD",
-    "AvBrasG",
-    "MainG",
-    "JambeD",
-    "PiedD",
-    "JambeG",
-    "PiedG",
+    "Pelvic",
+    "Head",
+    "LowerArmR",
+    "HandR",
+    "LowerArmL",
+    "HandL",
+    "LowerLegR",
+    "FootR",
+    "LowerLegL",
+    "FootL",
 ]
 
 ## Plot all try
@@ -131,7 +140,7 @@ result_vicon = np.zeros((len(members), n_points))
 
 fig, axs = plt.subplots(5, 2, figsize=(14, 16))
 
-for i in range(10):
+for i in range(len(members)):
     start_index = i * 3
     end_index = start_index + 3
     result_xsens[i] = np.mean(std_xsens_all_data[start_index:end_index], axis=0)
@@ -165,28 +174,28 @@ all_data_xsens = np.array(all_data_xsens)
 total_dofs = all_data_vicon.shape[2]
 
 
-plt.figure(figsize=(30, 24), dpi=100)
-
-for dof in range(total_dofs):
-    ax = plt.subplot(6, 6, dof + 1)
-
-    # T-test pour données indépendantes
-    t = spm1d.stats.ttest2(all_data_vicon[:, :, dof], all_data_xsens[:, :, dof])
-    ti = t.inference(alpha, two_tailed=True, interp=True)
-
-    # Plot des résultats
-    ti.plot(ax=ax)
-    ti.plot_threshold_label(ax=ax, fontsize=8)  # Ajoute le seuil de signification sur le graphique
-    ti.plot_p_values(ax=ax, size=8, offsets=[(0, 0.5)])  # Affiche les valeurs p sur le graphique
-    plt.title(f"{joint_center_name_all_axes[dof]}")
-
-    # Cacher les noms des axes pour les graphiques intérieurs
-    if dof % 6 != 0:  # Cacher les étiquettes de l'axe y sauf pour la première colonne
-        plt.setp(ax.get_yticklabels(), visible=False)
-    if dof < 30:  # Cacher les étiquettes de l'axe x sauf pour la dernière ligne
-        plt.setp(ax.get_xticklabels(), visible=False)
-
-# Ajustement de l'espacement et affichage
-plt.tight_layout()
-plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5, bottom=0.05)
+# plt.figure(figsize=(30, 24), dpi=100)
+#
+# for dof in range(total_dofs):
+#     ax = plt.subplot(6, 6, dof + 1)
+#
+#     # T-test pour données indépendantes
+#     t = spm1d.stats.ttest2(all_data_vicon[:, :, dof], all_data_xsens[:, :, dof])
+#     ti = t.inference(alpha, two_tailed=True, interp=True)
+#
+#     # Plot des résultats
+#     ti.plot(ax=ax)
+#     ti.plot_threshold_label(ax=ax, fontsize=8)  # Ajoute le seuil de signification sur le graphique
+#     ti.plot_p_values(ax=ax, size=8, offsets=[(0, 0.5)])  # Affiche les valeurs p sur le graphique
+#     plt.title(f"{joint_center_name_all_axes[dof]}")
+#
+#     # Cacher les noms des axes pour les graphiques intérieurs
+#     if dof % 6 != 0:  # Cacher les étiquettes de l'axe y sauf pour la première colonne
+#         plt.setp(ax.get_yticklabels(), visible=False)
+#     if dof < 30:  # Cacher les étiquettes de l'axe x sauf pour la dernière ligne
+#         plt.setp(ax.get_xticklabels(), visible=False)
+#
+# # Ajustement de l'espacement et affichage
+# plt.tight_layout()
+# plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5, bottom=0.05)
 plt.show()

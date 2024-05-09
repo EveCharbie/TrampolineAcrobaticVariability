@@ -120,7 +120,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                               "UpperArmL_X", "UpperArmL_Y", "UpperArmL_Z"]
 
         columns_to_exclude = []
-        for column_name in columns_to_exclude:
+        for column_name in name_to_exclude:
             column_index = find_index(column_name, joint_center_name_all_axes.tolist())
             if column_index is not None:
                 columns_to_exclude.append(column_index)
