@@ -37,61 +37,57 @@ list_name_for_movement = data_loaded["list_name_for_movement"]
 
 X, Y = np.meshgrid([-7 * 0.3048, 7 * 0.3048], [-3.5 * 0.3048, 3.5 * 0.3048])
 
-print(liste_name)
+name_to_color = {
+    'GuSe': '#1f77b4', 'JaSh': '#ff7f0e', 'JeCa': '#2ca02c', 'AnBe': '#d62728',
+    'AnSt': '#9467bd', 'SaBe': '#8c564b', 'JoBu': '#e377c2', 'JaNo': '#7f7f7f',
+    'SaMi': '#bcbd22', 'AlLe': '#17becf', 'MaBo': '#aec7e8', 'SoMe': '#ffbb78',
+    'JeCh': '#98df8a', 'LiDu': '#ff9896', 'LeJa': '#c5b0d5', 'ArMa': '#c49c94',
+    'AlAd': '#dbdb8d'
+}
+
 num_points = 100
 
 for idx_mvt, mvt in enumerate(movement_to_analyse):
 
     up_subject = 0.1
-    custom_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-                     '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-                     '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
-                     '#c49c94', '#dbdb8d']
-
-    colors = custom_colors[:len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])]
     max_value = np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
-    fig, ax = plt.subplots(figsize=(3, 6))
+    # Configuration initiale des axes et des listes de ticks et labels
+    fig, ax = plt.subplots(figsize=(3, 7))
+    initial_ticks = np.arange(0, max_value, 0.2)
+    current_ticks = list(initial_ticks)
+    current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 
-    for idx_subject in range(len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])):
-        color = colors[idx_subject]
+    # Boucle sur les sujets
+    for idx_subject, name_subject in enumerate(list_name_for_movement[0][idx_mvt]):
+        color = name_to_color[name_subject]
         up_line = max_value + up_subject
 
-        for idx_trials in range(len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
-            gaze_position = gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
-            ##
+        for idx_trials in range(
+                len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
+            gaze_position = \
+                gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
             data = np.zeros(len(gaze_position), dtype=int)
 
             for idx_ligne, ligne in enumerate(gaze_position):
-                if X[0][0] <= ligne[0] <= X[0][1] and \
-                        Y[:, 1][0] <= ligne[1] <= Y[:, 1][1]:
+                if X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1]:
                     data[idx_ligne] = 0
                 else:
                     data[idx_ligne] = 1
 
-            ##
-
-            # data = wall_index_all_subjects_acrobatics[0][i][0][j][0][k]
             data = pd.DataFrame(data)
             data_norm = data.apply(lambda x: safe_interpolate(x, num_points))
 
-            # Choose the y-coordinate where the line will be plotted
             y_line_position = up_line
-
-            # Create an array to hold the y-values for the plot line
             y_values = np.full(len(data_norm[0]), np.nan)
-
-            # Set y-values to the chosen y-coordinate where the data is zero
             y_values[data_norm[0] == 0] = y_line_position
+            ax.plot(y_values, '-', color=color, label='Presence of Zero' if idx_trials == 0 else "")
 
-            # Plot the line with the color obtained for this iteration of j
-            ax.plot(y_values, '-', color=color, label='Presence of Zero')
-
-            ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
-            ax.set_xlabel("Index")
-            ax.set_ylabel("Line Presence (Custom Y Position)")
-            ax.set_xlim(0, len(data_norm[0]))
-            ax.set_ylim(0, max_value+0.45)
-            ax.set_yticks(np.arange(0, max_value, 0.2))
+            if max_value + up_subject not in current_ticks:
+                current_ticks.append(max_value + up_subject)
+                current_labels.append(str(name_subject))
+            current_ticks.sort()
+            special_index = current_ticks.index(max_value + up_subject)
+            current_labels[special_index] = str(name_subject)
 
             up_line += 0.0005
 
@@ -99,12 +95,24 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                  color=color, linestyle='--')
         up_subject += 0.02
 
-    # Ajouter des lignes fantômes pour la légende
-    line1, = plt.plot([], [], color='black', label='Gaze on trampoline')
-    line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal')
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels, fontsize=9)
 
-    #if idx_mvt == 0:
-        # Créer la légende
+    for label in ax.get_yticklabels():
+        if label.get_text().replace('.', '', 1).isdigit():
+            label.set_fontsize(10)
+        else:
+            label.set_fontsize(5)
+
+    ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
+    ax.set_xlabel("Index")
+    ax.set_ylabel("Line Presence (Custom Y Position)")
+    ax.set_xlim(0, len(data_norm[0]))
+    ax.set_ylim(0, max_value + 0.45)
+
+    # Ajout de la légende
+    line1, = plt.plot([], [], color='black', label='Gaze on trampoline')
+    line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
     plt.legend(handles=[line1, line2], fontsize='small')
 
     plt.title(f'{mvt}', fontsize=15)
@@ -112,7 +120,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     plt.ylabel('SD pelvic rotation')
     plt.savefig(f"/home/lim/Documents/StageMathieu/meeting/{mvt}_gaze.png")
     plt.subplots_adjust(left=0.11, right=0.957, top=0.937, bottom=0.082)
-    plt.show()
-
+    # plt.show()
 
 

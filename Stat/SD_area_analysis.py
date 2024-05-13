@@ -54,12 +54,6 @@ combined_data['Type'] = combined_data['Difficulty'].map(lambda x: ratio_twist_so
 # Compute linear regression
 slope, intercept, r_value, p_value, std_err = linregress(combined_data['TwistRatio'], combined_data['Score'])
 
-# Compute the predicted values using the regression line equation
-predicted_values = slope * combined_data['TwistRatio'] + intercept
-
-# Calculate R-squared value
-r_squared = r2_score(combined_data['Score'], predicted_values)
-
 # Create the regression line data
 x_reg_line = np.linspace(min(combined_data['TwistRatio']), max(combined_data['TwistRatio']), 100)
 y_reg_line = slope * x_reg_line + intercept
@@ -74,7 +68,7 @@ for (difficulty, type), group_data in combined_data.groupby(['Difficulty', 'Type
     ax.scatter(group_data['TwistRatio'], group_data['Score'], label=f"{difficulty}", marker=markers[type])
 
 # Plot regression line
-ax.plot(x_reg_line, y_reg_line, 'r-', label=f'R2 {r_squared:.2f}')
+ax.plot(x_reg_line, y_reg_line, 'r-', label=f'R2 {r_value**2:.2f}')
 
 # Set titles and labels
 ax.set_title('Scatter Plot Grouped by Twist to Somersault Ratio with Regression Line')
