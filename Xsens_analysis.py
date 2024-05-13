@@ -56,12 +56,9 @@ area_df = pd.DataFrame(columns=columns_names_area, index=liste_name)
 mean_SD_pelvis_all_subjects_acrobatics = []
 wall_index_all_subjects_acrobatics = []
 gaze_position_temporal_evolution_projected_all_subject_acrobatics = []
+list_name_for_movement = []
 
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
-
-    # if "ArMa" in liste_name:
-    #     liste_name.remove("ArMa")
-    #     liste_name.remove("MaBo")
 
     temp_liste_name = []
     for name in liste_name:
@@ -70,6 +67,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             print(f"Subject {name} didn't realize {mvt_name}")
         else:
             temp_liste_name.append(name)
+
+    list_name_for_movement.append(temp_liste_name)
 
     anova_rot_df = pd.DataFrame(columns=columns_names_anova_rotation)
     anova_pos_df = pd.DataFrame(columns=columns_names_anova_position)
@@ -357,7 +356,8 @@ mat_data = {
                 "movement_to_analyse": movement_to_analyse,
                 "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics,
                 "gaze_position_temporal_evolution_projected_all_subject_acrobatics": gaze_position_temporal_evolution_projected_all_subject_acrobatics,
-                "liste_name": liste_name
+                "liste_name": liste_name,
+                "list_name_for_movement": list_name_for_movement
             }
 
 print(area_df)
