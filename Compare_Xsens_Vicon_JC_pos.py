@@ -127,6 +127,8 @@ for i in range(n_columns_all_axes):
     if i == 0:
         plt.legend(loc='upper right')
 plt.tight_layout()
+
+
 plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
 
 std_xsens_all_data = np.stack(std_xsens_all_data)
@@ -138,7 +140,7 @@ std_vicon_all_data = np.stack(std_vicon_all_data)
 result_xsens = np.zeros((len(members), n_points))
 result_vicon = np.zeros((len(members), n_points))
 
-fig, axs = plt.subplots(5, 2, figsize=(14, 16))
+fig, axs = plt.subplots(5, 2, figsize=(13, 17))
 
 for i in range(len(members)):
     start_index = i * 3
@@ -148,14 +150,18 @@ for i in range(len(members)):
 
     row = i // 2
     col = i % 2
-    axs[row, col].plot(result_vicon[i], color="red")
-    axs[row, col].plot(result_xsens[i], color="blue")
+    # S'assurer que les étiquettes pour la légende sont définies
+    line1, = axs[row, col].plot(result_vicon[i], color="red", label="Vicon")
+    line2, = axs[row, col].plot(result_xsens[i], color="blue", label="Xsens")
     axs[row, col].set_title(f'{members[i]}')
     axs[row, col].set_ylabel('SD')
-    if i == 0:
-        plt.legend(loc='upper right')
-plt.tight_layout()
-# plt.show()
+
+    # Pour inclure la légende sur chaque sous-plot ou juste pour i == 1 (exclusif)
+    if i == 0:  # Cette condition peut être changée pour `True` si vous souhaitez la légende sur tous les graphiques
+        axs[row, col].legend(loc='upper right')
+
+plt.subplots_adjust(top=0.95, hspace=0.35, wspace=0.2)
+plt.show()
 
 # ## SPM plot
 
