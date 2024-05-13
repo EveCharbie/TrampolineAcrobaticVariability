@@ -15,7 +15,7 @@ home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
 rotation_files = []
 index = ['takeoff_75', '75_landing']
-order = ['8-1o', '8-1<', '811<', '41', '41o', '42', '8-3<', '831<', '822', '43']
+order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 
 
 for root, dirs, files in os.walk(home_path):
@@ -125,11 +125,11 @@ for i, mvt_name in enumerate(order):
             i_plot += 1
 
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Standard Deviation Across Different Timings from Multiple Files')
+plt.title('Pelvic Rotation')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
-
+plt.ylabel('SD')
 plt.legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/rotation.png")
 
 
 print("Statistical test for all acrobatics")
@@ -178,7 +178,9 @@ for j in range(len(pos_plot) - 1):
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Mean Standard Deviation Across Different Timings')
+plt.title('Pelvic Rotation')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
+plt.ylabel('SD')
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_rotation.png")
+
 plt.show()

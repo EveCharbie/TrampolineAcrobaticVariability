@@ -14,7 +14,7 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
 all_data = pd.DataFrame()
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
-order = ['8-1o', '8-1<', '811<', '41', '41o', '42', '8-3<', '831<', '822', '43']
+order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 index = ['takeoff_75', '75_landing']
 body_parts = ['upper_body', 'lower_body']
 
@@ -152,10 +152,11 @@ for i, mvt_name in enumerate(order):
             i_plot += 1
 
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Upper Body Standard Deviation')
+plt.title('Upper Body')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
+plt.ylabel('SD')
 plt.legend(title='File ID', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body.png")
 
 
 ## Plot lower body
@@ -211,11 +212,11 @@ for i, mvt_name in enumerate(order):
             i_plot += 1
 
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Lower Body Standard Deviation')
+plt.title('Lower Body')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
+plt.ylabel('SD')
 plt.legend(title='File ID', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
-
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png")
 
 print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'upper_body', 'Timing')
@@ -263,9 +264,10 @@ for j in range(len(pos_plot) - 1):
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Mean Upper Body Standard Deviation')
+plt.title('Upper Body')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
+plt.ylabel('SD')
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png")
 
 
 print("Statistical test for all acrobatics")
@@ -314,7 +316,9 @@ for j in range(len(pos_plot) - 1):
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Mean Lower Body Standard Deviation')
+plt.title('Lower Body')
 plt.xlabel('Timing')
-plt.ylabel('Standard Deviation')
+plt.ylabel('SD')
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png")
+
 plt.show()
