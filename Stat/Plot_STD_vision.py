@@ -33,6 +33,7 @@ movement_to_analyse = data_loaded["movement_to_analyse"]
 wall_index_all_subjects_acrobatics = data_loaded["wall_index_all_subjects_acrobatics"]
 liste_name = data_loaded["liste_name"]
 gaze_position_temporal_evolution_projected_all_subject_acrobatics = data_loaded["gaze_position_temporal_evolution_projected_all_subject_acrobatics"]
+list_name_for_movement = data_loaded["list_name_for_movement"]
 
 X, Y = np.meshgrid([-7 * 0.3048, 7 * 0.3048], [-3.5 * 0.3048, 3.5 * 0.3048])
 
@@ -49,7 +50,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
     colors = custom_colors[:len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])]
     max_value = np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(3, 6))
 
     for idx_subject in range(len(wall_index_all_subjects_acrobatics[0][idx_mvt][0])):
         color = colors[idx_subject]
@@ -68,7 +69,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                     data[idx_ligne] = 1
 
             ##
-
 
             # data = wall_index_all_subjects_acrobatics[0][i][0][j][0][k]
             data = pd.DataFrame(data)
@@ -91,16 +91,28 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             ax.set_ylabel("Line Presence (Custom Y Position)")
             ax.set_xlim(0, len(data_norm[0]))
             ax.set_ylim(0, max_value+0.45)
+            ax.set_yticks(np.arange(0, max_value, 0.2))
 
             up_line += 0.0005
-        plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject], label=f'Subject {idx_subject + 1}', color=color)
+
+        plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject], label=f'Subject {idx_subject + 1}',
+                 color=color, linestyle='--')
         up_subject += 0.02
 
-    plt.title(f'Data for {mvt} Acrobatic Movement')
-    plt.xlabel('Data Points')
-    plt.ylabel('Values')
-    plt.show()
+    # Ajouter des lignes fantômes pour la légende
+    line1, = plt.plot([], [], color='black', label='Gaze on trampoline')
+    line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal')
 
+    #if idx_mvt == 0:
+        # Créer la légende
+    plt.legend(handles=[line1, line2], fontsize='small')
+
+    plt.title(f'{mvt}', fontsize=15)
+    plt.xlabel('Time (%)')
+    plt.ylabel('SD pelvic rotation')
+    plt.savefig(f"/home/lim/Documents/StageMathieu/meeting/{mvt}_gaze.png")
+    plt.subplots_adjust(left=0.11, right=0.957, top=0.937, bottom=0.082)
+    plt.show()
 
 
 
