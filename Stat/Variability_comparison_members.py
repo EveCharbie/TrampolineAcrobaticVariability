@@ -15,6 +15,24 @@ all_data = pd.DataFrame()
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
+
+full_name_acrobatics = {
+    '4-': '4-/',
+    '4-o':  '4-o',
+    '8--o': '8--o',
+    '8-1<': '8-1<',
+    '8-1o': '8-1o',
+    '41': '41/',
+    '811<': '811<',
+    '41o': '41o',
+    '8-3<': '8-3<',
+    '42': '42/',
+    '822': '822/',
+    '831<': '831<',
+    '43': '43/',
+
+}
+
 index = ['takeoff_75', '75_landing']
 body_parts = ['upper_body', 'lower_body']
 
@@ -100,11 +118,13 @@ colors = plt.colormaps['tab20b_r'](np.linspace(0, 1, len(all_data['Source'].uniq
 
 ## Plot upper body
 
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(12, 8))
 ax = plt.gca()
 i_plot = 0
 
 for i, mvt_name in enumerate(order):
+    name_acro = full_name_acrobatics[mvt_name]
+
     filtered_data = all_data[all_data['Source'].str.contains(mvt_name)]
 
     means = filtered_data.groupby('Timing', observed=True)["upper_body"].mean()
@@ -125,7 +145,7 @@ for i, mvt_name in enumerate(order):
     #     print(f"{key}: {value:.2f}%")
     # #
 
-    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=mvt_name,
+    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
                  color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
@@ -155,17 +175,20 @@ plt.xticks([1.5, 5.5, 9.5], categories)
 plt.title('Upper Body')
 plt.xlabel('Timing')
 plt.ylabel('SD')
-plt.legend(title='File ID', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+plt.subplots_adjust(left=0.05, right=0.885, top=0.937, bottom=0.082)
+plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body.png")
 
 
 ## Plot lower body
 
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(12, 8))
 ax = plt.gca()
 i_plot = 0
 
 for i, mvt_name in enumerate(order):
+    name_acro = full_name_acrobatics[mvt_name]
+
     filtered_data = all_data[all_data['Source'].str.contains(mvt_name)]
 
     means = filtered_data.groupby('Timing', observed=True)["lower_body"].mean()
@@ -186,7 +209,7 @@ for i, mvt_name in enumerate(order):
     #     print(f"{key}: {value:.2f}%")
     # #
 
-    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=mvt_name,
+    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
                  color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
@@ -215,7 +238,8 @@ plt.xticks([1.5, 5.5, 9.5], categories)
 plt.title('Lower Body')
 plt.xlabel('Timing')
 plt.ylabel('SD')
-plt.legend(title='File ID', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+plt.subplots_adjust(left=0.05, right=0.885, top=0.937, bottom=0.082)
+plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png")
 
 print("Statistical test for all acrobatics")
@@ -267,6 +291,7 @@ plt.xticks([1, 5, 9], categories)
 plt.title('Upper Body')
 plt.xlabel('Timing')
 plt.ylabel('SD')
+plt.tight_layout()
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png")
 
 
@@ -319,6 +344,7 @@ plt.xticks([1, 5, 9], categories)
 plt.title('Lower Body')
 plt.xlabel('Timing')
 plt.ylabel('SD')
+plt.tight_layout()
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png")
 
 plt.show()

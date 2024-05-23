@@ -26,7 +26,7 @@ def safe_interpolate(x, num_points):
 
     return interpolated_values
 
-file_path = "/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
+file_path = "/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
 movement_to_analyse = data_loaded["movement_to_analyse"]
@@ -78,7 +78,7 @@ full_name_acrobatics = {
     '41o': '41o',
     '8-3<': '8-3<',
     '42': '42/',
-    '822': '822',
+    '822': '822/',
     '831<': '831<',
     '43': '43/',
 
