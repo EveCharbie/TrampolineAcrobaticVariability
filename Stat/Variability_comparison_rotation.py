@@ -143,7 +143,7 @@ for i, mvt_name in enumerate(order):
             i_plot += 1
 
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Pelvic Rotation')
+plt.title('Pelvis Rotation')
 plt.xlabel('Timing')
 plt.ylabel('SD')
 plt.subplots_adjust(left=0.035, right=0.91, top=0.937, bottom=0.082)
@@ -197,7 +197,7 @@ for j in range(len(pos_plot) - 1):
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Pelvic Rotation')
+plt.title('Pelvis Rotation')
 plt.xlabel('Timing')
 plt.ylabel('SD')
 plt.tight_layout()
