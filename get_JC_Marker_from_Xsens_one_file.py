@@ -5,7 +5,8 @@ import numpy as np
 import bioviz
 import os
 import scipy
-
+from scipy.spatial.transform import Rotation as R
+from scipy.signal import savgol_filter
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from TrampolineAcrobaticVariability.Function.Function_build_model import (
@@ -40,7 +41,7 @@ parent_list_xsens_JC = [
     "ToesL",  # delete
 ]
 
-chemin_fichier_pkl = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/GuSe/831</a4ff449f_0_0-120_283__831<__0__eyetracking_metrics.pkl"
+chemin_fichier_pkl = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/SaMi/41/41400296_0_0-44_243__41__0__eyetracking_metrics.pkl"
 with open(chemin_fichier_pkl, "rb") as fichier_pkl:
     # Charger les données à partir du fichier ".pkl"
     eye_tracking_metrics = pickle.load(fichier_pkl)
@@ -95,6 +96,8 @@ n_markers = len(parent_list_xsens_JC_complet)
 
 Jc_in_pelvis_frame = np.ndarray((3, n_markers, n_frames))
 
+rot_head_complet = []
+
 for i in range(n_frames):
     mid_hip_pos = (Xsens_positions_complet[:, find_index("UpperLegR", parent_list_xsens_JC_complet), i] +
                    Xsens_positions_complet[:, find_index("UpperLegL", parent_list_xsens_JC_complet), i]) / 2
@@ -103,6 +106,10 @@ for i in range(n_frames):
                                          Xsens_orientation_per_move_complet[i, :])
     rot_mov = calculer_rotation_et_angle(find_index("Pelvis", parent_list_xsens_JC_complet),
                                          Xsens_orientation_per_move_complet[i, :], move_orientation)
+
+    rot_head = calculer_rotation_et_angle(find_index("Head", parent_list_xsens_JC_complet),
+                                         Xsens_orientation_per_move_complet[i, :], move_orientation)
+    rot_head_complet.append(rot_head)
 
     for idx, jcname in enumerate(parent_list_xsens_JC_complet):
 
@@ -126,12 +133,59 @@ for i in range(n_frames):
             P2_prime = convert_marker_to_local_frame(mid_hip_pos, rot_mov_without_zrot, Xsens_positions_complet[:, idx, i])
             Jc_in_pelvis_frame[:, idx, i] = P2_prime
 
-# Jc_in_pelvis_frame[:, 0:3, :] = np.unwrap(Jc_in_pelvis_frame[:, 0:3, :], axis=2)
-# Jc_in_pelvis_frame[:, 0, :] = np.unwrap(Jc_in_pelvis_frame[:, 0, :])
-# Jc_in_pelvis_frame[:, 1, :] = np.unwrap(Jc_in_pelvis_frame[:, 1, :])
-# Jc_in_pelvis_frame[:, 2, :] = np.unwrap(Jc_in_pelvis_frame[:, 2, :])
 Jc_in_pelvis_frame = np.unwrap(Jc_in_pelvis_frame)
 
+##
+
+
+def rotation_matrix_to_axis_angle(rotation_matrix):
+    r = R.from_matrix(rotation_matrix)
+    return r.as_rotvec()
+
+
+def calculate_angular_velocity(rotation_matrices, delta_t):
+    angular_velocities = []
+    num_frames = len(rotation_matrices)
+
+    for i in range(1, num_frames):
+        delta_rotation_matrix = np.dot(rotation_matrices[i], np.linalg.inv(rotation_matrices[i - 1]))
+
+        delta_rotvec = rotation_matrix_to_axis_angle(delta_rotation_matrix)
+
+        angular_velocity = delta_rotvec / delta_t
+        angular_velocities.append(angular_velocity)
+
+    return np.array(angular_velocities)
+
+
+def radians_to_degrees(angular_velocities):
+    return angular_velocities * (180 / np.pi)
+
+
+def calculate_total_angular_speed(angular_velocities):
+    return np.linalg.norm(angular_velocities, axis=1)
+
+
+delta_t = 1/60
+angular_velocities = calculate_angular_velocity(rot_head_complet, delta_t)
+angular_velocities_degrees = radians_to_degrees(angular_velocities)
+angular_velocities_filtered = savgol_filter(angular_velocities_degrees, window_length=11, polyorder=2, axis=0)
+total_angular_speed = calculate_total_angular_speed(angular_velocities_filtered)# Tracer les vitesses angulaires
+time_steps = np.arange(1, len(rot_head_complet)) * delta_t
+
+plt.figure(figsize=(10, 6))
+plt.plot(time_steps, angular_velocities_filtered[:, 0], label='Filtré autour de x')
+plt.plot(time_steps, angular_velocities_filtered[:, 1], label='Filtré autour de y')
+plt.plot(time_steps, angular_velocities_filtered[:, 2], label='Filtré autour de z')
+plt.plot(time_steps, total_angular_speed, label='total rot')
+
+plt.xlabel('Temps (s)')
+plt.ylabel('Vitesse angulaire (rad/s)')
+plt.title('Vitesse angulaire vs Temps (avec filtre)')
+plt.legend()
+plt.grid(True)
+plt.show()
+##
 
 colors = ['r', 'g', 'b']
 n_rows = int(np.ceil(Jc_in_pelvis_frame.shape[1] / 4))
