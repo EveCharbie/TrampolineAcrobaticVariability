@@ -283,7 +283,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             if anova_time_to75_df[name].dtype != 'object':
                 anova_time_to75_df[name] = anova_time_to75_df[name].astype('object')
 
-            anova_time_to75_df.at[0, name] = str(subject_expertise[0])
+            # anova_time_to75_df.at[0, name] = str(subject_expertise[0])
 
             ##
             if len(timestramp_treshold_subject_10) > len(anova_time_to10_df):
@@ -297,7 +297,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             if anova_time_to10_df[name].dtype != 'object':
                 anova_time_to10_df[name] = anova_time_to10_df[name].astype('object')
 
-            anova_time_to10_df.at[0, name] = str(subject_expertise[0])
+            # anova_time_to10_df.at[0, name] = str(subject_expertise[0])
             ##
 
             for id_member, member in enumerate(members[2:], start=2):
