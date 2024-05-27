@@ -93,24 +93,6 @@ for file in position_files:
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
 
-# fig, axes = plt.subplots(1, 2, figsize=(24, 8))  # 1 row, 2 columns of plots
-#
-# sns.pointplot(x='Timing', y='upper_body', hue='Source', data=all_data, dodge=0.5,
-#               capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd', ax=axes[0])
-# axes[0].set_title('Upper Body Standard Deviation Across Different Timings')
-# axes[0].set_xlabel('Timing')
-# axes[0].set_ylabel('Standard Deviation')
-# axes[0].legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-#
-# sns.pointplot(x='Timing', y='lower_body', hue='Source', data=all_data, dodge=0.5,
-#               capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd', ax=axes[1])
-# axes[1].set_title('Lower Body Standard Deviation Across Different Timings')
-# axes[1].set_xlabel('Timing')
-# axes[1].set_ylabel('Standard Deviation')
-# axes[1].legend(title='File ID', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-#
-# plt.tight_layout()
-# plt.show()
 
 categories = all_data['Timing'].cat.categories
 pos_plot = np.array([1, 5, 9])
@@ -118,7 +100,10 @@ colors = plt.colormaps['tab20b_r'](np.linspace(0, 1, len(all_data['Source'].uniq
 
 ## Plot upper body
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(363 / 96, 242 / 96))
+initial_ticks = np.arange(0, 1.4, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 i_plot = 0
 
@@ -146,9 +131,9 @@ for i, mvt_name in enumerate(order):
     # #
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
-                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
+                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
 
-    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
+    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
 
     y_max = all_data["upper_body"].max()
 
@@ -163,26 +148,36 @@ for i, mvt_name in enumerate(order):
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i], linestyles='solid',
+            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.03, ymax=line_y, colors=colors[i], linestyles='solid',
                       lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.03, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.01, p_text, ha='center', va='bottom', color=colors[i])
+            ax.text(mid_point, line_y - 0.055, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
-            i_plot += 1
+            i_plot += 1.6
+
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
 
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Upper Body')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.subplots_adjust(left=0.05, right=0.885, top=0.937, bottom=0.082)
+# plt.title('Upper Body')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
 plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body.png")
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body.png", dpi=1000)
 
 
 ## Plot lower body
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(363 / 96, 242 / 96))
+initial_ticks = np.arange(0, 0.6, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 i_plot = 0
 
@@ -210,9 +205,9 @@ for i, mvt_name in enumerate(order):
     # #
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
-                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
+                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
 
-    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
+    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
 
     y_max = all_data["lower_body"].max()
 
@@ -223,31 +218,43 @@ for i, mvt_name in enumerate(order):
         if p_value < 0.05:
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            line_y = y_max + 0.02 * i_plot
+            line_y = (y_max-0.08) + 0.03 * i_plot
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.006, ymax=line_y, colors=colors[i], linestyles='solid',
+            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i], linestyles='solid',
                       lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.006, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.005, p_text, ha='center', va='bottom', color=colors[i])
+            ax.text(mid_point, line_y - 0.018, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
             i_plot += 1
 
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
+
 plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Lower Body')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.subplots_adjust(left=0.05, right=0.885, top=0.937, bottom=0.082)
+# plt.title('Lower Body')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
 plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png")
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png", dpi=1000)
 
 print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'upper_body', 'Timing')
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
 significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
 
-plt.figure(figsize=(12, 8))
+## Upper body mean
+
+plt.figure(figsize=(363 / 96, 242 / 96))
+initial_ticks = np.arange(0, 1.2, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 pos_plot = np.array([1, 5, 9])
 
@@ -266,8 +273,8 @@ for i in range(len(keys) - 1):
 for key, value in pourcentages.items():
     print(f"{key}: {value:.2f}%")
 
-plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black")
-plt.plot(pos_plot, means, '-', color="black")
+plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black", markersize=5)
+plt.plot(pos_plot, means, '-', color="black", linewidth=1)
 
 y_max = all_data["upper_body"].max() - 0.4
 
@@ -277,7 +284,7 @@ for j in range(len(pos_plot) - 1):
     if p_value < 0.05:
         p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
         mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
-        line_y = y_max + 0.03 * i_plot
+        line_y = (y_max - 0.25) + 0.03 * i_plot
 
         ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
                   linestyles='solid', lw=1, color="black")
@@ -285,14 +292,23 @@ for j in range(len(pos_plot) - 1):
                   lw=1, color="black")
         ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
                   linestyles='solid', lw=1, color="black")
-        ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
+        ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
+
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+    ax.set_ylim(0, 1.18)
+
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Upper Body')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.tight_layout()
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png")
+# plt.title('Upper Body')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png", dpi=1000)
 
 
 print("Statistical test for all acrobatics")
@@ -300,7 +316,12 @@ posthoc_results_total = perform_kruskal_and_dunn(all_data, 'lower_body', 'Timing
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
 significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
 
-plt.figure(figsize=(12, 8))
+
+## Lower body mean
+plt.figure(figsize=(363 / 96, 242 / 96))
+initial_ticks = np.arange(0, 0.6, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 pos_plot = np.array([1, 5, 9])
 
@@ -319,8 +340,8 @@ for i in range(len(keys) - 1):
 for key, value in pourcentages.items():
     print(f"{key}: {value:.2f}%")
 
-plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black")
-plt.plot(pos_plot, means, '-', color="black")
+plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black", markersize=5)
+plt.plot(pos_plot, means, '-', color="black", linewidth=1)
 
 y_max = all_data["lower_body"].max() - 0.4
 
@@ -330,7 +351,7 @@ for j in range(len(pos_plot) - 1):
     if p_value < 0.05:
         p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
         mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
-        line_y = y_max + 0.03 * i_plot
+        line_y = (y_max - 0.05) + 0.03 * i_plot
 
         ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
                   linestyles='solid', lw=1, color="black")
@@ -338,13 +359,22 @@ for j in range(len(pos_plot) - 1):
                   lw=1, color="black")
         ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
                   linestyles='solid', lw=1, color="black")
-        ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
+        ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
+
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+    ax.set_ylim(0, 0.55)
+
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Lower Body')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.tight_layout()
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png")
+# plt.title('Lower Body')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png", dpi=1000)
 
 plt.show()

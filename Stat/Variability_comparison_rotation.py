@@ -83,7 +83,11 @@ for file in rotation_files:
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
 
-plt.figure(figsize=(15, 10))
+plt.figure(figsize=(363 / 96, 242 / 96))
+
+initial_ticks = np.arange(0, 1, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 
 categories = all_data['Timing'].cat.categories
@@ -117,9 +121,9 @@ for i, mvt_name in enumerate(order):
     # #
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
-                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5)
+                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
 
-    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i])
+    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
 
     y_max = all_data["Std"].max()
 
@@ -130,25 +134,33 @@ for i, mvt_name in enumerate(order):
         if p_value < 0.05:
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            line_y = y_max + 0.03 * i_plot
+            line_y = (y_max-0.08) + 0.03 * i_plot
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i], linestyles='solid',
+            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i], linestyles='solid',
                       lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.01, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.005, p_text, ha='center', va='bottom', color=colors[i])
+            ax.text(mid_point, line_y - 0.024, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
-            i_plot += 1
+            i_plot += 1.6
 
-plt.xticks([1.5, 5.5, 9.5], categories)
-plt.title('Pelvis Rotation')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.subplots_adjust(left=0.035, right=0.91, top=0.937, bottom=0.082)
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
+
+plt.xticks([1.5, 5.5, 9.5])
+# plt.xticks([1.5, 5.5, 9.5], categories)
+# plt.title('Pelvis Rotation')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
 plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/rotation.png")
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/rotation.png", dpi=1000)
 
 
 print("Statistical test for all acrobatics")
@@ -156,7 +168,12 @@ posthoc_results_total = perform_kruskal_and_dunn(all_data, 'Std', 'Timing')
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
 significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(363 / 96, 242 / 96))
+
+initial_ticks = np.arange(0, 0.8, 0.2)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.1f}" for tick in initial_ticks]
+
 ax = plt.gca()
 pos_plot = np.array([1, 5, 9])
 
@@ -175,8 +192,8 @@ for i in range(len(keys) - 1):
 for key, value in pourcentages.items():
     print(f"{key}: {value:.2f}%")
 
-plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black")
-plt.plot(pos_plot, means, '-', color="black")
+plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black", markersize=5)
+plt.plot(pos_plot, means, '-', color="black", linewidth=1)
 
 y_max = all_data["Std"].max() - 0.4
 
@@ -186,7 +203,7 @@ for j in range(len(pos_plot) - 1):
     if p_value < 0.05:
         p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
         mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
-        line_y = y_max + 0.03 * i_plot
+        line_y = (y_max-0.25) + 0.03 * i_plot
 
         ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
                   linestyles='solid', lw=1, color="black")
@@ -194,13 +211,22 @@ for j in range(len(pos_plot) - 1):
                   lw=1, color="black")
         ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
                   linestyles='solid', lw=1, color="black")
-        ax.text(mid_point, line_y, p_text, ha='center', va='bottom')
+        ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
+
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+    ax.set_ylim(0, 0.8)
+
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
 
 plt.xticks([1, 5, 9], categories)
-plt.title('Pelvis Rotation')
-plt.xlabel('Timing')
-plt.ylabel('SD')
-plt.tight_layout()
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_rotation.png")
+# plt.title('Pelvis Rotation')
+# plt.xlabel('Timing')
+# plt.ylabel('SD')
+plt.subplots_adjust(top=0.981, bottom=0.03, left=0.077, right=0.992, hspace=0.2, wspace=0.2)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_rotation.png", dpi=1000)
 
 plt.show()
