@@ -48,23 +48,23 @@ name_to_color = {
 }
 
 anonyme_name = {
-    'GuSe': 'Athlete 1',
-    'JaSh': 'Athlete 2',
-    'JeCa': 'Athlete 3',
-    'AnBe': 'Athlete 4',
-    'AnSt': 'Athlete 5',
-    'SaBe': 'Athlete 6',
-    'JoBu': 'Athlete 7',
-    'JaNo': 'Athlete 8',
-    'SaMi': 'Athlete 9',
-    'AlLe': 'Athlete 10',
-    'MaBo': 'Athlete 11',
-    'SoMe': 'Athlete 12',
-    'JeCh': 'Athlete 13',
-    'LiDu': 'Athlete 14',
-    'LeJa': 'Athlete 15',
-    'ArMa': 'Athlete 16',
-    'AlAd': 'Athlete 17'
+    'GuSe': '1',
+    'JaSh': '2',
+    'JeCa': '3',
+    'AnBe': '4',
+    'AnSt': '5',
+    'SaBe': '6',
+    'JoBu': '7',
+    'JaNo': '8',
+    'SaMi': '9',
+    'AlLe': '10',
+    'MaBo': '11',
+    'SoMe': '12',
+    'JeCh': '13',
+    'LiDu': '14',
+    'LeJa': '15',
+    'ArMa': '16',
+    'AlAd': '17'
 }
 
 full_name_acrobatics = {
@@ -92,7 +92,8 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     up_subject = 0.1
     max_value = 1 #np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
     # Configuration initiale des axes et des listes de ticks et labels
-    fig, ax = plt.subplots(figsize=(5, 8))
+    # fig, ax = plt.subplots(figsize=(5, 11))
+    fig, ax = plt.subplots(figsize=(280 / 100, 396 / 100))
     initial_ticks = np.arange(0, max_value, 0.2)
     current_ticks = list(initial_ticks)
     current_labels = [f"{tick:.1f}" for tick in initial_ticks]
@@ -102,32 +103,24 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
         color = name_to_color[name_subject]
         anonyme = anonyme_name[name_subject]
         up_line = max_value + up_subject
-        np.set_printoptions(threshold=np.inf)
+        # np.set_printoptions(threshold=np.inf)
         for idx_trials in range(
                 len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
             gaze_position = \
                 gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
 
             data = np.zeros(len(gaze_position), dtype=int)
-
             tolerance = 1e-6  # Tolérance pour vérifier si ligne[2] est très proche de 0
 
             for idx_ligne, ligne in enumerate(gaze_position):
-                if (X[0][0] <= ligne[0] <= X[0][1] and
-                        Y[:, 1][0] <= ligne[1] <= Y[:, 1][1] and
-                        abs(ligne[2]) <= tolerance):
+            #     if (X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1] and abs(ligne[2]) <= tolerance):  # Trampo
+                if abs((ligne[2]) <= tolerance):  # Ground
                     data[idx_ligne] = 0
                 else:
                     data[idx_ligne] = 1
+            data = pd.DataFrame(data)
 
-            # for idx_ligne, ligne in enumerate(gaze_position):
-            #     if X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1]:
-            #         data[idx_ligne] = 0
-            #     else:
-            #         data[idx_ligne] = 1
-
-            data = pd.DataFrame(data) #Trampo
-            # data = pd.DataFrame(wall_index_all_subjects_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials][:, 0]) #Ground
+            pd.set_option('display.max_rows', None)
 
             data_norm = data.apply(lambda x: safe_interpolate(x, num_points))
 
@@ -147,33 +140,47 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
         plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject], label=f'Subject {idx_subject + 1}',
                  color=color, linestyle='--')
-        up_subject += 0.022
+        # up_subject += 0.022
+        up_subject += 0.04
 
     ax.set_yticks(current_ticks)
-    ax.set_yticklabels(current_labels, fontsize=9)
+    ax.set_yticklabels(current_labels)
 
     for label in ax.get_yticklabels():
-        if label.get_text().replace('.', '', 1).isdigit():
-            label.set_fontsize(10)
+        value = float(label.get_text())
+        if value < 1:
+            label.set_fontsize(9)
         else:
-            label.set_fontsize(5)
+            label.set_fontsize(7)
 
     ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
-    ax.set_xlabel("Index")
+    # ax.set_xlabel("Index")
     # ax.set_ylabel("Line Presence (Custom Y Position)")
     ax.set_xlim(0, len(data_norm[0]))
-    ax.set_ylim(0, max_value + 0.48)
+    ax.set_ylim(0, max_value + 0.04*19.5)
+    ax.tick_params(axis='x', labelsize=9)
 
     # Ajout de la légende
     line1, = plt.plot([], [], color='black', label='Gaze on trampoline')
     line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
-    plt.legend(handles=[line1, line2], fontsize='small')
+    # plt.legend(handles=[line1, line2], fontsize='small')
 
-    plt.title(f'{name_acro}', fontsize=15)
-    plt.xlabel('Time (%)')
+    plt.title(f'{name_acro}', fontsize=11)
+    # plt.xlabel('Time (%)')
     # plt.ylabel('SD pelvic rotation')
-    plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_trampo/{mvt}_gaze.png")
-    plt.subplots_adjust(left=0.11, right=0.957, top=0.937, bottom=0.082)
+    plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.052)
+    plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
     # plt.show()
 
 
+# Dummy plot to create legend
+fig, ax = plt.subplots()
+
+# Ajout de la légende
+line1, = ax.plot([], [], color='black', label='Gaze on trampoline')
+line2, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
+
+# Créez une légende et enregistrez-la dans une image séparée
+figlegend = plt.figure(figsize=(3, 1), facecolor='white')
+plt.figlegend(handles=[line1, line2], loc='center', fontsize='small')
+figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0)
