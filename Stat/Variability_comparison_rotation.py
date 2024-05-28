@@ -163,6 +163,15 @@ plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxes
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/rotation.png", dpi=1000)
 
 
+# Créer une nouvelle figure pour la légende
+fig_legend = plt.figure(figsize=(10, 2))  # Taille de la figure pour la légende
+handles, labels = ax.get_legend_handles_labels()
+fig_legend.legend(handles, labels, loc='center', title='Acrobatics Code', ncol=5)
+
+# Enregistrer la légende dans une image séparée
+fig_legend.savefig("/home/lim/Documents/StageMathieu/meeting/legend.png", dpi=1000, bbox_inches='tight')
+
+
 print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'Std', 'Timing')
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]

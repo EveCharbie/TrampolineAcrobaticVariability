@@ -92,7 +92,7 @@ for file in position_files:
 
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
-
+all_data['Timing'] = all_data['Timing'].cat.rename_categories({"75%": "T75"})
 
 categories = all_data['Timing'].cat.categories
 pos_plot = np.array([1, 5, 9])
@@ -238,16 +238,16 @@ for spine in ax.spines.values():
 
 plt.xticks([1.5, 5.5, 9.5], categories)
 # plt.title('Lower Body')
-# plt.xlabel('Timing')
+plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
+plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.097)
 plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png", dpi=1000)
 
 print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'upper_body', 'Timing')
-significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
-significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
+significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "T75"]
+significant_value_75_landing = posthoc_results_total.loc["T75", "Landing"]
 
 ## Upper body mean
 
@@ -313,8 +313,8 @@ plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png", dpi=
 
 print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'lower_body', 'Timing')
-significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
-significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
+significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "T75"]
+significant_value_75_landing = posthoc_results_total.loc["T75", "Landing"]
 
 
 ## Lower body mean
@@ -372,9 +372,9 @@ for spine in ax.spines.values():
 
 plt.xticks([1, 5, 9], categories)
 # plt.title('Lower Body')
-# plt.xlabel('Timing')
+plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.097)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png", dpi=1000)
 
 plt.show()
