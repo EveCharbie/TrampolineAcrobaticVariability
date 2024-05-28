@@ -19,6 +19,9 @@ home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 
+orderxlabel = ['8-1o', '8-1<', '811<', '41/', '41o', '8-3<', '42/', '831<', '822/', '43/']
+
+
 ratio_twist_somersault = {
     '8-1o': '#1f77b4',
     '8-1<': '#ff7f0e',
@@ -95,13 +98,13 @@ sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression 
 text_str = f'R-squared: {r_value**2:.2f}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-ax.set_title('Boxplot with Regression Line for Different Difficulty Level')
+# ax.set_title('Boxplot with Regression Line for Different Difficulty Level')
 ax.set_xlabel('Acrobatics by Difficulty Level')
-ax.set_ylabel('75%')
+ax.set_ylabel('T75')
 ax.set_xticks(x_boxplot_centers)
-ax.set_xticklabels(order)
+ax.set_xticklabels(orderxlabel)
 ax.legend(loc='lower right')
-
+plt.tight_layout()
 plt.show()
 
 correlation = complete_data[order].corr()
