@@ -57,13 +57,13 @@ sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression 
 text_str = f'R-squared: {r_value**2:.2f}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-ax.set_title('Boxplot with Regression Line for Different Difficulty Level')
+# ax.set_title('Boxplot with Regression Line for Different Difficulty Level')
 ax.set_xlabel('Acrobatics by Difficulty Level')
-ax.set_ylabel('75%')
+ax.set_ylabel('T75')
 ax.set_xticks([0, 1, 2])
-ax.set_xticklabels(['41', '42', '43'])
+ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
-
+plt.tight_layout()
 plt.show()
 
 correlation = complete_data[['41', '42', '43']].corr()

@@ -177,7 +177,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 fig, ax = plt.subplots()
 
 # Ajout de la légende
-line1, = ax.plot([], [], color='black', label='Gaze on trampoline')
+line1, = ax.plot([], [], color='black', label='Gaze on the ground')
 line2, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
 
 # Créez une légende et enregistrez-la dans une image séparée
