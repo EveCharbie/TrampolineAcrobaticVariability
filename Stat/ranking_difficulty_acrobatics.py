@@ -64,6 +64,8 @@ ax.set_xticks([0, 1, 2])
 ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
 plt.tight_layout()
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/75_with_difficulty.png", dpi=1000)
+
 plt.show()
 
 correlation = complete_data[['41', '42', '43']].corr()

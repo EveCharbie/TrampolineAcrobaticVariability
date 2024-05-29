@@ -105,6 +105,8 @@ ax.set_xticks(x_boxplot_centers)
 ax.set_xticklabels(orderxlabel)
 ax.legend(loc='lower right')
 plt.tight_layout()
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/reg_all.png", dpi=1000)
+
 plt.show()
 
 correlation = complete_data[order].corr()
