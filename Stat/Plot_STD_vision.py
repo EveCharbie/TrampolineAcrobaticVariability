@@ -109,25 +109,43 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             gaze_position = \
                 gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
 
-            data = np.zeros(len(gaze_position), dtype=int)
+            data_ground = np.zeros(len(gaze_position), dtype=int)
             tolerance = 1e-6  # Tolérance pour vérifier si ligne[2] est très proche de 0
 
             for idx_ligne, ligne in enumerate(gaze_position):
             #     if (X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1] and abs(ligne[2]) <= tolerance):  # Trampo
                 if abs((ligne[2]) <= tolerance):  # Ground
-                    data[idx_ligne] = 0
+                    data_ground[idx_ligne] = 0
                 else:
-                    data[idx_ligne] = 1
-            data = pd.DataFrame(data)
+                    data_ground[idx_ligne] = 1
+            data_ground = pd.DataFrame(data_ground)
+
+            ##
+            data_mat = np.zeros(len(gaze_position), dtype=int)
+
+            for idx_ligne, ligne in enumerate(gaze_position):
+                if (X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1] and abs(ligne[2]) <= tolerance):  # Trampo
+                    data_mat[idx_ligne] = 0
+                else:
+                    data_mat[idx_ligne] = 1
+            data_mat = pd.DataFrame(data_mat)
+            ##
 
             pd.set_option('display.max_rows', None)
 
-            data_norm = data.apply(lambda x: safe_interpolate(x, num_points))
+            data_norm_ground = data_ground.apply(lambda x: safe_interpolate(x, num_points))
+            data_norm_mat = data_mat.apply(lambda x: safe_interpolate(x, num_points))
 
             y_line_position = up_line
-            y_values = np.full(len(data_norm[0]), np.nan)
-            y_values[data_norm[0] == 0] = y_line_position
-            ax.plot(y_values, '-', color=color, label='Presence of Zero' if idx_trials == 0 else "")
+            y_values_ground = np.full(len(data_norm_ground[0]), np.nan)
+            y_values_ground[data_norm_ground[0] == 0] = y_line_position
+            ax.plot(y_values_ground, '-', color=color, alpha=0.1, label='Presence of Zero' if idx_trials == 0 else "")
+
+            ##
+            y_values_mat = np.full(len(data_norm_mat[0]), np.nan)
+            y_values_mat[data_norm_mat[0] == 0] = y_line_position
+            ax.plot(y_values_mat, '-', color=color, alpha=1, label='Presence of Zero' if idx_trials == 0 else "")
+            ##
 
             if max_value + up_subject not in current_ticks:
                 current_ticks.append(max_value + up_subject)
@@ -156,7 +174,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
     # ax.set_xlabel("Index")
     # ax.set_ylabel("Line Presence (Custom Y Position)")
-    ax.set_xlim(0, len(data_norm[0]))
+    ax.set_xlim(0, len(data_norm_ground[0]))
     ax.set_ylim(0, max_value + 0.04*19.5)
     ax.tick_params(axis='x', labelsize=9)
 
