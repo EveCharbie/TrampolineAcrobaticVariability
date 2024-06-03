@@ -13,6 +13,9 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
 
 all_data = pd.DataFrame()
 
+labels_x = ["T$_{Takeoff}$", "T$_{75}$", "T$_{Landing}$"]
+labels_x_empty = [" ", " ", " "]
+
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 
@@ -163,12 +166,12 @@ for i, mvt_name in enumerate(order):
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
-plt.xticks([1.5, 5.5, 9.5], categories)
+plt.xticks([1.5, 5.5, 9.5], labels_x_empty)
 # plt.title('Upper Body')
 # plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
-plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
+# plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body.png", dpi=1000)
 
 
@@ -236,12 +239,12 @@ for i, mvt_name in enumerate(order):
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
-plt.xticks([1.5, 5.5, 9.5], categories)
+plt.xticks([1.5, 5.5, 9.5], labels_x)
 # plt.title('Lower Body')
 plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.097)
-plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
+# plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body.png", dpi=1000)
 
 print("Statistical test for all acrobatics")
@@ -303,11 +306,11 @@ for j in range(len(pos_plot) - 1):
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
-plt.xticks([1, 5, 9], categories)
+plt.xticks([1, 5, 9], labels_x_empty)
 # plt.title('Upper Body')
 # plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.995, top=0.982, bottom=0.032)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png", dpi=1000)
 
 
@@ -370,11 +373,11 @@ for j in range(len(pos_plot) - 1):
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
-plt.xticks([1, 5, 9], categories)
+plt.xticks([1, 5, 9], labels_x)
 # plt.title('Lower Body')
 plt.xlabel('Timing')
 # plt.ylabel('SD')
-plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.097)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png", dpi=1000)
 
 plt.show()

@@ -93,7 +93,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     max_value = 1 #np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
     # Configuration initiale des axes et des listes de ticks et labels
     # fig, ax = plt.subplots(figsize=(5, 11))
-    fig, ax = plt.subplots(figsize=(280 / 100, 396 / 100))
+    fig, ax = plt.subplots(figsize=(280 / 90, 396 / 80))
     initial_ticks = np.arange(0, max_value, 0.2)
     current_ticks = list(initial_ticks)
     current_labels = [f"{tick:.1f}" for tick in initial_ticks]
@@ -186,19 +186,24 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     plt.title(f'{name_acro}', fontsize=11)
     # plt.xlabel('Time (%)')
     # plt.ylabel('SD pelvic rotation')
-    plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.052)
+    plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.047)
     plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
     # plt.show()
 
 
-# Dummy plot to create legend
+
+
+# Création de la figure et de l'axe
 fig, ax = plt.subplots()
 
-# Ajout de la légende
-line1, = ax.plot([], [], color='black', label='Gaze on the ground')
-line2, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
+# Ajout des lignes pour la légende
+line1, = ax.plot([], [], color='black', label='Gaze on the bed')
+line2, = ax.plot([], [], color='black', alpha=0.2, label='Gaze on the ground')
+line3, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
 
-# Créez une légende et enregistrez-la dans une image séparée
-figlegend = plt.figure(figsize=(3, 1), facecolor='white')
-plt.figlegend(handles=[line1, line2], loc='center', fontsize='small')
-figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0)
+# Création de la légende dans une figure séparée
+figlegend = plt.figure(figsize=(4, 1.5), facecolor='white')
+plt.figlegend(handles=[line1, line2, line3], loc='center', fontsize='small')
+# Sauvegarde de la légende dans une image
+figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0, dpi=1000)
+
