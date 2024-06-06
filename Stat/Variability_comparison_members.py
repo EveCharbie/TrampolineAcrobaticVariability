@@ -13,7 +13,7 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
 
 all_data = pd.DataFrame()
 
-labels_x = ["T$_{Takeoff}$", "T$_{75}$", "T$_{Landing}$"]
+labels_x = ["T$_{TO}$", "T$_{75}$", "T$_{LA}$"]
 labels_x_empty = [" ", " ", " "]
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"

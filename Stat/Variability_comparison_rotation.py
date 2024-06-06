@@ -83,12 +83,13 @@ for file in rotation_files:
     all_data = pd.concat([all_data, data_specific], ignore_index=True)
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
+all_data['Std'] = np.degrees(all_data['Std'])
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 
-initial_ticks = np.arange(0, 1, 0.2)
+initial_ticks = np.arange(0, 50, 10)
 current_ticks = list(initial_ticks)
-current_labels = [f"{tick:.1f}" for tick in initial_ticks]
+current_labels = [f"{tick:.0f}" for tick in initial_ticks]
 ax = plt.gca()
 
 categories = all_data['Timing'].cat.categories
@@ -135,17 +136,17 @@ for i, mvt_name in enumerate(order):
         if p_value < 0.05:
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            line_y = (y_max-0.08) + 0.03 * i_plot
+            line_y = (y_max-5) + 0.03 * i_plot
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i], linestyles='solid',
+            ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid',
                       lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.024, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+            ax.text(mid_point, line_y - 1.4, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
-            i_plot += 1.6
+            i_plot += 80
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
@@ -154,7 +155,7 @@ for i, mvt_name in enumerate(order):
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
-plt.xticks([1.5, 5.5, 9.5],labels_x_empty)
+plt.xticks([1.5, 5.5, 9.5], labels_x_empty)
 # plt.xticks([1.5, 5.5, 9.5], categories)
 # plt.title('Pelvis Rotation')
 # plt.xlabel('Timing')
@@ -180,9 +181,9 @@ significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 
-initial_ticks = np.arange(0, 0.8, 0.2)
+initial_ticks = np.arange(0, 50, 10)
 current_ticks = list(initial_ticks)
-current_labels = [f"{tick:.1f}" for tick in initial_ticks]
+current_labels = [f"{tick:.0f}" for tick in initial_ticks]
 
 ax = plt.gca()
 pos_plot = np.array([1, 5, 9])
@@ -213,20 +214,20 @@ for j in range(len(pos_plot) - 1):
     if p_value < 0.05:
         p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
         mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2
-        line_y = (y_max-0.25) + 0.03 * i_plot
+        line_y = 45
 
         ax.hlines(y=line_y, xmin=pos_plot[j] + 0.1, xmax=pos_plot[j + 1] - 0.1,
                   linestyles='solid', lw=1, color="black")
-        ax.vlines(x=pos_plot[j] + 0.1, ymin=line_y - 0.01, ymax=line_y, linestyles='solid',
+        ax.vlines(x=pos_plot[j] + 0.1, ymin=line_y - 0.9, ymax=line_y, linestyles='solid',
                   lw=1, color="black")
-        ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.01, ymax=line_y,
+        ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.9, ymax=line_y,
                   linestyles='solid', lw=1, color="black")
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
     ax.tick_params(axis='y', labelsize=8, width=0.4)
-    ax.set_ylim(0, 0.8)
+    ax.set_ylim(0, 50)
 
 # Réduire l'épaisseur du cadre du graphique
 for spine in ax.spines.values():
