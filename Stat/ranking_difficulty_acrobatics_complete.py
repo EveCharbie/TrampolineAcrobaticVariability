@@ -141,7 +141,7 @@ for file in rotation_files:
     mvt_name = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')
     anova_rot_df = data.pivot_table(index=['ID'], columns='Timing', values='Std')
     for gymnast_name in data["ID"].unique():
-        complete_data.loc[gymnast_name, mvt_name] = anova_rot_df.loc[gymnast_name, "75%"]
+        complete_data.loc[gymnast_name, mvt_name] = np.degrees(anova_rot_df.loc[gymnast_name, "75%"])
 
 # Prepare data for regression using x_boxplot_centers
 all_x_positions = []
@@ -173,7 +173,7 @@ ax.set_xlabel('Acrobatics by Difficulty Level')
 ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (rad)')
 ax.set_xticks(x_boxplot_centers)
 ax.set_xticklabels(orderxlabel)
-ax.set_ylim(0.1, 0.98)
+ax.set_ylim(0, 57)
 ax.legend(loc='lower right')
 plt.tight_layout()
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/reg_all.png", dpi=1000)

@@ -38,7 +38,7 @@ for file in files:
     data = pd.read_csv(file)
     mvt_name = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')  # Clean file ID
     anova_rot_df = data.pivot_table(index=['ID', 'Expertise'], columns='Timing', values='Std')
-    complete_data[mvt_name] = anova_rot_df["75%"]
+    complete_data[mvt_name] = np.degrees(anova_rot_df["75%"])
 
 complete_data = complete_data.dropna()
 
@@ -91,7 +91,7 @@ sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression 
 
 # Add R-squared text
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
-text_str = f'R-squared: {r_value:.2f}\n{p_text}'
+text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 # Set labels and title
