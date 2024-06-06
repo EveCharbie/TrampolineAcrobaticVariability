@@ -89,14 +89,15 @@ num_points = 100
 for idx_mvt, mvt in enumerate(movement_to_analyse):
     name_acro = full_name_acrobatics[mvt]
 
-    up_subject = 0.1
-    max_value = 1 #np.max(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt].flatten())
+    up_subject = 1.5
+    max_value = 60
     # Configuration initiale des axes et des listes de ticks et labels
     # fig, ax = plt.subplots(figsize=(5, 11))
     fig, ax = plt.subplots(figsize=(280 / 90, 396 / 80))
-    initial_ticks = np.arange(0, max_value, 0.2)
+    initial_ticks = np.arange(0, 60, 10)
     current_ticks = list(initial_ticks)
-    current_labels = [f"{tick:.1f}" for tick in initial_ticks]
+    current_labels = [f"{tick:.0f}" for tick in initial_ticks]
+
 
     # Boucle sur les sujets
     for idx_subject, name_subject in enumerate(list_name_for_movement[0][idx_mvt]):
@@ -104,6 +105,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
         anonyme = anonyme_name[name_subject]
         up_line = max_value + up_subject
         # np.set_printoptions(threshold=np.inf)
+        trial_count = 0
         for idx_trials in range(
                 len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
             gaze_position = \
@@ -146,36 +148,42 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             y_values_mat[data_norm_mat[0] == 0] = y_line_position
             ax.plot(y_values_mat, '-', color=color, alpha=1, label='Presence of Zero' if idx_trials == 0 else "")
             ##
-
+            tick_with_offset = max_value + up_subject
             if max_value + up_subject not in current_ticks:
-                current_ticks.append(max_value + up_subject)
+                current_ticks.append(tick_with_offset)
                 current_labels.append(str(anonyme))
             current_ticks.sort()
-            special_index = current_ticks.index(max_value + up_subject)
+            special_index = current_ticks.index(tick_with_offset)
             current_labels[special_index] = str(anonyme)
 
-            up_line += 0.0005
+            up_line += 0.04
+            trial_count += 0.08
 
-        plt.plot(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject], label=f'Subject {idx_subject + 1}',
+        plt.plot(np.degrees(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject]), label=f'Subject {idx_subject + 1}',
                  color=color, linestyle='--')
-        # up_subject += 0.022
-        up_subject += 0.04
+
+        up_subject += 2
 
     ax.set_yticks(current_ticks)
-    ax.set_yticklabels(current_labels)
+    ax.set_yticklabels(current_labels, fontweight='normal')
 
-    for label in ax.get_yticklabels():
-        value = float(label.get_text())
-        if value < 1:
-            label.set_fontsize(9)
-        else:
-            label.set_fontsize(7)
+    yticks = ax.get_yticks()
+    yticklabels = ax.get_yticklabels()
+
+    for tick, label in zip(yticks, yticklabels):
+        try:
+            if tick < max_value:
+                label.set_fontsize(9)
+            else:
+                label.set_fontsize(7)
+        except ValueError:
+            continue
 
     ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
     # ax.set_xlabel("Index")
     # ax.set_ylabel("Line Presence (Custom Y Position)")
     ax.set_xlim(0, len(data_norm_ground[0]))
-    ax.set_ylim(0, max_value + 0.04*19.5)
+    ax.set_ylim(0, 95)
     ax.tick_params(axis='x', labelsize=9)
 
     # Ajout de la légende
@@ -199,7 +207,7 @@ fig, ax = plt.subplots()
 # Ajout des lignes pour la légende
 line1, = ax.plot([], [], color='black', label='Gaze on the bed')
 line2, = ax.plot([], [], color='black', alpha=0.2, label='Gaze on the ground')
-line3, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
+line3, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvis orientation')
 
 # Création de la légende dans une figure séparée
 figlegend = plt.figure(figsize=(4, 1.5), facecolor='white')

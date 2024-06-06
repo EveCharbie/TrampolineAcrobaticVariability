@@ -170,7 +170,7 @@ ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalign
 
 # Set labels and title
 ax.set_xlabel('Acrobatics by Difficulty Level')
-ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (rad)')
+ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (deg)')
 ax.set_xticks(x_boxplot_centers)
 ax.set_xticklabels(orderxlabel)
 ax.set_ylim(0, 57)
