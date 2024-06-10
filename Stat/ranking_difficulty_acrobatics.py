@@ -16,6 +16,8 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
                                                                    prepare_data)
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
+x_boxplot_top = [0.5, 1, 1.5]
+orderxlabeltop = ['0.5', '1', '1.5']
 
 rotation_files = []
 
@@ -43,7 +45,7 @@ for file in files:
 complete_data = complete_data.dropna()
 
 # 1. Boxplots for the different difficulty levels without expertise distinction
-x_boxplot_centers = [0, 1, 2]
+x_boxplot_centers = [0.25, 0.5, 1]
 
 means = [complete_data[col].mean() for col in ['41', '42', '43']]
 slope, intercept, r_value, p_value, std_err = linregress(x_boxplot_centers, means)
@@ -72,21 +74,23 @@ print(p_value)
 correlation = complete_data[['41', '42', '43']].corr()
 print(correlation)
 
+difficulty_values = [0.5, 1, 1.5]
+difficulty_levels = np.concatenate([np.full(len(complete_data[col]), difficulty_values[i]) for i, col in enumerate(['41', '42', '43'])])
 
 
-difficulty_levels = np.concatenate([np.full(len(complete_data[col]), i) for i, col in enumerate(['41', '42', '43'])])
+# difficulty_levels = np.concatenate([np.full(len(complete_data[col]), i) for i, col in enumerate(['41', '42', '43'])])
 values = np.concatenate([complete_data[col] for col in ['41', '42', '43']])
 
 # Perform the regression using all data points
 slope, intercept, r_value, p_value, std_err = linregress(difficulty_levels, values)
 
 # Create the regression line
-x_reg_line = np.array([0, 1, 2])
+x_reg_line = np.array([0.5, 1, 1.5])
 y_reg_line = slope * x_reg_line + intercept
 
 # Plotting
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.boxplot(data=complete_data[['41', '42', '43']], ax=ax, color="skyblue")
+sns.boxplot(data=[complete_data['41'], complete_data['42'], complete_data['43']], ax=ax, color="skyblue", positions=[0.5, 1, 1.5], width=0.2)
 sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
 # Add R-squared text
@@ -95,12 +99,20 @@ text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 # Set labels and title
-ax.set_xlabel('Acrobatics by Difficulty Level')
+ax.set_xlabel('Acrobatics', labelpad=15)
 ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (deg)')
-ax.set_xticks([0, 1, 2])
+ax.set_xticks([0.5, 1, 1.5])
 ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
+
+secax = ax.secondary_xaxis('top')
+secax.set_xticks(x_boxplot_top)
+secax.set_xticklabels(orderxlabeltop)
+secax.set_xlabel('Ratio twists somersaults', labelpad=15)
+
 plt.tight_layout()
+plt.subplots_adjust(left=0.060, right=0.995, top=0.902, bottom=0.103)
+
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/75_with_difficulty.png", dpi=1000)
 plt.show()
 
