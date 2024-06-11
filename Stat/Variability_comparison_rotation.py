@@ -14,7 +14,7 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import extrac
 home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
 
 rotation_files = []
-index = ['takeoff_75', '75_landing']
+index = ['takeoff_75', '75_landing', 'takeoff_landing']
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 labels_x_empty = [" ", " ", " "]
 
@@ -78,12 +78,94 @@ for file in rotation_files:
 
     significant_value.loc["takeoff_75", mvt_name] = posthoc_results.loc["Takeoff", "75%"]
     significant_value.loc["75_landing", mvt_name] = posthoc_results.loc["75%", "Landing"]
+    significant_value.loc["takeoff_landing", mvt_name] = posthoc_results.loc["Takeoff", "Landing"]
 
     # Append data to the plotting DataFrame
     all_data = pd.concat([all_data, data_specific], ignore_index=True)
 
 all_data['Timing'] = pd.Categorical(all_data['Timing'], categories=["Takeoff", "75%", "Landing"], ordered=True)
 all_data['Std'] = np.degrees(all_data['Std'])
+
+# all acrobatics
+##
+plt.figure(figsize=(363 / 96, 242 / 96))
+
+initial_ticks = np.arange(0, 50, 10)
+current_ticks = list(initial_ticks)
+current_labels = [f"{tick:.0f}" for tick in initial_ticks]
+ax = plt.gca()
+
+categories = all_data['Timing'].cat.categories
+pos_plot = np.array([1, 5, 9])
+
+colors = plt.get_cmap('tab10')(np.linspace(0, 1, len(all_data['Source'].unique())))
+y_increment = 4  # Increment for y-position for each level
+line_y = all_data["Std"].max() - 5  # Initialize line_y outside the loop
+
+for i, mvt_name in enumerate(order):
+    name_acro = full_name_acrobatics[mvt_name]
+
+    filtered_data = all_data[all_data['Source'].str.contains(mvt_name)]
+
+    means = filtered_data.groupby('Timing', observed=True)['Std'].mean()
+    std_devs = filtered_data.groupby('Timing', observed=True)['Std'].std()
+
+    plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
+                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
+
+    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
+
+    significant_added = False  # Flag to track if a significance bar is added
+
+    for j in range(len(pos_plot) - 1):
+        sig_key = f"takeoff_75" if j == 0 else f"75_landing"
+        p_value = significant_value[mvt_name][sig_key]
+
+        if p_value < 0.05:
+            significant_added = True
+            p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
+            mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
+            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 * 1.1, xmax=pos_plot[j + 1] + i * 0.1 * 0.9, colors=colors[i],
+                      linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j] + i * 0.1 * 1.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1 * 0.9, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
+            ax.text(mid_point, line_y - 0.8, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+
+    if significant_added:
+        line_y += y_increment  # Increment line_y only if a significance bar was added
+        significant_added = False
+
+    # Ajouter la barre de significativité entre Takeoff et Landing
+    p_value_tl = significant_value[mvt_name]['takeoff_landing']
+    if p_value_tl < 0.05:
+        significant_added = True
+        p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
+        mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
+
+        ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 * 1.1, xmax=pos_plot[2] + i * 0.1 * 0.9,
+                  colors=colors[i], linestyles='solid', lw=1)
+        ax.vlines(x=pos_plot[0] + i * 0.1 * 1.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i],
+                  linestyles='solid', lw=1)
+        ax.vlines(x=pos_plot[2] + i * 0.1 * 0.9, ymin=line_y - 0.9, ymax=line_y, colors=colors[i],
+                  linestyles='solid', lw=1)
+        ax.text(mid_point_tl, line_y - 0.8, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
+
+    if significant_added:
+        line_y += y_increment  # Increment line_y only if a significance bar was added
+
+    ax.set_yticks(current_ticks)
+    ax.set_yticklabels(current_labels)
+    ax.tick_params(axis='y', labelsize=8, width=0.4)
+
+# Réduire l'épaisseur du cadre du graphique
+for spine in ax.spines.values():
+    spine.set_linewidth(0.5)
+
+plt.xticks([1.5, 5.5, 9.5], labels_x_empty)
+plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/rotation_all_analysis.png", dpi=1000)
+plt.show()
+##
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 
@@ -95,8 +177,6 @@ ax = plt.gca()
 categories = all_data['Timing'].cat.categories
 pos_plot = np.array([1, 5, 9])
 
-colors = plt.colormaps['tab20b_r'](np.linspace(0, 1, len(all_data['Source'].unique())))
-
 i_plot = 0
 
 for i, mvt_name in enumerate(order):
@@ -107,20 +187,6 @@ for i, mvt_name in enumerate(order):
     means = filtered_data.groupby('Timing', observed=True)['Std'].mean()
     std_devs = filtered_data.groupby('Timing', observed=True)['Std'].std()
 
-    # #
-    # print(mvt_name)
-    # pourcentages = {}
-    # keys = list(means.keys())
-    # for i in range(len(keys) - 1):
-    #     key1, key2 = keys[i], keys[i + 1]
-    #     valeur1, valeur2 = means[key1], means[key2]
-    #     pourcentage = ((valeur2 - valeur1) / valeur1) * 100
-    #     pourcentages[f"{key1} to {key2}"] = pourcentage
-    #
-    # # Affichage des pourcentages
-    # for key, value in pourcentages.items():
-    #     print(f"{key}: {value:.2f}%")
-    # #
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
                  color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
@@ -132,12 +198,14 @@ for i, mvt_name in enumerate(order):
     for j in range(len(pos_plot) - 1):
         sig_key = f"takeoff_75" if j == 0 else f"75_landing"
         p_value = significant_value[mvt_name][sig_key]
+        line_y = (y_max - 5) + i_plot
 
         if p_value < 0.05:
+            i_plot += 4
+
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            line_y = (y_max-5) + 0.03 * i_plot
-
+            # line_y = (y_max-5) + 0.03 * i_plot
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1, xmax=pos_plot[j + 1] + i * 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
             ax.vlines(x=pos_plot[j] + i * 0.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid',
@@ -146,7 +214,6 @@ for i, mvt_name in enumerate(order):
                       linestyles='solid', lw=1)
             ax.text(mid_point, line_y - 1.4, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
-            i_plot += 80
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
@@ -178,6 +245,7 @@ print("Statistical test for all acrobatics")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'Std', 'Timing')
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "75%"]
 significant_value_75_landing = posthoc_results_total.loc["75%", "Landing"]
+significant_value_takeoff_landing = posthoc_results_total.loc["Takeoff", "Landing"]
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 
@@ -223,11 +291,27 @@ for j in range(len(pos_plot) - 1):
         ax.vlines(x=pos_plot[j + 1] - 0.1, ymin=line_y - 0.9, ymax=line_y,
                   linestyles='solid', lw=1, color="black")
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
+    ax.set_ylim(0, 49)
+
+    # Ajouter la barre de significativité entre Takeoff et Landing
+p_value_tl = significant_value_takeoff_landing
+if p_value_tl < 0.05:
+    significant_added = True
+    p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
+    mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
+
+    ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 * 1.1, xmax=pos_plot[2] + i * 0.1 * 0.9,
+              colors="black", linestyles='solid', lw=1)
+    ax.vlines(x=pos_plot[0] + i * 0.1 * 1.1, ymin=line_y - 0.9, ymax=line_y, colors="black",
+              linestyles='solid', lw=1)
+    ax.vlines(x=pos_plot[2] + i * 0.1 * 0.9, ymin=line_y - 0.9, ymax=line_y, colors="black",
+              linestyles='solid', lw=1)
+    ax.text(mid_point_tl, line_y - 0.8, p_text_tl, ha='center', va='bottom', color="black", fontsize=7)
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
     ax.tick_params(axis='y', labelsize=8, width=0.4)
-    ax.set_ylim(0, 50)
+
 
 # Réduire l'épaisseur du cadre du graphique
 for spine in ax.spines.values():
