@@ -125,10 +125,10 @@ for i, mvt_name in enumerate(order):
             significant_added = True
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
-            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 * 1.1, xmax=pos_plot[j + 1] + i * 0.1 * 0.9, colors=colors[i],
+            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 + 0.1, xmax=pos_plot[j + 1] + i * 0.1 - 0.1, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1 * 1.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1 * 0.9, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j] + i * 0.1 + 0.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1 - 0.1, ymin=line_y - 0.9, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
             ax.text(mid_point, line_y - 0.8, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
