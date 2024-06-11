@@ -164,6 +164,8 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
         up_subject += 2
 
+    plt.plot(np.degrees(np.mean(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt], axis=0)), color="black", linestyle= '-.')
+
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels, fontweight='normal')
 
@@ -199,19 +201,21 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     # plt.show()
 
 
-
-
 # Création de la figure et de l'axe
 fig, ax = plt.subplots()
 
 # Ajout des lignes pour la légende
-line1, = ax.plot([], [], color='black', label='Gaze on the bed')
-line2, = ax.plot([], [], color='black', alpha=0.2, label='Gaze on the ground')
-line3, = ax.plot([], [], color='black', linestyle='--', label='SDtotal on pelvis orientation')
+line1, = ax.plot([], [], color='#9467bd', label='Gaze on the bed')
+line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the floor')
+line3, = ax.plot([], [], color='#9467bd', linestyle='--', label='SDtotal on pelvis \norientation')
+line4, = ax.plot([], [], color='black', linestyle='-.', label='Mean SDtotal across \nacrobatics on \npelvis orientation')
 
 # Création de la légende dans une figure séparée
 figlegend = plt.figure(figsize=(4, 1.5), facecolor='white')
-plt.figlegend(handles=[line1, line2, line3], loc='center', fontsize='small')
+plt.figlegend(handles=[line1, line2, line3, line4], loc='center', fontsize='small', handlelength=4)
+
+plt.show()
+
 # Sauvegarde de la légende dans une image
 figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0, dpi=1000)
 
