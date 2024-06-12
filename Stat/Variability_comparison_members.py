@@ -147,7 +147,7 @@ for i, mvt_name in enumerate(order):
                       linestyles='solid', lw=1)
             ax.vlines(x=pos_plot[j] + i * 0.1+0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
             ax.vlines(x=pos_plot[j + 1] + i * 0.1-0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.055, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+            ax.text(mid_point, line_y - 0.035, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
         line_y += y_increment  # Increment line_y slightly more to avoid overlap
@@ -164,7 +164,7 @@ for i, mvt_name in enumerate(order):
                   linestyles='solid', lw=1)
         ax.vlines(x=pos_plot[0] + i * 0.1 + 0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
         ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-        ax.text(mid_point_tl, line_y - 0.055, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
+        ax.text(mid_point_tl, line_y - 0.035, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
         line_y += y_increment  # Increment line_y slightly more to avoid overlap
@@ -227,7 +227,7 @@ for i, mvt_name in enumerate(order):
                       linestyles='solid', lw=1)
             ax.vlines(x=pos_plot[j + 1] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.02, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+            ax.text(mid_point, line_y - 0.015, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
         line_y += y_increment  # Increment line_y slightly more to avoid overlap
@@ -246,7 +246,7 @@ for i, mvt_name in enumerate(order):
                   lw=1)
         ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i], linestyles='solid',
                   lw=1)
-        ax.text(mid_point_tl, line_y - 0.02, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
+        ax.text(mid_point_tl, line_y - 0.015, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
         line_y += y_increment  # Increment line_y slightly more to avoid overlap
