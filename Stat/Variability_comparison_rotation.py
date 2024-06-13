@@ -11,7 +11,7 @@ from scipy.stats import kruskal
 import scikit_posthocs as sp
 from TrampolineAcrobaticVariability.Function.Function_stat import perform_anova_and_tukey, perform_kruskal_and_dunn
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import extract_identifier
-home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
+home_path = "/home/lim/Documents/StageMathieu/Tab_result3/"
 
 rotation_files = []
 index = ['takeoff_75', '75_landing', 'takeoff_landing']

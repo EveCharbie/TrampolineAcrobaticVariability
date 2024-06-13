@@ -15,7 +15,7 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
                                                                    perform_kruskal_and_dunn,
                                                                    prepare_data)
 
-home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
+home_path = "/home/lim/Documents/StageMathieu/Tab_result3/"
 
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 
@@ -130,8 +130,9 @@ fig, ax = plt.subplots(figsize=(10, 6))
 sns.boxplot(data=complete_data[order], ax=ax, color="skyblue", positions=x_boxplot_centers)
 sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
-# Add R-squared text
-p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.2f}"
+# Add R-squared text<
+if p_value < 0.05:
+    p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 

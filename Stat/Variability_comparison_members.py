@@ -16,7 +16,7 @@ all_data = pd.DataFrame()
 labels_x = ["T$_{TO}$", "T$_{75}$", "T$_{LA}$"]
 labels_x_empty = [" ", " ", " "]
 
-home_path = "/home/lim/Documents/StageMathieu/Tab_result/"
+home_path = "/home/lim/Documents/StageMathieu/Tab_result3/"
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 
 full_name_acrobatics = {
