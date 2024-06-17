@@ -2,29 +2,8 @@ import pandas as pd
 import scipy.io
 import matplotlib.pyplot as plt
 import numpy as np
+from TrampolineAcrobaticVariability.Function.Function_stat import safe_interpolate
 
-
-def safe_interpolate(x, num_points):
-    # Create an array to store interpolated values, initialized with NaN
-    interpolated_values = np.full(num_points, np.nan)
-
-    # Check if all elements are finite, ignore NaNs for interpolation
-    finite_mask = np.isfinite(x)
-    if finite_mask.any():  # Ensure there's at least one finite value to interpolate
-        # Interpolate only finite values
-        valid_x = x[finite_mask]
-        valid_indices = np.linspace(0, 1, len(x))[finite_mask]
-
-        # Perform interpolation over the range with finite values
-        interpolated_valid_values = np.interp(np.linspace(0, 1, num_points), valid_indices, valid_x)
-
-        # Round interpolated values to the nearest integer
-        rounded_values = np.round(interpolated_valid_values).astype(int)
-
-        # Place rounded interpolated values back in the full array
-        interpolated_values = rounded_values
-
-    return interpolated_values
 
 file_path = "/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
@@ -198,7 +177,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     # plt.ylabel('SD pelvic rotation')
     plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.047)
     plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
-    # plt.show()
+    plt.show()
 
 
 # Création de la figure et de l'axe

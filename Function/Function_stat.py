@@ -65,3 +65,26 @@ def perform_kruskal_and_dunn(data, dependent_var, group_var):
     else:
         print("No significant differences found by Kruskal-Wallis; no post hoc test performed.")
         return fake_data_df
+
+
+def safe_interpolate(x, num_points):
+    # Create an array to store interpolated values, initialized with NaN
+    interpolated_values = np.full(num_points, np.nan)
+
+    # Check if all elements are finite, ignore NaNs for interpolation
+    finite_mask = np.isfinite(x)
+    if finite_mask.any():  # Ensure there's at least one finite value to interpolate
+        # Interpolate only finite values
+        valid_x = x[finite_mask]
+        valid_indices = np.linspace(0, 1, len(x))[finite_mask]
+
+        # Perform interpolation over the range with finite values
+        interpolated_valid_values = np.interp(np.linspace(0, 1, num_points), valid_indices, valid_x)
+
+        # Round interpolated values to the nearest integer
+        rounded_values = np.round(interpolated_valid_values).astype(int)
+
+        # Place rounded interpolated values back in the full array
+        interpolated_values = rounded_values
+
+    return interpolated_values

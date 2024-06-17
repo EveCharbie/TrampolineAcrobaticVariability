@@ -227,8 +227,6 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                 all_data_subject.append(data_subject[i])
             all_data_subject = np.array(all_data_subject)
 
-            total_dofs = all_data_subject.shape[2]
-
             timestramp_treshold_subject_75 = []
             for trials in range(all_data_subject.shape[0]):
                 initial_rot = all_data_subject[trials, 0, 2]
