@@ -45,34 +45,6 @@ for file in files:
 complete_data = complete_data.dropna()
 
 # 1. Boxplots for the different difficulty levels without expertise distinction
-x_boxplot_centers = [0.25, 0.5, 1]
-
-means = [complete_data[col].mean() for col in ['41', '42', '43']]
-slope, intercept, r_value, p_value, std_err = linregress(x_boxplot_centers, means)
-
-x_reg_line = np.array(x_boxplot_centers)
-y_reg_line = slope * x_reg_line + intercept
-
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.boxplot(data=complete_data[['41', '42', '43']], ax=ax, color="skyblue")
-sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
-
-text_str = f'R-squared: {r_value**2:.2f}'
-ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
-
-# ax.set_title('Boxplot with Regression Line for Different Difficulty Level')
-ax.set_xlabel('Acrobatics by Difficulty Level')
-ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (rad)')
-ax.set_xticks([0, 1, 2])
-ax.set_xticklabels(['41/', '42/', '43/'])
-ax.legend(loc='lower right')
-plt.tight_layout()
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/75_with_difficulty.png", dpi=1000)
-plt.show()
-
-print(p_value)
-correlation = complete_data[['41', '42', '43']].corr()
-print(correlation)
 
 difficulty_values = [0.5, 1, 1.5]
 difficulty_levels = np.concatenate([np.full(len(complete_data[col]), difficulty_values[i]) for i, col in enumerate(['41', '42', '43'])])
@@ -95,7 +67,7 @@ sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression 
 
 # Add R-squared text
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
-text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
+text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 # Set labels and title
