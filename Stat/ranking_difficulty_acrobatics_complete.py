@@ -131,8 +131,8 @@ sns.boxplot(data=complete_data[order], ax=ax, color="skyblue", positions=x_boxpl
 sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
 # Add R-squared text<
-if p_value < 0.05:
-    p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
+
+p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 

@@ -111,6 +111,7 @@ def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_
     Order_JC = data_loaded["JC_order"]
 
     Xsens_position = pd.DataFrame((JC.transpose(1, 0, 2).reshape(-1, JC.shape[2])).T)
+    duration = len(Xsens_position)/60
 
     Xsens_position = Xsens_position.apply(
         lambda x: np.interp(np.linspace(0, 1, num_points), np.linspace(0, 1, len(x)), x)
@@ -131,7 +132,7 @@ def load_and_interpolate_for_point(file_path, num_points=100, include_expertise_
         length_segment = data_loaded["length_segment"]
         wall_index = data_loaded["wall_index"]
         gaze_position_temporal_evolution_projected = data_loaded["gaze_position_temporal_evolution_projected"]
-        return DataFrame_with_colname, subject_expertise, laterality, length_segment, wall_index, gaze_position_temporal_evolution_projected
+        return DataFrame_with_colname, subject_expertise, laterality, length_segment, wall_index, gaze_position_temporal_evolution_projected, duration
     else:
         return DataFrame_with_colname
 

@@ -25,7 +25,6 @@ time_values = np.linspace(0, n_points-1, num=n_points)
 home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 mean_length_member = np.loadtxt('/home/lim/Documents/StageMathieu/mean_total_length.csv', delimiter=',', skiprows=1)
 movement_to_analyse = ['41', '42', '43', '41o', '4-', '4-o', '8--o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
-# movement_to_analyse = ['831<']
 
 half_twists_per_movement = {
     '4-': 0,
@@ -38,8 +37,8 @@ half_twists_per_movement = {
     '8-1o': 1,
     '8-3<': 3,
     '8--o': 0,
-    '811<': 1,
-    '822': 350/75,
+    '811<': 175/75,  # to reach 75% of the second somersault
+    '822': 350/75,  # to reach 75% of the second somersault
     '831<': 3,
 
 }
@@ -106,7 +105,8 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
              laterality,
              length_segment,
              wall_index,
-             gaze_position_temporal_evolution_projected) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
+             gaze_position_temporal_evolution_projected,
+             duration) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
             data_subject.append(data)
             length_subject.append(length_segment)
             wall_index_subject.append(wall_index)
@@ -360,7 +360,7 @@ mat_data = {
                 "wall_index_all_subjects_acrobatics": wall_index_all_subjects_acrobatics,
                 "gaze_position_temporal_evolution_projected_all_subject_acrobatics": gaze_position_temporal_evolution_projected_all_subject_acrobatics,
                 "liste_name": liste_name,
-                "list_name_for_movement": list_name_for_movement
+                "list_name_for_movement": list_name_for_movement,
             }
 
 print(area_df)
