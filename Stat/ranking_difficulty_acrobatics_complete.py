@@ -17,66 +17,20 @@ from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova
 
 home_path = "/home/lim/Documents/StageMathieu/Tab_result3/"
 
-order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
-
-orderxlabel = ['8-1o', '8-1<', '811<', '41/', '41o', '8-3<', '42/', '831<', '822/', '43/']
-
-
-ratio_twist_somersault = {
-    '8-1o': '#1f77b4',
-    '8-1<': '#ff7f0e',
-    '41': '#2ca02c',
-    '811<': '#ff7f0e',
-    '41o': '#1f77b4',
-    '8-3<': '#ff7f0e',
-    '42': '#2ca02c',
-    '822': '#2ca02c',
-    '831<': '#ff7f0e',
-    '43': '#2ca02c',
+velocity_at_T75 = {
+    '8-1o': 109,
+    '8-1<': 119,
+    '41': 88,
+    '811<': 127,
+    '41o': 82,
+    '8-3<': 204,
+    '42': 128,
+    '822': 181,
+    '831<': 320,
+    '43': 183,
 }
 
 ratio = [0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 1, 1, 1, 1.5]
-
-name = [
-    'GuSe',
-    'JaSh',
-    'JeCa',
-    'AnBe',
-    'AnSt',
-    'SaBe',
-    'JoBu',
-    'JaNo',
-    'SaMi',
-    'AlLe',
-    'MaBo',
-    'SoMe',
-    'JeCh',
-    'LiDu',
-    'LeJa',
-    'ArMa',
-    'AlAd'
-]
-
-rotation_files = []
-
-for root, dirs, files in os.walk(home_path):
-    for file in files:
-        if 'rotation' in file:
-            full_path = os.path.join(root, file)
-            rotation_files.append(full_path)
-
-complete_data = pd.DataFrame(columns=order, index=name)
-
-# complete_data = []
-for file in rotation_files:
-    data = pd.read_csv(file)
-    mvt_name = file.split('/')[-1].replace('results_', '').replace('_rotation.csv', '')
-    anova_rot_df = data.pivot_table(index=['ID'], columns='Timing', values='Std')
-
-    for name in (data["ID"].unique()):
-
-        complete_data.loc[name, mvt_name] = anova_rot_df.loc[name, "75%"]
-
 
 order = ['8-1o', '8-1<', '811<', '41', '41o', '8-3<', '42', '831<', '822', '43']
 orderxlabel = ['8-1o', '8-1<', '811<', '41/', '41o', '8-3<', '42/', '831<', '822/', '43/']
