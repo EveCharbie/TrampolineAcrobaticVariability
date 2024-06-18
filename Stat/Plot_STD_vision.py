@@ -94,7 +94,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             tolerance = 1e-6  # Tolérance pour vérifier si ligne[2] est très proche de 0
 
             for idx_ligne, ligne in enumerate(gaze_position):
-            #     if (X[0][0] <= ligne[0] <= X[0][1] and Y[:, 1][0] <= ligne[1] <= Y[:, 1][1] and abs(ligne[2]) <= tolerance):  # Trampo
                 if abs((ligne[2]) <= tolerance):  # Ground
                     data_ground[idx_ligne] = 0
                 else:
