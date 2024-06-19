@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import scipy.io
 import matplotlib.pyplot as plt
@@ -6,6 +8,8 @@ from TrampolineAcrobaticVariability.Function.Function_stat import safe_interpola
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 members = ["AvBrasD", "MainD", "AvBrasG", "MainG", "JambeD", "PiedD", "JambeG", "PiedG"]
+members = ["ElbowR", "HandR", "ElbowL", "HandL", "KneeR", "FootR", "KneeL", "FootL"]
+
 full_name_acrobatics = {
     '4-': '4-/',
     '4-o':  '4-o',
@@ -101,136 +105,38 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     gaze_by_acrobatics_ground = np.mean(subject_gaze_ground, axis=0)
     gaze_by_acrobatics_ground = (gaze_by_acrobatics_ground >= 0.5).astype(int)
 
-    # Création des graphiques sur la même image
-    plt.figure(figsize=(13, 13))
-    colors = np.linspace(0, 1, len(data_pelvis))
-
-    # Premier graphique: pelvis_by_subject vs. data_upper_body avec gradient de couleur
-    plt.subplot(2, 2, 1)
-    scatter1 = plt.scatter(data_pelvis, data_upper_body, c=colors, cmap='viridis', label='Upper Body')
-    plt.xlabel('Pelvis SDtotal')
-    plt.ylabel('Upper Body SDtotal')
-    plt.title('Pelvis vs Upper Body')
-    plt.legend()
-
-    # Deuxième graphique: pelvis_by_subject vs. data_lower_body avec gradient de couleur
-    plt.subplot(2, 2, 2)
-    scatter2 = plt.scatter(data_pelvis, data_lower_body, c=colors, cmap='viridis', label='Lower Body')
-    plt.colorbar(scatter2, label='Time')
-    plt.xlabel('Pelvis SDtotal')
-    plt.ylabel('Lower Body SDtotal')
-    plt.title('Pelvis vs Lower Body')
-    plt.legend()
-
-    # Troisième graphique: time vs. data_upper_body et data_lower_body avec data_pelvis sur un axe ordonné différent
-    ax1 = plt.subplot(2, 2, 3)
-    ax1.plot(time, data_upper_body, label='Upper Body', color='b')
-    ax1.plot(time, data_lower_body, label='Lower Body', color='r')
-    ax1.set_xlabel('Time')
-    ax1.set_ylabel('Upper and Lower Body SDtotal')
-    ax1.legend(loc='upper left')
-
-    ax2 = ax1.twinx()
-    ax2.plot(time, data_pelvis, label='Pelvis', color='g')
-    ax2.set_ylabel('Pelvis SDtotal')
-    ax2.legend(loc='upper right')
-
-    # Tracé des zones grises en fonction de gaze_by_acrobatics
-    in_gaze = False
-    start = 0
-    for i in range(len(gaze_by_acrobatics_mat)):
-        if gaze_by_acrobatics_mat[i] == 0 and not in_gaze:
-            start = i
-            in_gaze = True
-        elif gaze_by_acrobatics_mat[i] == 1 and in_gaze:
-            ax1.axvspan(start, i, color='gray', alpha=0.4)
-            in_gaze = False
-    if in_gaze:
-        ax1.axvspan(start, len(gaze_by_acrobatics_mat), color='gray', alpha=0.4)
-
-    # Tracé des zones grises en fonction de gaze_by_acrobatics
-    in_gaze = False
-    start = 0
-    for i in range(len(gaze_by_acrobatics_ground)):
-        if gaze_by_acrobatics_ground[i] == 0 and not in_gaze:
-            start = i
-            in_gaze = True
-        elif gaze_by_acrobatics_ground[i] == 1 and in_gaze:
-            ax1.axvspan(start, i, color='gray', alpha=0.3)
-            in_gaze = False
-    if in_gaze:
-        ax1.axvspan(start, len(gaze_by_acrobatics_ground), color='gray', alpha=0.3)
-
-    # Quatrième graphique: time vs. members avec data_pelvis sur un axe ordonné différent
-    ax3 = plt.subplot(2, 2, 4)
-    upper_body_colors = plt.cm.Blues(np.linspace(0.4, 1, 4))
-    lower_body_colors = plt.cm.Reds(np.linspace(0.4, 1, 4))
-
-    for i in range(4):
-        ax3.plot(time, data_members[i], label=members[i], color=upper_body_colors[i])
-    for i in range(4, 8):
-        ax3.plot(time, data_members[i], label=members[i], color=lower_body_colors[i - 4])
-
-    ax3.set_xlabel('Time')
-    ax3.set_ylabel('Upper and Lower Body SDtotal')
-    ax3_legend = ax3.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
-
-    ax4 = ax3.twinx()
-    ax4.plot(time, data_pelvis, label='Pelvis', color='g')
-    ax4.set_ylabel('Pelvis SDtotal')
-    ax4.legend(loc='upper right')
-
-    # Tracé des zones grises en fonction de gaze_by_acrobatics
-    in_gaze = False
-    start = 0
-    for i in range(len(gaze_by_acrobatics_mat)):
-        if gaze_by_acrobatics_mat[i] == 0 and not in_gaze:
-            start = i
-            in_gaze = True
-        elif gaze_by_acrobatics_mat[i] == 1 and in_gaze:
-            ax3.axvspan(start, i, color='gray', alpha=0.4)
-            in_gaze = False
-    if in_gaze:
-        ax3.axvspan(start, len(gaze_by_acrobatics_mat), color='gray', alpha=0.4)
-
-    # Tracé des zones grises en fonction de gaze_by_acrobatics
-    in_gaze = False
-    start = 0
-    for i in range(len(gaze_by_acrobatics_ground)):
-        if gaze_by_acrobatics_ground[i] == 0 and not in_gaze:
-            start = i
-            in_gaze = True
-        elif gaze_by_acrobatics_ground[i] == 1 and in_gaze:
-            ax3.axvspan(start, i, color='gray', alpha=0.3)
-            in_gaze = False
-    if in_gaze:
-        ax3.axvspan(start, len(gaze_by_acrobatics_ground), color='gray', alpha=0.3)
-
-    # plt.subplots_adjust(
-    #                     top=0.975,
-    #                     bottom=0.11,
-    #                     left=0.05,
-    #                     right=0.96,
-    #                     hspace=0.285,
-    #                     wspace=0.275
-    #                     )
-
-    # plt.tight_layout()
-    # plt.show()
-    plt.close()
 
 
 
-################################################################################################################
+    # Dimensions des axes
+    left, width = 0.1, 0.38
+    bottom, height = 0.6, 0.35
+    bottom_h = bottom - height - 0.05
+    small_height = 0.01
 
-    # Création des graphiques sur la même image
-    fig = plt.figure(figsize=(16, 9))
-    gs = GridSpec(3, 2, figure=fig)
+    # Définitions des rectangles pour les grands graphiques
+    rect1 = [left, bottom, width, height]
+    rect2 = [left + width + 0.05, bottom, width, height]
+    rect3 = [left, bottom_h, width, height]
+    rect4 = [left + width + 0.05, bottom_h, width, height]
+
+    # Définitions des rectangles pour les petits graphiques en dessous
+    rect5 = [left, bottom_h - small_height - 0.15, width, small_height+0.5]
+    rect6 = [left + width + 0.05, bottom_h - small_height - 0.05, width, small_height]
+
+    fig = plt.figure(figsize=(14, 14))
+    fig.suptitle(f"Acrobatics {full_name_acrobatics[mvt]}")
+    # Création des axes
+    ax1 = plt.axes(rect1)
+    ax2 = plt.axes(rect3)
+    ax3 = plt.axes(rect2)
+    ax4 = plt.axes(rect4)
+    ax_legend = plt.axes(rect6)
+    ax_colorbar = plt.axes(rect5)
 
     colors = np.linspace(0, 1, len(data_pelvis))
 
     # Premier graphique: pelvis_by_subject vs. data_upper_body avec gradient de couleur
-    ax1 = fig.add_subplot(gs[0, 0])
     scatter1 = ax1.scatter(data_pelvis, data_upper_body, c=colors, cmap='viridis', label='Upper Body')
     # ax1.set_xlabel('Pelvis SDtotal')
     ax1.set_ylabel('Upper Body SDtotal')
@@ -240,7 +146,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
 
     # Deuxième graphique: pelvis_by_subject vs. data_lower_body avec gradient de couleur
-    ax2 = fig.add_subplot(gs[1, 0])
     scatter2 = ax2.scatter(data_pelvis, data_lower_body, c=colors, cmap='viridis', label='Lower Body')
     # fig.colorbar(scatter2, ax=ax2, label='Time')
     ax2.set_xlabel('Pelvis SDtotal')
@@ -249,7 +154,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     # ax2.legend()
 
     # Troisième graphique: time vs. data_upper_body et data_lower_body avec data_pelvis sur un axe ordonné différent
-    ax3 = fig.add_subplot(gs[0, 1])
     ax3.plot(time, data_upper_body, label='Upper Body', color='b')
     ax3.plot(time, data_lower_body, label='Lower Body', color='r')
     # ax3.set_xlabel('Time')
@@ -258,10 +162,10 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     # ax3.legend(loc='upper left')
     ax3.set_xticklabels([])  # Supprimer les xlabels
 
-    ax4 = ax3.twinx()
-    ax4.plot(time, data_pelvis, label='Pelvis', color='g')
-    ax4.set_ylabel('Pelvis SDtotal')
-    # ax4.legend(loc='upper right')
+    ax3bis = ax3.twinx()
+    ax3bis.plot(time, data_pelvis, label='Pelvis', color='g')
+    ax3bis.set_ylabel('Pelvis SDtotal')
+    # ax3bis.legend(loc='upper right')
 
     # Tracé des zones grises en fonction de gaze_by_acrobatics
     in_gaze = False
@@ -290,30 +194,29 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
         ax3.axvspan(start, len(gaze_by_acrobatics_ground), color='gray', alpha=0.3)
 
     # Quatrième graphique: time vs. members avec data_pelvis sur un axe ordonné différent
-    ax5 = fig.add_subplot(gs[1, 1])
     upper_body_colors = plt.cm.Blues(np.linspace(0.4, 1, 4))
     lower_body_colors = plt.cm.Reds(np.linspace(0.4, 1, 4))
 
     lines = []
     labels = []
     for i in range(4):
-        line, = ax5.plot(time, data_members[i], label=members[i], color=upper_body_colors[i])
+        line, = ax4.plot(time, data_members[i], label=members[i], color=upper_body_colors[i])
         lines.append(line)
         labels.append(members[i])
     for i in range(4, 8):
-        line, = ax5.plot(time, data_members[i], label=members[i], color=lower_body_colors[i - 4])
+        line, = ax4.plot(time, data_members[i], label=members[i], color=lower_body_colors[i - 4])
         lines.append(line)
         labels.append(members[i])
 
-    ax5.set_xlabel('Time')
-    ax5.set_ylabel('Limbs joint center positions SDtotal')
-    ax5.set_xticklabels([])  # Supprimer les xlabels
+    ax4.set_xlabel('Time')
+    ax4.set_ylabel('Limbs joint center positions SDtotal')
+    # ax4.set_xticklabels([])  # Supprimer les xlabels
 
-    ax6 = ax5.twinx()
-    line, = ax6.plot(time, data_pelvis, label='Pelvis', color='g')
+    ax4bis = ax4.twinx()
+    line, = ax4bis.plot(time, data_pelvis, label='Pelvis', color='g')
     lines.append(line)
     labels.append('Pelvis')
-    ax6.set_ylabel('Pelvis SDtotal')
+    ax4bis.set_ylabel('Pelvis SDtotal')
 
     # Tracé des zones grises en fonction de gaze_by_acrobatics
     in_gaze = False
@@ -323,10 +226,10 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             start = i
             in_gaze = True
         elif gaze_by_acrobatics_mat[i] == 1 and in_gaze:
-            ax5.axvspan(start, i, color='gray', alpha=0.4)
+            ax4.axvspan(start, i, color='gray', alpha=0.4)
             in_gaze = False
     if in_gaze:
-        ax5.axvspan(start, len(gaze_by_acrobatics_mat), color='gray', alpha=0.4)
+        ax4.axvspan(start, len(gaze_by_acrobatics_mat), color='gray', alpha=0.4)
 
     # Tracé des zones grises en fonction de gaze_by_acrobatics
     in_gaze = False
@@ -336,16 +239,18 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             start = i
             in_gaze = True
         elif gaze_by_acrobatics_ground[i] == 1 and in_gaze:
-            ax5.axvspan(start, i, color='gray', alpha=0.3)
+            ax4.axvspan(start, i, color='gray', alpha=0.3)
             in_gaze = False
     if in_gaze:
-        ax5.axvspan(start, len(gaze_by_acrobatics_ground), color='gray', alpha=0.3)
+        ax4.axvspan(start, len(gaze_by_acrobatics_ground), color='gray', alpha=0.3)
 
-    ax_legend = fig.add_subplot(gs[2, 1])
     ax_legend.axis('off')  # Masquer les axes
+    # Lignes et labels supplémentaires
     additional_lines = [Line2D([0], [0], color='b', lw=2),
-                        Line2D([0], [0], color='r', lw=2)]
-    additional_labels = ['Upper Body', 'Lower Body']
+                        Line2D([0], [0], color='r', lw=2),
+                        Line2D([0], [0], color='grey', lw=2, alpha=0.5),
+                        Line2D([0], [0], color='grey', lw=2, alpha=1.0)]
+    additional_labels = ['Upper Body', 'Lower Body', 'Gaze on ground', 'Gaze on trampoline']
 
     all_lines = lines + additional_lines
     all_labels = labels + additional_labels
@@ -353,7 +258,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     ax_legend.legend(all_lines, all_labels, loc='upper center', title='Body Part', ncol=3)
 
     # Créer un subplot pour la colorbar
-    ax_colorbar = fig.add_subplot(gs[2, 0])
     norm = plt.Normalize(0, 100)
     sm = plt.cm.ScalarMappable(cmap='viridis', norm=norm)
     sm.set_array([])
@@ -362,23 +266,10 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     cbar.set_ticks([0, 25, 50, 75, 100])
     cbar.set_ticklabels(['0%', '25%', '50%', '75%', '100%'])
     ax_colorbar.axis('off')  # Masquer les axes
+    plt.savefig(f"/home/lim/Documents/StageMathieu/All_graphique/{mvt}_all_graphique.png", dpi=350)
 
-    # Ajuster la position de la colorbar pour qu'elle soit en haut du subplot
-    pos = ax_colorbar.get_position()
-    new_pos = [pos.x0, pos.y0 + 0.15, pos.width, pos.height / 2]  # [left, bottom, width, height]
-    ax_colorbar.set_position(new_pos)
-
-    # # Configuration des marges et affichage
-    # plt.subplots_adjust(
-    #     top=0.970,
-    #     bottom=0.000,
-    #     left=0.05,
-    #     right=0.965,
-    #     hspace=0.080,
-    #     wspace=0.120
-    # )
-
-    plt.show()
+    # plt.show()
+    plt.close()
 
 
 

@@ -2,7 +2,7 @@ import moviepy.editor as mp
 import os
 
 
-home_path = "/home/lim/Documents/StageMathieu/Video_AnSt/"
+home_path = "/home/lim/Documents/StageMathieu/Video_JeCa/"
 
 
 video_files = []
@@ -15,7 +15,7 @@ for root, dirs, files in os.walk(home_path):
 
 
 # Load all videos
-clips = [mp.VideoFileClip(video).set_opacity(0.4) for video in video_files]
+clips = [mp.VideoFileClip(video).set_opacity(0.3) for video in video_files]
 
 # Find the duration of the longest video
 max_duration = max(clip.duration for clip in clips)
@@ -27,7 +27,7 @@ clips = [clip.set_duration(max_duration) for clip in clips]
 final_clip = mp.CompositeVideoClip(clips)
 
 # Write the result to a file
-output_path = "/home/lim/Documents/StageMathieu/composite_video_AnSt.mp4"
+output_path = "/home/lim/Documents/StageMathieu/composite_video_JeCa.mp4"
 final_clip.write_videofile(output_path, codec='libx264')
 
 output_path

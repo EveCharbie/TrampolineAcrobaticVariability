@@ -23,26 +23,37 @@ from sklearn.metrics import r2_score
 #
 # }
 
+velocity_at_T75 = {
+    '8-1o': 109,
+    '8-1<': 119,
+    '41': 88,
+    '811<': 127,
+    '41o': 82,
+    '8-3<': 204,
+    '42': 128,
+    '822': 181,
+    '831<': 320,
+    '43': 183,
+}
+
+
 ratio_twist_somersault = {
-    '4-': (0, 'stretched'),
-    '4-o': (0, 'grouped'),
-    '8--o': (0, 'grouped'),
-    '8-1<': (0.25, 'pike'),
-    '8-1o': (0.25, 'grouped'),
-    '41': (0.5, 'stretched'),
-    '811<': (0.5, 'pike'),
-    '41o': (0.5, 'stretched'),
-    '8-3<': (0.75, 'pike'),
-    '42': (1, 'stretched'),
-    '822': (1, 'stretched'),
-    '831<': (1, 'pike'),
-    '43': (1.5, 'stretched'),
+    '8-1<': (119, 'pike'),
+    '8-1o': (109, 'grouped'),
+    '41': (88, 'stretched'),
+    '811<': (127, 'pike'),
+    '41o': (82, 'stretched'),
+    '8-3<': (204, 'pike'),
+    '42': (128, 'stretched'),
+    '822': (181, 'stretched'),
+    '831<': (320, 'pike'),
+    '43': (183, 'stretched'),
 }
 
 movement_to_analyse = list(ratio_twist_somersault.keys())
 
 # Load your data
-data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve2.csv')
+data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_area_under_curve2.csv')
 
 # Melt the data to long format
 combined_data = pd.melt(data, id_vars=['ID', 'Expertise'], value_vars=movement_to_analyse, var_name='Difficulty', value_name='Score')
@@ -68,7 +79,9 @@ for (difficulty, type), group_data in combined_data.groupby(['Difficulty', 'Type
     ax.scatter(group_data['TwistRatio'], group_data['Score'], label=f"{difficulty}", marker=markers[type])
 
 # Plot regression line
-ax.plot(x_reg_line, y_reg_line, 'r-', label=f'R2 {r_value**2:.2f}')
+p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
+text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
+ax.plot(x_reg_line, y_reg_line, 'r-', label=text_str)
 
 # Set titles and labels
 ax.set_title('Scatter Plot Grouped by Twist to Somersault Ratio with Regression Line')
