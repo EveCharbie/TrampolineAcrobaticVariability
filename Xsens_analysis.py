@@ -162,7 +162,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        plt.savefig(f"{home_path_subject}/all_data.png")
+        plt.savefig(f"{home_path_subject}/all_data.png", dpi= 200)
         # plt.show()
         plt.close()
 
@@ -190,7 +190,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                 plt.legend(loc='upper right')
         plt.tight_layout()
         plt.subplots_adjust(top=0.95, hspace=0.5, wspace=0.5)
-        plt.savefig(f"{home_path_subject}/all_axes_sd.png")
+        plt.savefig(f"{home_path_subject}/all_axes_sd.png", dpi= 200)
         plt.close()
 
 
@@ -215,7 +215,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             if i == 0:
                 plt.legend(loc='upper right')
         plt.tight_layout()
-        plt.savefig(f"{home_path_subject}/mean_axes_sd.png")
+        plt.savefig(f"{home_path_subject}/mean_axes_sd.png", dpi= 200)
         # plt.show()
         plt.close()
 

@@ -136,22 +136,40 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
     colors = np.linspace(0, 1, len(data_pelvis))
 
+    # Générer 100 couleurs progressives
+    cmap = plt.get_cmap('viridis')
+    colors_gradient = cmap(np.linspace(0, 1, 100))
+
     # Premier graphique: pelvis_by_subject vs. data_upper_body avec gradient de couleur
-    scatter1 = ax1.scatter(data_pelvis, data_upper_body, c=colors, cmap='viridis', label='Upper Body')
+    # Tracé des points avec des marqueurs différents selon la condition
+    for i in range(len(data_pelvis)):
+        marker = 'o' if gaze_by_acrobatics_mat[i] == 0 else '.'
+        ax1.scatter(data_pelvis[i], data_upper_body[i], color=colors_gradient[i], s=10, marker=marker)
+
+    ax1.scatter([], [], color='black', s=10, marker='o', label='Gaze on trampoline')
+    ax1.scatter([], [], color='black', s=10, marker='.', label='Gaze in the gym')
     # ax1.set_xlabel('Pelvis SDtotal')
     ax1.set_ylabel('Upper Body SDtotal')
     ax1.set_title('Pelvis vs Limbs')
-    # ax1.legend()
+    ax1.legend()
     ax1.set_xticklabels([])  # Supprimer les xlabels
+    ax1.set_xlim(10, 40)
+    ax1.set_ylim(0.01, 0.47)
 
 
     # Deuxième graphique: pelvis_by_subject vs. data_lower_body avec gradient de couleur
-    scatter2 = ax2.scatter(data_pelvis, data_lower_body, c=colors, cmap='viridis', label='Lower Body')
+    # Tracé des points avec des marqueurs différents selon la condition
+    for i in range(len(data_pelvis)):
+        marker = 'o' if gaze_by_acrobatics_mat[i] == 0 else '.'
+        ax2.scatter(data_pelvis[i], data_lower_body[i], color=colors_gradient[i], s=10, marker=marker)
+
     # fig.colorbar(scatter2, ax=ax2, label='Time')
     ax2.set_xlabel('Pelvis SDtotal')
     ax2.set_ylabel('Lower Body SDtotal')
     # ax2.set_title('Pelvis vs Lower Body')
     # ax2.legend()
+    ax2.set_xlim(10, 40)
+    ax2.set_ylim(0.01, 0.47)
 
     # Troisième graphique: time vs. data_upper_body et data_lower_body avec data_pelvis sur un axe ordonné différent
     ax3.plot(time, data_upper_body, label='Upper Body', color='b')
@@ -161,11 +179,14 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     ax3.set_title('Pelvis and limbs across time')
     # ax3.legend(loc='upper left')
     ax3.set_xticklabels([])  # Supprimer les xlabels
+    ax3.set_ylim(0.01, 0.47)
 
     ax3bis = ax3.twinx()
     ax3bis.plot(time, data_pelvis, label='Pelvis', color='g')
     ax3bis.set_ylabel('Pelvis SDtotal')
     # ax3bis.legend(loc='upper right')
+    ax3bis.set_ylim(10, 40)
+
 
     # Tracé des zones grises en fonction de gaze_by_acrobatics
     in_gaze = False
@@ -211,12 +232,16 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     ax4.set_xlabel('Time')
     ax4.set_ylabel('Limbs joint center positions SDtotal')
     # ax4.set_xticklabels([])  # Supprimer les xlabels
+    ax4.set_ylim(0.01, 0.47)
+
 
     ax4bis = ax4.twinx()
     line, = ax4bis.plot(time, data_pelvis, label='Pelvis', color='g')
     lines.append(line)
     labels.append('Pelvis')
     ax4bis.set_ylabel('Pelvis SDtotal')
+    ax4bis.set_ylim(10, 40)
+
 
     # Tracé des zones grises en fonction de gaze_by_acrobatics
     in_gaze = False
