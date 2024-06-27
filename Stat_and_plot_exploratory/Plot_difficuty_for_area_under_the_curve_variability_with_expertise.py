@@ -5,11 +5,9 @@ from scipy.stats import linregress, mannwhitneyu
 import numpy as np
 import matplotlib.patches as mpatches
 
-data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result/results_area_under_curve.csv')
+data = pd.read_csv('/home/lim/Documents/StageMathieu/Tab_result3/results_area_under_curve2.csv')
 combined_data = pd.melt(data, id_vars=['ID', 'Expertise'], value_vars=['41', '42', '43'], var_name='Difficulty', value_name='Score')
 
-
-# 1. Boxplots for the different difficulty levels without expertise distinction
 x_boxplot_centers = [0, 1, 2]
 
 means = [data[col].mean() for col in ['41', '42', '43']]
@@ -34,12 +32,6 @@ ax.legend(loc='lower right')
 
 plt.show()
 
-correlation = data[['41', '42', '43']].corr()
-print(correlation)
-
-
-
-# Calculate Pearson correlation matrix for each expertise group
 correlation_elite = data[data['Expertise'] == 'Elite'][['41', '42', '43']].corr(method='pearson')
 correlation_subelite = data[data['Expertise'] == 'SubElite'][['41', '42', '43']].corr(method='pearson')
 
@@ -53,11 +45,9 @@ positions_subelite = [2, 6, 10]
 
 fig, ax = plt.subplots(figsize=(12, 8))
 
-# Définir les couleurs des boxplots
 colors = {'Elite': 'lightblue', 'SubElite': 'lightgreen'}
 median_color = 'black'
 
-# Boxplots pour 'Elite'
 for i, level in enumerate(levels):
     data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
         'Score'].dropna()
@@ -65,7 +55,6 @@ for i, level in enumerate(levels):
                boxprops=dict(facecolor=colors['Elite']),
                medianprops=dict(color=median_color))
 
-# Boxplots pour 'SubElite'
 for i, level in enumerate(levels):
     data_subelite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'SubElite')][
         'Score'].dropna()
@@ -73,7 +62,6 @@ for i, level in enumerate(levels):
                boxprops=dict(facecolor=colors['SubElite']),
                medianprops=dict(color=median_color))
 
-# Ajouter des annotations et lignes pour le test de Mann-Whitney U
 for i, level in enumerate(levels):
     data_elite = combined_data[(combined_data['Difficulty'] == level) & (combined_data['Expertise'] == 'Elite')][
         'Score'].dropna()
@@ -82,10 +70,8 @@ for i, level in enumerate(levels):
     stat, pvalue = mannwhitneyu(data_elite, data_subelite)
     y_max = max(data_elite.max(), data_subelite.max()) + 5
 
-    # Formatter le texte de l'annotation en fonction de la valeur p
     p_text = f"p < 0.001" if pvalue < 0.001 else f"p = {pvalue:.3f}"
 
-    # Dessiner les lignes horizontales et verticales
     mid_point = (positions_elite[i] + positions_subelite[i]) / 2
     line_y = y_max + 1
     ax.hlines(y=line_y, xmin=positions_elite[i], xmax=positions_subelite[i], colors="black", linestyles='solid', lw=1)
@@ -94,7 +80,6 @@ for i, level in enumerate(levels):
 
     ax.annotate(p_text, xy=(mid_point, line_y + 0.5), textcoords="offset points", xytext=(0, 5), ha='center')
 
-# Légende pour les couleurs
 legend_patches = [mpatches.Patch(color=colors['Elite'], label='Elite'),
                   mpatches.Patch(color=colors['SubElite'], label='SubElite')]
 ax.legend(handles=legend_patches, title='Expertise', loc='lower right')
@@ -107,8 +92,3 @@ ax.set_ylabel('AUC')
 
 plt.show()
 
-
-####
-
-print(correlation_elite)
-print(correlation_subelite)

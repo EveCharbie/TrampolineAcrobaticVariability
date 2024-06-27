@@ -1,15 +1,11 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import levene, mannwhitneyu, shapiro, kruskal
-import matplotlib.patches as mpatches
-import numpy as np
-import statsmodels.api as sm
+from scipy.stats import levene, shapiro
+
 from statsmodels.formula.api import ols
-from statsmodels.stats.anova import AnovaRM
 from statsmodels.multivariate.manova import MANOVA
 from statsmodels.stats.anova import anova_lm
-from scikit_posthocs import posthoc_dunn
 
 
 def prepare_data(data):
@@ -27,10 +23,8 @@ files = [
     '/home/lim/Documents/StageMathieu/Tab_result/results_43_position.csv'
 ]
 
-# Créez une liste pour stocker tous les axes
 all_axes = []
 
-# Initialiser un compteur pour suivre le nombre d'axes ajoutés
 num_axes = 0
 
 fig, axes = plt.subplots(2, 2, figsize=(16, 12))
@@ -47,7 +41,6 @@ for file in files:
 
     print(f"===== Movement {mvt_name} is running =====")
 
-    # Check normality and homogeneity of variance for each group
     measurements = ['upper_body', 'lower_body']
     for measure in measurements:
         for expertise in data_prepared['Expertise'].unique():
@@ -82,12 +75,12 @@ for file in files:
     palette_upper = sns.color_palette("Reds", 2)
     palette_lower = sns.color_palette("Blues", 2)
 
-    # Plot pour upper_body
+    # Plot upper_body
     upper_plot = sns.pointplot(x='Timing', y='upper_body', hue='Expertise', data=data_prepared,
                                dodge=0.1, markers=['o', 's'], capsize=0.1, err_kws={'linewidth': 0.7},
                                palette=palette_upper, errorbar='sd', ax=axes[num_axes // 2, num_axes % 2])
 
-    # Plot pour lower_body
+    # Plot lower_body
     lower_plot = sns.pointplot(x='Timing', y='lower_body', hue='Expertise', data=data_prepared,
                                dodge=0.1, markers=['o', 's'], capsize=0.1, err_kws={'linewidth': 0.7},
                                palette=palette_lower, errorbar='sd', ax=axes[num_axes // 2, num_axes % 2])
@@ -109,13 +102,11 @@ for file in files:
         axes[num_axes // 2, num_axes % 2].legend(handles, new_labels,
                                                  bbox_to_anchor=(1, 1))
 
-    # Supprimer la légende automatique des autres graphiques
     if num_axes > 0:
         axes[num_axes // 2, num_axes % 2].get_legend().remove()
 
     num_axes += 1
 
-# Supprimer les axes non utilisés
 for i in range(num_axes, 4):
     fig.delaxes(axes.flatten()[i])
 
