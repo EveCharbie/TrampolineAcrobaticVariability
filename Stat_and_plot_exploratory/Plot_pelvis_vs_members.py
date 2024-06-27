@@ -23,7 +23,7 @@ full_name_acrobatics = {
 
 }
 
-file_path = "/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
+file_path = "/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
 members_data_all_subjects_acrobatics = data_loaded["members_data_all_subjects_acrobatics"]

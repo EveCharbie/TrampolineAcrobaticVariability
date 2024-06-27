@@ -74,7 +74,6 @@ secax.set_xticklabels(orderxlabeltop)
 secax.set_xlabel('Ratio twists somersaults', labelpad=15)
 
 plt.subplots_adjust(top=0.907, bottom=0.098, left=0.056, right=0.995,)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/reg_all.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/linear_reg_all_acrobatics_with_ratio.png", dpi=1000)
 plt.show()
 
-print(p_value)

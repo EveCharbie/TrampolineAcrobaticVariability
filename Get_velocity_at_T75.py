@@ -15,7 +15,7 @@ n_points = 100
 next_index = 0
 time_values = np.linspace(0, n_points-1, num=n_points)
 
-home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
+home_path = "/DataTrampo/Xsens_pkl/"
 movement_to_analyse = ['41', '42', '43', '41o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
 path75 = "/home/lim/Documents/StageMathieu/Tab_result3/"
 

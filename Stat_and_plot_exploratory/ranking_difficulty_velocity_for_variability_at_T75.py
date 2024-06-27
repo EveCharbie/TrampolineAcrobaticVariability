@@ -5,9 +5,9 @@ import os
 import numpy as np
 from scipy.stats import linregress
 
-home_path = "/home/lim/Documents/StageMathieu/Tab_result3/"
+home_path = "/Tab_result3/"
 
-
+## Velocity at T75
 velocity_at_T75 = {
     '8-1o': 109,
     '8-1<': 119,
@@ -23,7 +23,6 @@ velocity_at_T75 = {
 
 sorted_velocity = dict(sorted(velocity_at_T75.items(), key=lambda item: item[1]))
 order_and_ratio = pd.DataFrame(list(sorted_velocity.items()), columns=['Movement_Name', 'Velocity_at_T75'])
-
 
 name = [
     'GuSe', 'JaSh', 'JeCa', 'AnBe', 'AnSt', 'SaBe', 'JoBu',
@@ -48,7 +47,6 @@ for file in rotation_files:
     for gymnast_name in data["ID"].unique():
         complete_data.loc[gymnast_name, mvt_name] = np.degrees(anova_rot_df.loc[gymnast_name, "75%"])
 
-# Préparer les données pour la régression
 all_x_positions = []
 all_values = []
 
@@ -57,39 +55,26 @@ for i, col in enumerate(order_and_ratio["Movement_Name"]):
         all_x_positions.extend([velocity_at_T75[col]] * complete_data[col].dropna().shape[0])
         all_values.extend(complete_data[col].dropna().values)
 
-# Effectuer la régression linéaire
 slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_values)
 
-# Créer la ligne de régression
 x_reg_line = np.linspace(min(order_and_ratio["Velocity_at_T75"]), max(order_and_ratio["Velocity_at_T75"]), 100)
 y_reg_line = slope * x_reg_line + intercept
 
-# Tracé
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# Boxplot
 sns.boxplot(data=complete_data[order_and_ratio["Movement_Name"]], ax=ax, color="skyblue")
-# sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
-# Ajouter le texte R-squared et p-value
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
-text_str = f'R-squared: {r_value**2:.2f}\n{p_text}'
+text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-# Définir les étiquettes et le titre
 ax.set_xlabel('Velocity at T75', labelpad=15)
 ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (deg)')
-# ax.set_xticks(order_and_ratio["Velocity_at_T75"])
-# ax.set_xticklabels(orderxlabel)
 ax.set_ylim(0, 58)
 ax.legend(loc='lower right')
 
-# Ajuster les marges
 plt.subplots_adjust(top=0.907, bottom=0.098, left=0.056, right=0.995)
 
-# Sauvegarder et afficher
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/reg_all.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/linear_reg_all_acrobatics_with_velocity.png", dpi=1000)
 plt.show()
 
-# Afficher la p-value
-print(p_value)

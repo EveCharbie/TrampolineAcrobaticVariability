@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from TrampolineAcrobaticVariability.Function.Function_stat import safe_interpolate
 
-
 file_path = "/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
@@ -70,20 +69,16 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
     up_subject = 1.5
     max_value = 60
-    # Configuration initiale des axes et des listes de ticks et labels
-    # fig, ax = plt.subplots(figsize=(5, 11))
+
     fig, ax = plt.subplots(figsize=(280 / 90, 396 / 80))
     initial_ticks = np.arange(0, 60, 10)
     current_ticks = list(initial_ticks)
     current_labels = [f"{tick:.0f}" for tick in initial_ticks]
 
-
-    # Boucle sur les sujets
     for idx_subject, name_subject in enumerate(list_name_for_movement[0][idx_mvt]):
         color = name_to_color[name_subject]
         anonyme = anonyme_name[name_subject]
         up_line = max_value + up_subject
-        # np.set_printoptions(threshold=np.inf)
         trial_count = 0
         for idx_trials in range(
                 len(gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0])):
@@ -91,7 +86,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                 gaze_position_temporal_evolution_projected_all_subject_acrobatics[0][idx_mvt][0][idx_subject][0][idx_trials]
 
             data_ground = np.zeros(len(gaze_position), dtype=int)
-            tolerance = 1e-6  # Tolérance pour vérifier si ligne[2] est très proche de 0
+            tolerance = 1e-6
 
             for idx_ligne, ligne in enumerate(gaze_position):
                 if abs((ligne[2]) <= tolerance):  # Ground
@@ -100,7 +95,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                     data_ground[idx_ligne] = 1
             data_ground = pd.DataFrame(data_ground)
 
-            ##
             data_mat = np.zeros(len(gaze_position), dtype=int)
 
             for idx_ligne, ligne in enumerate(gaze_position):
@@ -109,7 +103,6 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                 else:
                     data_mat[idx_ligne] = 1
             data_mat = pd.DataFrame(data_mat)
-            ##
 
             pd.set_option('display.max_rows', None)
 
@@ -121,11 +114,10 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             y_values_ground[data_norm_ground[0] == 0] = y_line_position
             ax.plot(y_values_ground, '-', color=color, alpha=0.1, label='Presence of Zero' if idx_trials == 0 else "")
 
-            ##
             y_values_mat = np.full(len(data_norm_mat[0]), np.nan)
             y_values_mat[data_norm_mat[0] == 0] = y_line_position
             ax.plot(y_values_mat, '-', color=color, alpha=1, label='Presence of Zero' if idx_trials == 0 else "")
-            ##
+
             tick_with_offset = max_value + up_subject
             if max_value + up_subject not in current_ticks:
                 current_ticks.append(tick_with_offset)
@@ -160,40 +152,29 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             continue
 
     ax.set_title(f"Horizontal Line Indicating Presence of Zeros {mvt}")
-    # ax.set_xlabel("Index")
-    # ax.set_ylabel("Line Presence (Custom Y Position)")
     ax.set_xlim(0, len(data_norm_ground[0]))
     ax.set_ylim(0, 95)
     ax.tick_params(axis='x', labelsize=9)
 
-    # Ajout de la légende
     line1, = plt.plot([], [], color='black', label='Gaze on trampoline')
     line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
-    # plt.legend(handles=[line1, line2], fontsize='small')
 
     plt.title(f'{name_acro}', fontsize=11)
-    # plt.xlabel('Time (%)')
-    # plt.ylabel('SD pelvic rotation')
     plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.047)
     plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
     plt.show()
 
-
-# Création de la figure et de l'axe
+# Legend
 fig, ax = plt.subplots()
-
-# Ajout des lignes pour la légende
 line1, = ax.plot([], [], color='#9467bd', label='Gaze on the bed')
 line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the floor')
 line3, = ax.plot([], [], color='#9467bd', linestyle='--', label='SDtotal on pelvis \norientation')
 line4, = ax.plot([], [], color='black', linestyle='-.', label='Mean SDtotal across \nacrobatics on \npelvis orientation')
 
-# Création de la légende dans une figure séparée
 figlegend = plt.figure(figsize=(4, 1.5), facecolor='white')
 plt.figlegend(handles=[line1, line2, line3, line4], loc='center', fontsize='small', handlelength=4)
 
 plt.show()
 
-# Sauvegarde de la légende dans une image
 figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0, dpi=1000)
 
