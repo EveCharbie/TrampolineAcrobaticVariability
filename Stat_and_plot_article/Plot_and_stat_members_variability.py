@@ -60,7 +60,6 @@ for file in position_files:
 
     print(f"===== Movement {mvt_name} is running =====")
 
-    # Check normality and homogeneity of variances
     issues = []
 
     for body_part in body_parts:
@@ -104,7 +103,8 @@ categories = all_data['Timing'].cat.categories
 pos_plot = np.array([1, 5, 9])
 colors = plt.get_cmap('tab10')(np.linspace(0, 1, len(all_data['Source'].unique())))
 
-## Plot upper body
+
+## Plot upper body each acrobatics
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 initial_ticks = np.arange(0, 1.4, 0.2)
@@ -132,7 +132,7 @@ for i, mvt_name in enumerate(order):
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
 
-    significant_added = False  # Flag to track if a significance bar is added
+    significant_added = False
 
     for j in range(len(pos_plot) - 1):
         sig_key = f"takeoff_75" if j == 0 else f"75_landing"
@@ -150,10 +150,9 @@ for i, mvt_name in enumerate(order):
             ax.text(mid_point, line_y - 0.035, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
-        line_y += y_increment  # Increment line_y slightly more to avoid overlap
+        line_y += y_increment
         significant_added = False
 
-    # Ajouter la barre de significativité entre Takeoff et Landing
     p_value_tl = significant_value_upper_body[mvt_name]['takeoff_landing']
     if p_value_tl < 0.05:
         significant_added = True
@@ -167,24 +166,22 @@ for i, mvt_name in enumerate(order):
         ax.text(mid_point_tl, line_y - 0.035, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
-        line_y += y_increment  # Increment line_y slightly more to avoid overlap
+        line_y += y_increment
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
     ax.tick_params(axis='y', labelsize=8, width=0.4)
     ax.set_ylim(0, 2.5)
 
-# Réduire l'épaisseur du cadre du graphique
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
 plt.xticks([1.5, 5.5, 9.5], labels_x_empty)
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body_all_analysis.png", dpi=1000)
-# plt.show()
 
 
-## Plot lower body
+## Plot lower body each acrobatics
 
 plt.figure(figsize=(363 / 96, 242 / 96))
 initial_ticks = np.arange(0, 0.6, 0.2)
@@ -209,7 +206,7 @@ for i, mvt_name in enumerate(order):
 
     plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
 
-    significant_added = False  # Flag to track if a significance bar is added
+    significant_added = False
 
     for j in range(len(pos_plot) - 1):
         sig_key = f"takeoff_75" if j == 0 else f"75_landing"
@@ -230,10 +227,9 @@ for i, mvt_name in enumerate(order):
             ax.text(mid_point, line_y - 0.015, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
-        line_y += y_increment  # Increment line_y slightly more to avoid overlap
+        line_y += y_increment
         significant_added = False
 
-    # Ajouter la barre de significativité entre Takeoff et Landing
     p_value_tl = significant_value_lower_body[mvt_name]['takeoff_landing']
     if p_value_tl < 0.05:
         significant_added = True
@@ -249,23 +245,19 @@ for i, mvt_name in enumerate(order):
         ax.text(mid_point_tl, line_y - 0.015, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
 
     if significant_added:
-        line_y += y_increment  # Increment line_y slightly more to avoid overlap
+        line_y += y_increment
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels)
     ax.tick_params(axis='y', labelsize=8, width=0.4)
-# Réduire l'épaisseur du cadre du graphique
+
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
 plt.xticks([1.5, 5.5, 9.5], labels_x)
-# plt.title('Lower Body')
 plt.xlabel('Timing')
-# plt.ylabel('SD')
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
-# plt.legend(title='Acrobatics Code', bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body_all_analysis.png", dpi=1000)
-# plt.show()
 
 
 print("Statistical test for all acrobatics")
@@ -297,18 +289,6 @@ y_increment = 0.02
 means = all_data.groupby('Timing', observed=True)['upper_body'].mean()
 std_devs = all_data.groupby('Timing', observed=True)['upper_body'].std()
 
-pourcentages = {}
-keys = list(means.keys())
-for i in range(len(keys) - 1):
-    key1, key2 = keys[i], keys[i + 1]
-    valeur1, valeur2 = means[key1], means[key2]
-    pourcentage = ((valeur2 - valeur1) / valeur1) * 100
-    pourcentages[f"{key1} to {key2}"] = pourcentage
-
-# Affichage des pourcentages
-for key, value in pourcentages.items():
-    print(f"{key}: {value:.2f}%")
-
 plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black", markersize=5)
 plt.plot(pos_plot, means, '-', color="black", linewidth=1)
 
@@ -328,14 +308,12 @@ for j in range(len(pos_plot) - 1):
                   linestyles='solid', lw=1, color="black")
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
 
-    # Ajouter la barre de significativité entre Takeoff et Landing
-
 line_y += y_increment + 0.2
 p_value_tl = significant_value_takeoff_landing
 if p_value_tl < 0.05:
     significant_added = True
     p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
-    mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
+    mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2
 
     ax.hlines(y=line_y, xmin=pos_plot[0] + 0.1, xmax=pos_plot[2] - 0.1,
               colors="black", linestyles='solid', lw=1)
@@ -350,14 +328,10 @@ if p_value_tl < 0.05:
     ax.tick_params(axis='y', labelsize=8, width=0.4)
     ax.set_ylim(0, 1.55)
 
-# Réduire l'épaisseur du cadre du graphique
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
 plt.xticks([1, 5, 9], labels_x_empty)
-# plt.title('Upper Body')
-# plt.xlabel('Timing')
-# plt.ylabel('SD')
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png", dpi=1000)
 
@@ -367,12 +341,6 @@ posthoc_results_total = perform_kruskal_and_dunn(all_data, 'lower_body', 'Timing
 significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "T75"]
 significant_value_75_landing = posthoc_results_total.loc["T75", "Landing"]
 significant_value_takeoff_landing = posthoc_results_total.loc["Takeoff", "Landing"]
-
-
-
-
-
-
 
 
 
@@ -390,18 +358,6 @@ y_increment = 0.01
 
 means = all_data.groupby('Timing', observed=True)['lower_body'].mean()
 std_devs = all_data.groupby('Timing', observed=True)['lower_body'].std()
-
-pourcentages = {}
-keys = list(means.keys())
-for i in range(len(keys) - 1):
-    key1, key2 = keys[i], keys[i + 1]
-    valeur1, valeur2 = means[key1], means[key2]
-    pourcentage = ((valeur2 - valeur1) / valeur1) * 100
-    pourcentages[f"{key1} to {key2}"] = pourcentage
-
-# Affichage des pourcentages
-for key, value in pourcentages.items():
-    print(f"{key}: {value:.2f}%")
 
 plt.errorbar(x=pos_plot, y=means, yerr=std_devs, fmt='o', capsize=5, elinewidth=0.5, capthick=0.5, color="black", markersize=5)
 plt.plot(pos_plot, means, '-', color="black", linewidth=1)
@@ -421,14 +377,12 @@ for j in range(len(pos_plot) - 1):
                   linestyles='solid', lw=1, color="black")
         ax.text(mid_point, line_y, p_text, ha='center', va='bottom', fontsize=11)
 
-    # Ajouter la barre de significativité entre Takeoff et Landing
-
 line_y += y_increment + 0.1
 p_value_tl = significant_value_takeoff_landing
 if p_value_tl < 0.05:
     significant_added = True
     p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
-    mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
+    mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2
 
     ax.hlines(y=line_y, xmin=pos_plot[0] + 0.1, xmax=pos_plot[2] - 0.1,
               colors="black", linestyles='solid', lw=1)
@@ -442,14 +396,11 @@ if p_value_tl < 0.05:
     ax.tick_params(axis='y', labelsize=8, width=0.4)
     ax.set_ylim(0, 0.6)
 
-# Réduire l'épaisseur du cadre du graphique
 for spine in ax.spines.values():
     spine.set_linewidth(0.5)
 
 plt.xticks([1, 5, 9], labels_x)
-# plt.title('Lower Body')
 plt.xlabel('Timing')
-# plt.ylabel('SD')
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png", dpi=1000)
 
