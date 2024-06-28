@@ -20,7 +20,6 @@ import scipy
 import scipy
 
 
->>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
 def get_q(Xsens_orientation_per_move, move_orientation):
     """
     This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation
@@ -201,21 +200,12 @@ if GENRATE_DATA_FRAME_FLAG:
         # biorbd_model_path = f"models/{folder_subject}_Xsens_Model_rotated.bioMod"
         biorbd_model_path = "/home/charbie/Documents/Programmation/VisionOCP/models/SoMe_Xsens_Model_rotated_without_cone.bioMod"
         pelvis_orientations[folder_subject] = {}
-<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
         pelvis_orientations_interpolated[folder_subject] = {}
         time_vector[folder_subject] = {}
-        for folder_move in os.listdir(results_path + '/' + folder_subject):
-            if folder_move in move_list:
-                pelvis_orientations[folder_subject][folder_move] = []
-                pelvis_orientations_interpolated[folder_subject][folder_move] = []
-                time_vector[folder_subject][folder_move] = []
-                for file in os.listdir(results_path + '/' + folder_subject + '/' + folder_move):
-=======
         for folder_move in os.listdir(results_path + "/" + folder_subject):
             if folder_move in move_list:
                 pelvis_orientations[folder_subject][folder_move] = []
                 for file in os.listdir(results_path + "/" + folder_subject + "/" + folder_move):
->>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
                     if len(file) > 23:
                         if file[-23:] == "eyetracking_metrics.pkl":
 
@@ -297,7 +287,6 @@ if GENRATE_DATA_FRAME_FLAG:
                             duration = time_vector_pupil_per_move[-1]
                             vz_init = 9.81 * duration / 2
 
-<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
                             trans = np.zeros((3, len(Xsens_jointAngle_per_move)))
                             trans[2, :] = vz_init * time_vector_pupil_per_move - 0.5 * 9.81 * time_vector_pupil_per_move ** 2
 
@@ -339,9 +328,7 @@ if GENRATE_DATA_FRAME_FLAG:
                                 pelvis_interpolated[2, :] *= -1
                             pelvis_orientations_interpolated[folder_subject][folder_move].append(pelvis_interpolated/2/np.pi)
                             time_vector[folder_subject][folder_move].append(time_vector_pupil_per_move/duration)
-=======
                 pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
->>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
 
 
 elite_names = ["AlAd", "GuSe", "JeCa", "JeCh", "MaBo", "SaBe", "SaMi", "SoMe"]
@@ -393,67 +380,4 @@ for i in range(4):
 plt.tight_layout()
 plt.savefig("SomersaultsTwist.png", dpi=300)
 plt.show()
-<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
 
-
-fig, axs = plt.subplots(2, 2, figsize=(6, 6))
-axs = axs.ravel()
-mean_elites_pelvis_orientations = np.zeros((4, len(pelvis_orientations_interpolated.keys()), 100, 3))
-mean_subelites_pelvis_orientations = np.zeros((4, len(pelvis_orientations_interpolated.keys()), 100, 3))
-mean_elites_pelvis_orientations[:, :, :, :] = np.nan
-mean_subelites_pelvis_orientations[:, :, :, :] = np.nan
-for i_subject, subject in enumerate(pelvis_orientations_interpolated):
-    for i_move, move in enumerate(pelvis_orientations_interpolated[subject]):
-        for i in range(3):
-            if subject in elite_names:
-                if len(pelvis_orientations_interpolated[subject][move]) != 0:
-                    mean_elites_pelvis_orientations[move_list.index(move), i_subject, :, i] = np.nanmean(
-                        np.array(pelvis_orientations_interpolated[subject][move])[:, i, :], axis=0)
-            else:
-                if len(pelvis_orientations_interpolated[subject][move]) != 0:
-                    mean_subelites_pelvis_orientations[move_list.index(move), i_subject, :, i] = np.nanmean(
-                        np.array(pelvis_orientations_interpolated[subject][move])[:, i, :], axis=0)
-
-for i_move, move in enumerate(move_list):
-    mean_somersault_elites = np.nanmean(mean_elites_pelvis_orientations[i_move, :, :, 0], axis=0)
-    mean_twist_elites = np.nanmean(mean_elites_pelvis_orientations[i_move, :, :, 2], axis=0)
-    std_somersault_elites = np.nanstd(mean_elites_pelvis_orientations[i_move, :, :, 0], axis=0)
-    std_twist_elites = np.nanstd(mean_elites_pelvis_orientations[i_move, :, :, 2], axis=0)
-    if i_move == 0:
-        axs[i_move].plot(mean_somersault_elites, mean_twist_elites, color=colors_elites[3], label="Elites")
-    else:
-        axs[i_move].plot(mean_somersault_elites, mean_twist_elites, color=colors_elites[3])
-    axs[i_move].fill_between(mean_somersault_elites, mean_twist_elites - std_twist_elites,
-                             mean_twist_elites + std_twist_elites, color=colors_elites[3], alpha=0.5)
-    axs[i_move].plot(mean_somersault_elites[0], mean_twist_elites[0], color=colors_elites[3], marker='o')
-
-    mean_somersault_subelites = np.nanmean(mean_subelites_pelvis_orientations[i_move, :, :, 0], axis=0)
-    mean_twist_subelites = np.nanmean(mean_subelites_pelvis_orientations[i_move, :, :, 2], axis=0)
-    std_somersault_subelites = np.nanstd(mean_subelites_pelvis_orientations[i_move, :, :, 0], axis=0)
-    std_twist_subelites = np.nanstd(mean_subelites_pelvis_orientations[i_move, :, :, 2], axis=0)
-    if i_move == 0:
-        axs[i_move].plot(mean_somersault_subelites, mean_twist_subelites, color=colors_subelites[3], label="Subelites")
-    else:
-        axs[i_move].plot(mean_somersault_subelites, mean_twist_subelites, color=colors_subelites[3])
-    axs[i_move].fill_between(mean_somersault_subelites, mean_twist_subelites - std_twist_subelites,
-                             mean_twist_subelites + std_twist_subelites, color=colors_subelites[3], alpha=0.5)
-    axs[i_move].plot(mean_somersault_subelites[0], mean_twist_subelites[0], color=colors_subelites[3], marker='o')
-
-
-axs[0].set_title("0 twist", fontweight="bold")
-axs[1].set_title("0.5 twist", fontweight="bold")
-axs[2].set_title("1 twist", fontweight="bold")
-axs[3].set_title("1.5 twists", fontweight="bold")
-
-axs[0].legend(bbox_to_anchor=(1.2, 1.25), loc='upper center', borderaxespad=0., ncol=2)
-
-for i in range(4):
-    axs[i].set_xlabel("Somersault")
-    axs[i].set_ylabel("Twist")
-axs[0].set_ylim(-0.1, 0.5)
-
-plt.subplots_adjust(hspace=0.4, wspace=0.4)
-plt.savefig("SomersaultsTwist_angle-angle.png", dpi=300)
-plt.show()
-=======
->>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
