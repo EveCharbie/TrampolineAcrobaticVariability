@@ -8,10 +8,19 @@ from IPython import embed
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import os
+<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
 import biorbd
 import bioviz
 import scipy
 
+=======
+
+# import biorbd
+# import bioviz
+import scipy
+
+
+>>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
 def get_q(Xsens_orientation_per_move, move_orientation):
     """
     This function returns de generalized coordinates in the sequence XYZ (biorbd) from the quaternion of the orientation
@@ -81,24 +90,33 @@ def get_q(Xsens_orientation_per_move, move_orientation):
 
 
 joint_labels = [
+    "Pelvs_x",
+    "Pelvs_y",
+    "Pelvs_z",
+
     "jL5S1_x",  # 0
     "jL5S1_y",  # 1
     "jL5S1_z",  # 2
+
     "jL4L3_x",  # 3
     "jL4L3_y",  # 4
     "jL4L3_z",  # 5
+
     "jL1T12_x",  # 6
     "jL1T12_y",  # 7
     "jL1T12_z",  # 8
     "jT9T8_x",  # 9
     "jT9T8_y",  # 10
     "jT9T8_z",  # 11
+
     "jT1C7_x",  # 12
     "jT1C7_y",  # 13
     "jT1C7_z",  # 14
+
     "jC1Head_x",  # 15
     "jC1Head_y",  # 16
     "jC1Head_z",  # 17
+
     "jRightT4Shoulder…",  # 18
     "jRightT4Shoulder…",  # 19
     "jRightT4Shoulder…",  # 20
@@ -111,6 +129,7 @@ joint_labels = [
     "jRightWrist_x",  # 27
     "jRightWrist_y",  # 28
     "jRightWrist_z",  # 29
+
     "jLeftT4Shoulder_x",  # 30
     "jLeftT4Shoulder_y",  # 31
     "jLeftT4Shoulder_z",  # 32
@@ -123,6 +142,7 @@ joint_labels = [
     "jLeftWrist_x",  # 39
     "jLeftWrist_y",  # 40
     "jLeftWrist_z",  # 41
+
     "jRightHip_x",  # 42
     "jRightHip_y",  # 43
     "jRightHip_z",  # 44
@@ -135,6 +155,7 @@ joint_labels = [
     "jRightBallFoot_x",  # 51
     "jRightBallFoot_y",  # 52
     "jRightBallFoot_z",  # 53
+
     "jLeftHip_x",  # 54
     "jLeftHip_y",  # 55
     "jLeftHip_z",  # 56
@@ -157,7 +178,7 @@ name_results = ""
 save_path = "/home/charbie/Documents/Programmation/TrampolineAcrobaticVariability/XsensReconstructions/"
 
 
-move_list = ['4-', '41', '42', '43']
+move_list = ["4-", "41", "42", "43"]
 
 if os.path.exists("/home/user"):
     home_path = "/home/user"
@@ -180,6 +201,7 @@ if GENRATE_DATA_FRAME_FLAG:
         # biorbd_model_path = f"models/{folder_subject}_Xsens_Model_rotated.bioMod"
         biorbd_model_path = "/home/charbie/Documents/Programmation/VisionOCP/models/SoMe_Xsens_Model_rotated_without_cone.bioMod"
         pelvis_orientations[folder_subject] = {}
+<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
         pelvis_orientations_interpolated[folder_subject] = {}
         time_vector[folder_subject] = {}
         for folder_move in os.listdir(results_path + '/' + folder_subject):
@@ -188,10 +210,16 @@ if GENRATE_DATA_FRAME_FLAG:
                 pelvis_orientations_interpolated[folder_subject][folder_move] = []
                 time_vector[folder_subject][folder_move] = []
                 for file in os.listdir(results_path + '/' + folder_subject + '/' + folder_move):
+=======
+        for folder_move in os.listdir(results_path + "/" + folder_subject):
+            if folder_move in move_list:
+                pelvis_orientations[folder_subject][folder_move] = []
+                for file in os.listdir(results_path + "/" + folder_subject + "/" + folder_move):
+>>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
                     if len(file) > 23:
                         if file[-23:] == "eyetracking_metrics.pkl":
 
-                            path = results_path + '/' + folder_subject + '/' + folder_move + '/'
+                            path = results_path + "/" + folder_subject + "/" + folder_move + "/"
                             move_filename = path + file
                             with open(move_filename, "rb") as f:
                                 eye_tracking_metrics = pickle.load(f)
@@ -202,8 +230,12 @@ if GENRATE_DATA_FRAME_FLAG:
 
                                 acrobatics = folder_move
 
-                                gaze_position_temporal_evolution_projected = eye_tracking_metrics["gaze_position_temporal_evolution_projected"]
-                                gaze_position_temporal_evolution_projected_facing_front_wall = eye_tracking_metrics["gaze_position_temporal_evolution_projected_facing_front_wall"]
+                                gaze_position_temporal_evolution_projected = eye_tracking_metrics[
+                                    "gaze_position_temporal_evolution_projected"
+                                ]
+                                gaze_position_temporal_evolution_projected_facing_front_wall = eye_tracking_metrics[
+                                    "gaze_position_temporal_evolution_projected_facing_front_wall"
+                                ]
                                 wall_index = eye_tracking_metrics["wall_index"]
                                 wall_index_facing_front_wall = eye_tracking_metrics["wall_index_facing_front_wall"]
                                 fixation_index = eye_tracking_metrics["fixation_index"]
@@ -221,15 +253,17 @@ if GENRATE_DATA_FRAME_FLAG:
                                 EulAngles_head_global = eye_tracking_metrics["EulAngles_head_global"]
                                 EulAngles_neck = eye_tracking_metrics["EulAngles_neck"]
                                 eye_angles = eye_tracking_metrics["eye_angles"]
-                                Xsens_orthogonal_thorax_position = eye_tracking_metrics["Xsens_orthogonal_thorax_position"]
+                                Xsens_orthogonal_thorax_position = eye_tracking_metrics[
+                                    "Xsens_orthogonal_thorax_position"
+                                ]
                                 Xsens_orthogonal_head_position = eye_tracking_metrics["Xsens_orthogonal_head_position"]
                                 Xsens_position_no_level_CoM_corrected_rotated_per_move = eye_tracking_metrics[
-                                    "Xsens_position_no_level_CoM_corrected_rotated_per_move"]
+                                    "Xsens_position_no_level_CoM_corrected_rotated_per_move"
+                                ]
                                 Xsens_jointAngle_per_move = eye_tracking_metrics["Xsens_jointAngle_per_move"]
                                 Xsens_orientation_per_move = eye_tracking_metrics["Xsens_orientation_per_move"]
                                 Xsens_CoM_per_move = eye_tracking_metrics["Xsens_CoM_per_move"]
                                 time_vector_pupil_per_move = eye_tracking_metrics["time_vector_pupil_per_move"]
-
 
                             ### ------------- Computations begin here ------------- ###
                             # model = biorbd.Model(biorbd_model_path)
@@ -263,6 +297,7 @@ if GENRATE_DATA_FRAME_FLAG:
                             duration = time_vector_pupil_per_move[-1]
                             vz_init = 9.81 * duration / 2
 
+<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
                             trans = np.zeros((3, len(Xsens_jointAngle_per_move)))
                             trans[2, :] = vz_init * time_vector_pupil_per_move - 0.5 * 9.81 * time_vector_pupil_per_move ** 2
 
@@ -304,12 +339,15 @@ if GENRATE_DATA_FRAME_FLAG:
                                 pelvis_interpolated[2, :] *= -1
                             pelvis_orientations_interpolated[folder_subject][folder_move].append(pelvis_interpolated/2/np.pi)
                             time_vector[folder_subject][folder_move].append(time_vector_pupil_per_move/duration)
+=======
+                pelvis_orientations[folder_subject][folder_move].append(DoFs[3:6, :])
+>>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
 
 
 elite_names = ["AlAd", "GuSe", "JeCa", "JeCh", "MaBo", "SaBe", "SaMi", "SoMe"]
 subelite_names = ["AlLe", "AnBe", "AnSt", "ArMa", "JaNo", "JaSh", "JoBu", "LeJa", "LiDu"]
-colors_subelites = [cm.get_cmap('plasma')(k) for k in np.linspace(0, 0.4, len(subelite_names))]
-colors_elites = [cm.get_cmap('plasma')(k) for k in np.linspace(0.6, 1, len(elite_names))]
+colors_subelites = [cm.get_cmap("plasma")(k) for k in np.linspace(0, 0.4, len(subelite_names))]
+colors_elites = [cm.get_cmap("plasma")(k) for k in np.linspace(0.6, 1, len(elite_names))]
 
 fig, axs = plt.subplots(4, 4, figsize=(10, 10))
 for subject in pelvis_orientations:
@@ -355,6 +393,7 @@ for i in range(4):
 plt.tight_layout()
 plt.savefig("SomersaultsTwist.png", dpi=300)
 plt.show()
+<<<<<<< HEAD:get_kinematics_and_gaze_from_xsens.py
 
 
 fig, axs = plt.subplots(2, 2, figsize=(6, 6))
@@ -416,3 +455,5 @@ axs[0].set_ylim(-0.1, 0.5)
 plt.subplots_adjust(hspace=0.4, wspace=0.4)
 plt.savefig("SomersaultsTwist_angle-angle.png", dpi=300)
 plt.show()
+=======
+>>>>>>> main:Draw/get_kinematics_and_gaze_from_xsens.py
