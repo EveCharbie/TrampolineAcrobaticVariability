@@ -5,20 +5,34 @@ import os
 import numpy as np
 from scipy.stats import linregress
 
-home_path = "/Tab_result3/"
+home_path = "/home/lim/Documents/StageMathieu/Tab_result3"
+
+# ## Velocity at T75
+# velocity_at_T75 = {
+#     '8-1o': 109,
+#     '8-1<': 119,
+#     '41': 88,
+#     '811<': 127,
+#     '41o': 82,
+#     '8-3<': 204,
+#     '42': 128,
+#     '822': 181,
+#     '831<': 320,
+#     '43': 183,
+# }
 
 ## Velocity at T75
 velocity_at_T75 = {
-    '8-1o': 109,
-    '8-1<': 119,
-    '41': 88,
-    '811<': 127,
-    '41o': 82,
-    '8-3<': 204,
-    '42': 128,
-    '822': 181,
-    '831<': 320,
-    '43': 183,
+    '8-1o': 513,
+    '8-1<': 537,
+    '41': 221,
+    '811<': 590,
+    '41o': 250,
+    '8-3<': 520,
+    '42': 333,
+    '822': 301,
+    '831<': 347,
+    '43': 463,
 }
 
 sorted_velocity = dict(sorted(velocity_at_T75.items(), key=lambda item: item[1]))
