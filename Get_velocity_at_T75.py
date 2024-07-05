@@ -106,11 +106,27 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             vz_at_T75 = np.radians(dPelvis_X[int(T75_by_name)])
 
             euler_angles = np.array([x_at_T75, y_at_T75, z_at_T75])
+
+            def normalize_angles(angles):
+                normalized_angles = angles.copy()
+                for i in range(normalized_angles.shape[0]):
+                    while normalized_angles[i] < 0:
+                        normalized_angles[i] += 2 * np.pi
+                    while normalized_angles[i] >= 2 * np.pi:
+                        normalized_angles[i] -= 2 * np.pi
+                return normalized_angles
+
+
+            # Application de la normalisation
+            euler_angles_corrected = normalize_angles(euler_angles)
+
+            print(euler_angles_corrected)
             euler_dot = np.array([vx_at_T75, vy_at_T75, vz_at_T75])
+            # print(euler_dot)
 
             quaternion = biorbd.Quaternion()
 
-            omega = quaternion.eulerDotToOmega(euler_dot, euler_angles, seq="xyz")
+            omega = quaternion.eulerDotToOmega(euler_dot, euler_angles_corrected, seq="xyz")
             omega_values = omega.to_array()
             omega_norm = np.linalg.norm(omega_values)
 

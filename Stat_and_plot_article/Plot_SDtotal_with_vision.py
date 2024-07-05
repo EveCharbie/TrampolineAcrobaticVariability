@@ -166,8 +166,8 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
 # Legend
 fig, ax = plt.subplots()
-line1, = ax.plot([], [], color='#9467bd', label='Gaze on the bed')
-line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the floor')
+line1, = ax.plot([], [], color='#9467bd', label='Gaze on the trampoline bed')
+line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the gymnasium floor')
 line3, = ax.plot([], [], color='#9467bd', linestyle='--', label='SDtotal on pelvis \norientation')
 line4, = ax.plot([], [], color='black', linestyle='-.', label='Mean SDtotal across \nacrobatics on \npelvis orientation')
 

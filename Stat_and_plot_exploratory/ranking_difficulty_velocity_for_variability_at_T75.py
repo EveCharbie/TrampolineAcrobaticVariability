@@ -24,15 +24,15 @@ home_path = "/home/lim/Documents/StageMathieu/Tab_result3"
 ## Velocity at T75
 velocity_at_T75 = {
     '8-1o': 513,
-    '8-1<': 537,
-    '41': 221,
-    '811<': 590,
-    '41o': 250,
-    '8-3<': 520,
-    '42': 333,
-    '822': 301,
-    '831<': 347,
-    '43': 463,
+    '8-1<': 460,
+    '41': 379,
+    '811<': 232,
+    '41o': 407,
+    '8-3<': 493,
+    '42': 299,
+    '822': 166,
+    '831<': 117,
+    '43': 530,
 }
 
 sorted_velocity = dict(sorted(velocity_at_T75.items(), key=lambda item: item[1]))
