@@ -7,7 +7,7 @@ from scipy.stats import linregress
 
 home_path = "/Tab_result/"
 x_boxplot_top = [0.5, 1, 1.5]
-orderxlabeltop = ['0.5', '1', '1.5']
+orderxlabeltop = ['445', '568', '703']
 
 rotation_files = []
 
@@ -53,7 +53,7 @@ text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 ax.set_xlabel('Acrobatics', labelpad=15)
-ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (deg)')
+ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (degrees)')
 ax.set_xticks([0.5, 1, 1.5])
 ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
@@ -61,7 +61,7 @@ ax.legend(loc='lower right')
 secax = ax.secondary_xaxis('top')
 secax.set_xticks(x_boxplot_top)
 secax.set_xticklabels(orderxlabeltop)
-secax.set_xlabel('Ratio twists somersaults', labelpad=15)
+secax.set_xlabel('Rotation rate (degrees/s)', labelpad=15)
 
 plt.tight_layout()
 plt.subplots_adjust(left=0.060, right=0.995, top=0.902, bottom=0.103)

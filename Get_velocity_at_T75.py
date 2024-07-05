@@ -45,7 +45,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     pelvis_Z_velocity_by_subject = []
     pelvis_global_velocity_by_subject = []
     acrobatics_velocity_each_subject_T75 = []
-
+    plt.figure(figsize=(10, 6))
     for id_name, name in enumerate(temp_liste_name):
         print(f"{name} {mvt_name} is running")
         home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
@@ -75,6 +75,13 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
              total_duration) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
 
             pelvis_data = data[['Pelvis_X', 'Pelvis_Y', 'Pelvis_Z']]
+
+            if pelvis_data["Pelvis_Z"].iloc[-1] < 0.2:
+                pelvis_data["Pelvis_Z"]*=-1
+
+            if pelvis_data["Pelvis_Z"].iloc[1] < 0:
+                pelvis_data["Pelvis_Z"] += np.pi
+
             pelvis_data_degrees = np.degrees(pelvis_data)
 
             pelvis_data_degrees['Pelvis_X'] = savgol_filter(pelvis_data_degrees['Pelvis_X'], window_length=11,
@@ -84,6 +91,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             pelvis_data_degrees['Pelvis_Z'] = savgol_filter(pelvis_data_degrees['Pelvis_Z'], window_length=11,
                                                             polyorder=2)
 
+            # plt.plot(pelvis_data_degrees['Pelvis_Z'])
             time = np.arange(100)
 
             num_points = 100
@@ -111,9 +119,9 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
                 normalized_angles = angles.copy()
                 for i in range(normalized_angles.shape[0]):
                     while normalized_angles[i] < 0:
-                        normalized_angles[i] += 2 * np.pi
-                    while normalized_angles[i] >= 2 * np.pi:
-                        normalized_angles[i] -= 2 * np.pi
+                        normalized_angles[i] += 1 * np.pi
+                    while normalized_angles[i] >= 1 * np.pi:
+                        normalized_angles[i] -= 1 * np.pi
                 return normalized_angles
 
 
@@ -126,7 +134,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
             quaternion = biorbd.Quaternion()
 
-            omega = quaternion.eulerDotToOmega(euler_dot, euler_angles_corrected, seq="xyz")
+            omega = quaternion.eulerDotToOmega(euler_dot, euler_angles, seq="xyz")
             omega_values = omega.to_array()
             omega_norm = np.linalg.norm(omega_values)
 

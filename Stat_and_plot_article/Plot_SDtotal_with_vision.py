@@ -162,19 +162,19 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     plt.title(f'{name_acro}', fontsize=11)
     plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.047)
     plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
-    plt.show()
+    # plt.show()
 
 # Legend
 fig, ax = plt.subplots()
-line1, = ax.plot([], [], color='#9467bd', label='Gaze on the trampoline bed')
-line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the gymnasium floor')
+line1, = ax.plot([], [], color='#9467bd', label='Gaze on the \ntrampoline bed')
+line2, = ax.plot([], [], color='#9467bd', alpha=0.2, label='Gaze on the \ngymnasium floor')
 line3, = ax.plot([], [], color='#9467bd', linestyle='--', label='SDtotal on pelvis \norientation')
 line4, = ax.plot([], [], color='black', linestyle='-.', label='Mean SDtotal across \nacrobatics on \npelvis orientation')
 
 figlegend = plt.figure(figsize=(4, 1.5), facecolor='white')
 plt.figlegend(handles=[line1, line2, line3, line4], loc='center', fontsize='small', handlelength=4)
 
-plt.show()
+# plt.show()
 
 figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0, dpi=1000)
 
