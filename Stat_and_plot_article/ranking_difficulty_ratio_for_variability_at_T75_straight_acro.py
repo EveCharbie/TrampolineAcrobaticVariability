@@ -7,7 +7,7 @@ from scipy.stats import linregress
 
 home_path = "/Tab_result/"
 x_boxplot_top = [445, 568, 703]
-orderxlabeltop = ['445', '568', '703']
+orderxlabeltop = ['41/', '42/', '43/']
 
 rotation_files = []
 
@@ -59,19 +59,23 @@ p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-ax.set_xlabel('Acrobatics', labelpad=15)
+ax.set_xticks(np.arange(400, 800, 100))
+ax.set_xticklabels(np.arange(400, 800, 100))
+
+ax.set_xlabel('Rotation rate (°/s)', labelpad=15)
 ax.set_ylabel('Variability of pelvis orientation at T$_{75}$ (°)')
-ax.set_xticks([445, 568, 703])
-ax.set_xticklabels(['41/', '42/', '43/'])
+# ax.set_xticks([445, 568, 703])
+# ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
 
 secax = ax.secondary_xaxis('top')
 secax.set_xticks(x_boxplot_top)
 secax.set_xticklabels(orderxlabeltop)
-secax.set_xlabel('Rotation rate (°/s)', labelpad=15)
+secax.set_xlabel('Acrobatics', labelpad=15)
+secax.tick_params(axis='x', rotation=45)
 
 plt.tight_layout()
-plt.subplots_adjust(left=0.060, right=0.995, top=0.897, bottom=0.103)
+plt.subplots_adjust(top=0.872, bottom=0.108, left=0.066, right=0.995)
 
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/75_with_difficulty.png", dpi=1000)
 plt.show()
