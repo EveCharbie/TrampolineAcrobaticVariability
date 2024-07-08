@@ -36,6 +36,7 @@ velocity_at_T75 = {
 }
 
 x_boxplot_top = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+x_boxplot_top = [445, 459, 568, 691, 703, 809, 822, 1003, 1011, 1239]
 
 orderxlabeltop = ["445", "459", "568", "691", "703", "809", "822", "1003", "1011", "1239"]
 
@@ -76,12 +77,20 @@ for i, col in enumerate(order_and_ratio["Movement_Name"]):
 slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_values)
 
 x_reg_line = np.linspace(0, len(velocity_at_T75)-1, 100)
+x_reg_line = np.linspace(445, 1239, 100)
 y_reg_line = slope * x_reg_line + intercept
+
+plt.rc('font', size=14)          # Taille de la police du texte
+plt.rc('axes', titlesize=16)     # Taille de la police du titre des axes
+plt.rc('axes', labelsize=14)     # Taille de la police des labels des axes
+plt.rc('xtick', labelsize=12)    # Taille de la police des labels des ticks en x
+plt.rc('ytick', labelsize=12)    # Taille de la police des labels des ticks en y
+plt.rc('legend', fontsize=12)    # Taille de la police de la légende
 
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# positions=[809, 822, 445, 1011, 459, 1003, 568, 1239, 691, 703]
-sns.boxplot(data=complete_data[order_and_ratio["Movement_Name"]], ax=ax, color="skyblue")
+positions = [809, 822, 445, 1011, 459, 1003, 568, 1239, 691, 703]
+sns.boxplot(data=complete_data[order_and_ratio["Movement_Name"]], ax=ax, color="skyblue", positions=positions, width=8)
 sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
 
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
@@ -89,17 +98,17 @@ text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 ax.set_xlabel('Acrobatics', labelpad=15)
-ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (degrees)')
+ax.set_ylabel('Variability of pelvis orientation at T$_{75}$ (°)')
 ax.set_ylim(0, 58)
 ax.legend(loc='lower right')
 
 secax = ax.secondary_xaxis('top')
 secax.set_xticks(x_boxplot_top)
 secax.set_xticklabels(orderxlabeltop)
-secax.set_xlabel('Rotation rate (degrees/s)', labelpad=15)
+secax.set_xlabel('Rotation rate (°/s)', labelpad=15)
 
-plt.subplots_adjust(top=0.907, bottom=0.098, left=0.056, right=0.995)
+plt.subplots_adjust(top=0.897, bottom=0.108, left=0.066, right=0.995)
 
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/linear_reg_all_acrobatics_with_velocity.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/linear_reg_all_acrobatics_with_velocity_scale.png", dpi=1000)
 plt.show()
 
