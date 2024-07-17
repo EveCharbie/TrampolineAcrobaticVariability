@@ -6,8 +6,9 @@ import numpy as np
 from scipy.stats import linregress
 
 home_path = "/Tab_result/"
-x_boxplot_top = [0.5, 1, 1.5]
-orderxlabeltop = ['0.5', '1', '1.5']
+x_boxplot_top = [445, 568, 703]
+orderxlabeltop = ['41/', '42/', '43/']
+boxplot_xerr = [21, 27, 19]
 
 rotation_files = []
 
@@ -33,7 +34,7 @@ for file in files:
 
 complete_data = complete_data.dropna()
 
-difficulty_values = [0.5, 1, 1.5]
+difficulty_values = [445, 568, 703]
 difficulty_levels = np.concatenate([np.full(len(complete_data[col]), difficulty_values[i]) for i, col in enumerate(['41', '42', '43'])])
 
 
@@ -41,30 +42,47 @@ values = np.concatenate([complete_data[col] for col in ['41', '42', '43']])
 
 slope, intercept, r_value, p_value, std_err = linregress(difficulty_levels, values)
 
-x_reg_line = np.array([0.5, 1, 1.5])
+x_reg_line = np.array([445, 568, 703])
 y_reg_line = slope * x_reg_line + intercept
 
+plt.rc('font', size=14)          # Taille de la police du texte
+plt.rc('axes', titlesize=16)     # Taille de la police du titre des axes
+plt.rc('axes', labelsize=14)     # Taille de la police des labels des axes
+plt.rc('xtick', labelsize=12)    # Taille de la police des labels des ticks en x
+plt.rc('ytick', labelsize=12)    # Taille de la police des labels des ticks en y
+plt.rc('legend', fontsize=12)    # Taille de la police de la légende
+
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.boxplot(data=[complete_data['41'], complete_data['42'], complete_data['43']], ax=ax, color="skyblue", positions=[0.5, 1, 1.5], width=0.2)
-sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
+sns.boxplot(data=[complete_data['41'], complete_data['42'], complete_data['43']], ax=ax, color="skyblue", positions=[445, 568, 703], width=30)
+plt.setp(ax.artists, edgecolor='k')
+plt.setp(ax.lines, color='k')
+variability_values = np.array([np.nanmedian(complete_data['41']),
+                               np.nanmedian(complete_data['42']),
+                               np.nanmedian(complete_data['43'])])
+plt.errorbar(x_boxplot_top, variability_values, xerr=boxplot_xerr, linestyle="", capsize=17, color="k", elinewidth=0.8)
+sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', linestyle="--", label='Regression Line', linewidth=1.5)
 
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-ax.set_xlabel('Acrobatics', labelpad=15)
-ax.set_ylabel('Variability of pelvis rotations at T$_{75}$ (deg)')
-ax.set_xticks([0.5, 1, 1.5])
-ax.set_xticklabels(['41/', '42/', '43/'])
+ax.set_xticks(np.arange(400, 800, 100))
+ax.set_xticklabels(np.arange(400, 800, 100))
+
+ax.set_xlabel('Rotation rate (°/s)', labelpad=15)
+ax.set_ylabel('Variability of pelvis orientation at T$_{75}$ (°)')
+# ax.set_xticks([445, 568, 703])
+# ax.set_xticklabels(['41/', '42/', '43/'])
 ax.legend(loc='lower right')
 
 secax = ax.secondary_xaxis('top')
 secax.set_xticks(x_boxplot_top)
 secax.set_xticklabels(orderxlabeltop)
-secax.set_xlabel('Ratio twists somersaults', labelpad=15)
+secax.set_xlabel('Acrobatics', labelpad=15)
+secax.tick_params(axis='x', rotation=45)
 
 plt.tight_layout()
-plt.subplots_adjust(left=0.060, right=0.995, top=0.902, bottom=0.103)
+plt.subplots_adjust(top=0.872, bottom=0.108, left=0.066, right=0.995)
 
 plt.savefig("/home/lim/Documents/StageMathieu/meeting/75_with_difficulty.png", dpi=1000)
 plt.show()

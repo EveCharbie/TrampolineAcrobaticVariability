@@ -23,7 +23,7 @@ full_name_acrobatics = {
 
 }
 
-file_path = "/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
+file_path = "/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
 members_data_all_subjects_acrobatics = data_loaded["members_data_all_subjects_acrobatics"]
@@ -267,7 +267,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     ax_colorbar.axis('off')
     plt.savefig(f"/home/lim/Documents/StageMathieu/All_graphique/{mvt}_all_graphique.png", dpi=350)
 
-    plt.show()
+    # plt.show()
     plt.close()
 
 

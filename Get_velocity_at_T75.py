@@ -9,20 +9,22 @@ from TrampolineAcrobaticVariability.Function.Function_Class_Basics import (
     load_and_interpolate_for_point,
     find_index
 )
+import biorbd
 
 nombre_lignes_minimum = 10
 n_points = 100
 next_index = 0
 time_values = np.linspace(0, n_points-1, num=n_points)
 
-home_path = "/DataTrampo/Xsens_pkl/"
+home_path = "/home/lim/Documents/StageMathieu/DataTrampo/Xsens_pkl/"
 movement_to_analyse = ['41', '42', '43', '41o', '8-1<', '8-1o', '8-3<', '811<', '822', '831<']
 path75 = "/home/lim/Documents/StageMathieu/Tab_result3/"
 
 liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
 
 list_name_for_movement = []
-all_velocities = []
+all_mean_velocities = []
+all_std_velocities = []
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     pattern_file = f"*_{mvt_name}_*_75.csv"
@@ -44,7 +46,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     pelvis_Z_velocity_by_subject = []
     pelvis_global_velocity_by_subject = []
     acrobatics_velocity_each_subject_T75 = []
-
+    plt.figure(figsize=(10, 6))
     for id_name, name in enumerate(temp_liste_name):
         print(f"{name} {mvt_name} is running")
         home_path_subject = f"{home_path}{name}/Pos_JC/{mvt_name}"
@@ -60,6 +62,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         subject_info_dict = {}
         gaze_position_temporal_evolution_projected_subject = []
         velocity_by_subject = []
+        omega_by_subject = []
 
         T75_by_name = timestamp75[name].dropna().mean().round()
 
@@ -73,6 +76,13 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
              total_duration) = load_and_interpolate_for_point(file, include_expertise_laterality_length=True)
 
             pelvis_data = data[['Pelvis_X', 'Pelvis_Y', 'Pelvis_Z']]
+
+            if pelvis_data["Pelvis_Z"].iloc[-1] < 0.2:
+                pelvis_data["Pelvis_Z"]*=-1
+
+            if pelvis_data["Pelvis_Z"].iloc[1] < 0:
+                pelvis_data["Pelvis_Z"] += np.pi
+
             pelvis_data_degrees = np.degrees(pelvis_data)
 
             pelvis_data_degrees['Pelvis_X'] = savgol_filter(pelvis_data_degrees['Pelvis_X'], window_length=11,
@@ -82,6 +92,7 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             pelvis_data_degrees['Pelvis_Z'] = savgol_filter(pelvis_data_degrees['Pelvis_Z'], window_length=11,
                                                             polyorder=2)
 
+            # plt.plot(pelvis_data_degrees['Pelvis_Z'])
             time = np.arange(100)
 
             num_points = 100
@@ -95,12 +106,47 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
             dPelvis_Y = np.insert(dPelvis_Y, 0, 0)
             dPelvis_Z = np.insert(dPelvis_Z, 0, 0)
 
+            x_at_T75 = np.radians([pelvis_data_degrees['Pelvis_X']])[:, int(T75_by_name)][0]
+            y_at_T75 = np.radians([pelvis_data_degrees['Pelvis_Y']])[:, int(T75_by_name)][0]
+            z_at_T75 = np.radians([pelvis_data_degrees['Pelvis_Z']])[:, int(T75_by_name)][0]
+
+            vx_at_T75 = np.radians(dPelvis_X[int(T75_by_name)])
+            vy_at_T75 = np.radians(dPelvis_X[int(T75_by_name)])
+            vz_at_T75 = np.radians(dPelvis_X[int(T75_by_name)])
+
+            euler_angles = np.array([x_at_T75, y_at_T75, z_at_T75])
+
+            def normalize_angles(angles):
+                normalized_angles = angles.copy()
+                for i in range(normalized_angles.shape[0]):
+                    while normalized_angles[i] < 0:
+                        normalized_angles[i] += 1 * np.pi
+                    while normalized_angles[i] >= 1 * np.pi:
+                        normalized_angles[i] -= 1 * np.pi
+                return normalized_angles
+
+
+            # Application de la normalisation
+            euler_angles_corrected = normalize_angles(euler_angles)
+
+            print(euler_angles_corrected)
+            euler_dot = np.array([vx_at_T75, vy_at_T75, vz_at_T75])
+            # print(euler_dot)
+
+            quaternion = biorbd.Quaternion()
+
+            omega = quaternion.eulerDotToOmega(euler_dot, euler_angles, seq="xyz")
+            omega_values = omega.to_array()
+            omega_norm = np.linalg.norm(omega_values)
+
             global_velocity = np.sqrt(dPelvis_X ** 2 + dPelvis_Y ** 2 + dPelvis_Z ** 2)
 
             velocities = np.column_stack((dPelvis_X, dPelvis_Y, np.sqrt(dPelvis_Z**2), global_velocity))
             velocity_by_subject.append(velocities)
+            omega_by_subject.append(omega_norm)
 
         subject_velocities = np.mean(np.array(velocity_by_subject), axis=0)
+        subject_omega = np.mean(np.array(omega_by_subject), axis=0)
 
         pelvis_X_velocity_by_subject.append(subject_velocities[:, 0])
         pelvis_Y_velocity_by_subject.append(subject_velocities[:, 1])
@@ -108,7 +154,14 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
         pelvis_global_velocity_by_subject.append(subject_velocities[:, 3])
 
         subject_velocityT75 = subject_velocities[int(T75_by_name), 3]
-        acrobatics_velocity_each_subject_T75.append(subject_velocityT75)
+        # print(omega_by_subject)
+
+        ##
+
+
+        ##
+        # acrobatics_velocity_each_subject_T75.append(subject_velocityT75)
+        acrobatics_velocity_each_subject_T75.append(subject_omega)
 
     acrobatics_pelvis_X_velocity = np.mean(np.array(pelvis_X_velocity_by_subject), axis=0)
     acrobatics_pelvis_Y_velocity = np.mean(np.array(pelvis_Y_velocity_by_subject), axis=0)
@@ -171,16 +224,20 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     plt.tight_layout()
     # plt.show()
     plt.close()
+    print(acrobatics_velocity_each_subject_T75)
 
-    velocity_acrobatic_at_T75 = np.mean(acrobatics_velocity_each_subject_T75)
-    print(f"{velocity_acrobatic_at_T75} for {mvt_name}")
-    all_velocities.append(velocity_acrobatic_at_T75.round())
+    mean_velocity_acrobatic_at_T75 = np.mean(acrobatics_velocity_each_subject_T75)
+    std_velocity_acrobatic_at_T75 = np.std(acrobatics_velocity_each_subject_T75)
+    print(f"{np.degrees(mean_velocity_acrobatic_at_T75)} +- {np.degrees(std_velocity_acrobatic_at_T75)} for {mvt_name}")
+    all_mean_velocities.append(np.degrees(mean_velocity_acrobatic_at_T75).round())
+    all_std_velocities.append(np.degrees(std_velocity_acrobatic_at_T75).round())
 
 result_df = pd.DataFrame({
-    'Velocity at T75': all_velocities,
+    'Mean Velocity at T75': all_mean_velocities,
+    'STD Velocity at T75': all_std_velocities,
     'Movement Name': movement_to_analyse
 })
 
-result_df_sorted = result_df.sort_values(by='Velocity at T75')
+result_df_sorted = result_df.sort_values(by='Mean Velocity at T75')
 print(result_df_sorted)
 
