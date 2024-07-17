@@ -5,6 +5,13 @@ import os
 import numpy as np
 from scipy.stats import linregress
 
+
+#######################################################################################################################
+### !!!!!! Warning: the pandas DataFrames and the sorted order are redundant notation and are used interchangably. ####
+### !!!!!! If the order is changed the resluts might be unexpected !!!!!! #############################################
+#######################################################################################################################
+
+
 home_path = "/home/lim/Documents/StageMathieu/Tab_result3"
 
 # ## Velocity at T75
@@ -22,7 +29,7 @@ home_path = "/home/lim/Documents/StageMathieu/Tab_result3"
 # }
 
 ## Velocity at T75
-velocity_at_T75 = {
+mean_velocity_at_T75 = {
     '8-1o': 809,
     '8-1<': 822,
     '41': 445,
@@ -34,14 +41,28 @@ velocity_at_T75 = {
     '831<': 691,
     '43': 703,
 }
+std_velocity_at_T75 = {
+    '8-1o': 25,
+    '8-1<': 21,
+    '41': 21,
+    '811<': 45,
+    '41o': 13,
+    '8-3<': 35,
+    '42': 27,
+    '822': 31,
+    '831<': 66,
+    '43': 19,
+}
 
-x_boxplot_top = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-x_boxplot_top = [445, 459, 568, 691, 703, 809, 822, 1003, 1011, 1239]
+velocity_values = np.array([mean_velocity_at_T75[key] for key in mean_velocity_at_T75.keys()])
+sorted_order = np.argsort(velocity_values)
 
-orderxlabeltop = ["41/", "41o", "42", "831<", "43", "8-1o", "8-1<", "8-3<", "811<", "822"]
+x_boxplot_top = velocity_values[sorted_order]
+orderxlabeltop = list(list(mean_velocity_at_T75.keys())[idx] for idx in sorted_order)
+boxplot_xerr = np.array([std_velocity_at_T75[key] for key in orderxlabeltop])
 
-sorted_velocity = dict(sorted(velocity_at_T75.items(), key=lambda item: item[1]))
-order_and_ratio = pd.DataFrame(list(sorted_velocity.items()), columns=['Movement_Name', 'Velocity_at_T75'])
+sorted_velocity = dict(sorted(mean_velocity_at_T75.items(), key=lambda item: item[1]))
+order_and_ratio = pd.DataFrame(list(sorted_velocity.items()), columns=['Movement_Name', 'Mean Velocity_at_T75'])
 
 name = [
     'GuSe', 'JaSh', 'JeCa', 'AnBe', 'AnSt', 'SaBe', 'JoBu',
@@ -71,12 +92,12 @@ all_values = []
 
 for i, col in enumerate(order_and_ratio["Movement_Name"]):
     if col in complete_data.columns:
-        all_x_positions.extend([velocity_at_T75[col]] * complete_data[col].dropna().shape[0])
+        all_x_positions.extend([mean_velocity_at_T75[col]] * complete_data[col].dropna().shape[0])
         all_values.extend(complete_data[col].dropna().values)
 
 slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_values)
 
-x_reg_line = np.linspace(0, len(velocity_at_T75)-1, 100)
+# x_reg_line = np.linspace(0, len(mean_velocity_at_T75)-1, 100)
 x_reg_line = np.linspace(445, 1239, 100)
 y_reg_line = slope * x_reg_line + intercept
 
@@ -89,9 +110,12 @@ plt.rc('legend', fontsize=12)    # Taille de la police de la légende
 
 fig, ax = plt.subplots(figsize=(10, 6))
 
-positions = [809, 822, 445, 1011, 459, 1003, 568, 1239, 691, 703]
-sns.boxplot(data=complete_data[order_and_ratio["Movement_Name"]], ax=ax, color="skyblue", positions=positions, width=8)
-sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
+sns.boxplot(data=complete_data[order_and_ratio["Movement_Name"]], ax=ax, color="skyblue", positions=velocity_values, width=8)
+plt.setp(ax.artists, edgecolor='k')
+plt.setp(ax.lines, color='k')
+variability_values = np.array([np.nanmedian(complete_data[key]) for key in order_and_ratio["Movement_Name"]])
+plt.errorbar(velocity_values, variability_values, xerr=boxplot_xerr, linestyle="", capsize=1.5, color="k", elinewidth=0.8)
+sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', linestyle='--', label='Regression Line', linewidth=1.5)
 
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'r = {r_value:.2f}\n{p_text}'

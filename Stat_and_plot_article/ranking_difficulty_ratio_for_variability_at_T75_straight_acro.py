@@ -8,6 +8,7 @@ from scipy.stats import linregress
 home_path = "/Tab_result/"
 x_boxplot_top = [445, 568, 703]
 orderxlabeltop = ['41/', '42/', '43/']
+boxplot_xerr = [21, 27, 19]
 
 rotation_files = []
 
@@ -52,8 +53,14 @@ plt.rc('ytick', labelsize=12)    # Taille de la police des labels des ticks en y
 plt.rc('legend', fontsize=12)    # Taille de la police de la légende
 
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.boxplot(data=[complete_data['41'], complete_data['42'], complete_data['43']], ax=ax, color="skyblue", positions=[445, 568, 703], width=50)
-sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', label='Regression Line', linewidth=1.5)
+sns.boxplot(data=[complete_data['41'], complete_data['42'], complete_data['43']], ax=ax, color="skyblue", positions=[445, 568, 703], width=30)
+plt.setp(ax.artists, edgecolor='k')
+plt.setp(ax.lines, color='k')
+variability_values = np.array([np.nanmedian(complete_data['41']),
+                               np.nanmedian(complete_data['42']),
+                               np.nanmedian(complete_data['43'])])
+plt.errorbar(x_boxplot_top, variability_values, xerr=boxplot_xerr, linestyle="", capsize=17, color="k", elinewidth=0.8)
+sns.lineplot(x=x_reg_line, y=y_reg_line, ax=ax, color='gray', linestyle="--", label='Regression Line', linewidth=1.5)
 
 p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'r = {r_value:.2f}\n{p_text}'

@@ -23,7 +23,8 @@ path75 = "/home/lim/Documents/StageMathieu/Tab_result3/"
 liste_name = [name for name in os.listdir(home_path) if os.path.isdir(os.path.join(home_path, name))]
 
 list_name_for_movement = []
-all_velocities = []
+all_mean_velocities = []
+all_std_velocities = []
 for id_mvt, mvt_name in enumerate(movement_to_analyse):
 
     pattern_file = f"*_{mvt_name}_*_75.csv"
@@ -225,15 +226,18 @@ for id_mvt, mvt_name in enumerate(movement_to_analyse):
     plt.close()
     print(acrobatics_velocity_each_subject_T75)
 
-    velocity_acrobatic_at_T75 = np.mean(acrobatics_velocity_each_subject_T75)
-    print(f"{np.degrees(velocity_acrobatic_at_T75)} for {mvt_name}")
-    all_velocities.append(np.degrees(velocity_acrobatic_at_T75).round())
+    mean_velocity_acrobatic_at_T75 = np.mean(acrobatics_velocity_each_subject_T75)
+    std_velocity_acrobatic_at_T75 = np.std(acrobatics_velocity_each_subject_T75)
+    print(f"{np.degrees(mean_velocity_acrobatic_at_T75)} +- {np.degrees(std_velocity_acrobatic_at_T75)} for {mvt_name}")
+    all_mean_velocities.append(np.degrees(mean_velocity_acrobatic_at_T75).round())
+    all_std_velocities.append(np.degrees(std_velocity_acrobatic_at_T75).round())
 
 result_df = pd.DataFrame({
-    'Velocity at T75': all_velocities,
+    'Mean Velocity at T75': all_mean_velocities,
+    'STD Velocity at T75': all_std_velocities,
     'Movement Name': movement_to_analyse
 })
 
-result_df_sorted = result_df.sort_values(by='Velocity at T75')
+result_df_sorted = result_df.sort_values(by='Mean Velocity at T75')
 print(result_df_sorted)
 
