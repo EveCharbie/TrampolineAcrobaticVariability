@@ -5,7 +5,7 @@ import os
 import numpy as np
 from scipy.stats import linregress
 
-home_path = "/Tab_result/"
+home_path = "/Tab_result3/"
 x_boxplot_top = [445, 568, 703]
 orderxlabeltop = ['41/', '42/', '43/']
 boxplot_xerr = [21, 27, 19]
@@ -19,9 +19,9 @@ for root, dirs, files in os.walk(home_path):
             rotation_files.append(full_path)
 
 files = [
-    '/home/lim/Documents/StageMathieu/Tab_result/results_41_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_42_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_43_rotation.csv'
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_41_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_42_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_43_rotation.csv'
 ]
 
 complete_data = pd.DataFrame(columns=['41', '42', '43'])

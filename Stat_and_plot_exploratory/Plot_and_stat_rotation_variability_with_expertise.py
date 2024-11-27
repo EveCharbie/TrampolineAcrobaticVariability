@@ -8,10 +8,10 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 
 files = [
-    '/home/lim/Documents/StageMathieu/Tab_result/results_41_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_41o_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_42_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_43_rotation.csv'
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_41_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_41o_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_42_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_43_rotation.csv'
 ]
 
 num_axes = 0
