@@ -100,6 +100,7 @@ slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_va
 # x_reg_line = np.linspace(0, len(mean_velocity_at_T75)-1, 100)
 x_reg_line = np.linspace(445, 1239, 100)
 y_reg_line = slope * x_reg_line + intercept
+print(f"*** All acrobatics regression equation : {slope} x + {intercept} ***")
 
 plt.rc('font', size=14)          # Taille de la police du texte
 plt.rc('axes', titlesize=16)     # Taille de la police du titre des axes

@@ -44,6 +44,7 @@ slope, intercept, r_value, p_value, std_err = linregress(difficulty_levels, valu
 
 x_reg_line = np.array([445, 568, 703])
 y_reg_line = slope * x_reg_line + intercept
+print(f"*** Straight acrobatics regression equation : {slope} x + {intercept} ***")
 
 plt.rc('font', size=14)          # Taille de la police du texte
 plt.rc('axes', titlesize=16)     # Taille de la police du titre des axes
