@@ -28,15 +28,17 @@ mvt_to_color = {
 
 result_array = np.array(result_df)
 mean_velocity_at_T75 = {
-    '41':   result_array[np.where(result_array[:, 2] == '41')[0][0], 0],
-    '42':   result_array[np.where(result_array[:, 2] == '42')[0][0], 0],
-    '43':   result_array[np.where(result_array[:, 2] == '43')[0][0], 0],
+    '8-1<':   result_array[np.where(result_array[:, 2] == '8-1<')[0][0], 0],
+    '811<':   result_array[np.where(result_array[:, 2] == '811<')[0][0], 0],
+    '8-3<':   result_array[np.where(result_array[:, 2] == '8-3<')[0][0], 0],
+    '831<':   result_array[np.where(result_array[:, 2] == '831<')[0][0], 0],
 }
 
 std_velocity_at_T75 = {
-    '41':   result_array[np.where(result_array[:, 2] == '41')[0][0], 1],
-    '42':   result_array[np.where(result_array[:, 2] == '42')[0][0], 1],
-    '43':   result_array[np.where(result_array[:, 2] == '43')[0][0], 1],
+    '8-1<':   result_array[np.where(result_array[:, 2] == '8-1<')[0][0], 1],
+    '811<':   result_array[np.where(result_array[:, 2] == '811<')[0][0], 1],
+    '8-3<':   result_array[np.where(result_array[:, 2] == '8-3<')[0][0], 1],
+    '831<':   result_array[np.where(result_array[:, 2] == '831<')[0][0], 1],
 }
 
 velocity_values = np.array([mean_velocity_at_T75[key] for key in mean_velocity_at_T75.keys()])
@@ -58,12 +60,13 @@ for root, dirs, files in os.walk(home_path):
             rotation_files.append(full_path)
 
 files = [
-    '/home/lim/Documents/StageMathieu/Tab_result3/results_41_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result3/results_42_rotation.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result3/results_43_rotation.csv'
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_8-1<_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_811<_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_8-3<_rotation.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_831<_rotation.csv'
 ]
 
-complete_data = pd.DataFrame(columns=['41', '42', '43'])
+complete_data = pd.DataFrame(columns=['8-1<', '811<', '8-3<', '831<'])
 
 for file in files:
     data = pd.read_csv(file)
@@ -73,7 +76,7 @@ for file in files:
 
 complete_data = complete_data.dropna()
 
-values = np.concatenate([complete_data[col] for col in ['41', '42', '43']])
+values = np.concatenate([complete_data[col] for col in ['8-1<', '811<', '8-3<', '831<']])
 
 
 plt.rc('font', size=14)          # Taille de la police du texte
@@ -84,7 +87,7 @@ plt.rc('ytick', labelsize=12)    # Taille de la police des labels des ticks en y
 plt.rc('legend', fontsize=12)    # Taille de la police de la légende
 
 fig, ax = plt.subplots(figsize=(10, 6))
-for i, mvt in enumerate(['41', '42', '43']):
+for i, mvt in enumerate(['8-1<', '811<', '8-3<', '831<']):
     sns.boxplot(data=[complete_data[mvt]],
                 ax=ax,
                 color=mvt_to_color[mvt],
@@ -94,17 +97,19 @@ for i, mvt in enumerate(['41', '42', '43']):
 
 all_x_positions = []
 all_values = []
-for i, col in enumerate(['41', '42', '43']):
+for i, col in enumerate(['8-1<', '811<', '8-3<', '831<']):
     if col in complete_data.columns:
         all_x_positions.extend([mean_velocity_at_T75[col]] * complete_data[col].dropna().shape[0])
         all_values.extend(complete_data[col].dropna().values)
 
-variability_values = np.array([np.nanmedian(complete_data['41']),
-                               np.nanmedian(complete_data['42']),
-                               np.nanmedian(complete_data['43'])])
-print("Median 41/ : ", np.nanmedian(complete_data['41']))
-print("Median 42/ : ", np.nanmedian(complete_data['42']))
-print("Median 43/ : ", np.nanmedian(complete_data['43']))
+variability_values = np.array([np.nanmedian(complete_data['8-1<']),
+                               np.nanmedian(complete_data['811<']),
+                               np.nanmedian(complete_data['8-3<']),
+                               np.nanmedian(complete_data['831<'])])
+print("Median 8-1< : ", np.nanmedian(complete_data['8-1<']))
+print("Median 811< : ", np.nanmedian(complete_data['811<']))
+print("Median 8-3< : ", np.nanmedian(complete_data['8-3<']))
+print("Median 831< : ", np.nanmedian(complete_data['831<']))
 
 
 slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_values)
@@ -120,8 +125,8 @@ p_text = "p < 0.001" if p_value < 0.001 else f"p = {p_value:.3f}"
 text_str = f'r = {r_value:.2f}\n{p_text}'
 ax.text(0.02, 0.95, text_str, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-ax.set_xticks(np.arange(300, 600, 50))
-ax.set_xticklabels(np.arange(300, 600, 50))
+ax.set_xticks(np.arange(450, 900, 100))
+ax.set_xticklabels(np.arange(450, 900, 100))
 
 ax.set_xlabel('Rotation rate (°/s)', labelpad=15)
 ax.set_ylabel('Variability of pelvis orientation at T$_{75}$ (°)')
@@ -129,13 +134,13 @@ ax.legend(loc='lower right')
 
 secax = ax.secondary_xaxis('top')
 secax.set_xticks(x_boxplot_top)
-secax.set_xticklabels(['41/', '42/', '43/'])
+secax.set_xticklabels(['8-1<', '811<', '8-3<', '831<'])
 secax.set_xlabel('Acrobatics', labelpad=15)
 secax.tick_params(axis='x', rotation=45)
 
 plt.tight_layout()
 plt.subplots_adjust(top=0.872, bottom=0.108, left=0.066, right=0.995)
 
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/T75_variability_straight_acrobatics.svg", format="svg")
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/T75_variability_pike_acrobatics.svg", format="svg")
 plt.show()
 

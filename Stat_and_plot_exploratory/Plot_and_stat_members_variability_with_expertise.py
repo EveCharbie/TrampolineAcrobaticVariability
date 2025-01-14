@@ -17,10 +17,10 @@ def prepare_data(data):
 
 
 files = [
-    '/home/lim/Documents/StageMathieu/Tab_result/results_41_position.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_41o_position.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_42_position.csv',
-    '/home/lim/Documents/StageMathieu/Tab_result/results_43_position.csv'
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_41_position.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_41o_position.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_42_position.csv',
+    '/home/lim/Documents/StageMathieu/Tab_result3/results_43_position.csv'
 ]
 
 all_axes = []

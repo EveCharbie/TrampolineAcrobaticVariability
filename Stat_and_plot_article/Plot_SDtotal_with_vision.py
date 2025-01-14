@@ -1,10 +1,11 @@
+import pickle
 import pandas as pd
 import scipy.io
 import matplotlib.pyplot as plt
 import numpy as np
 from TrampolineAcrobaticVariability.Function.Function_stat import safe_interpolate
 
-file_path = "/home/lim/Documents/StageMathieu/Tab_result/sd_pelvis_and_gaze_orientation.mat"
+file_path = "/home/lim/Documents/StageMathieu/Tab_result3/sd_pelvis_and_gaze_orientation.mat"
 data_loaded = scipy.io.loadmat(file_path)
 mean_SD_pelvis_all_subjects_acrobatics = data_loaded["mean_SD_pelvis_all_subjects_acrobatics"]
 movement_to_analyse = data_loaded["movement_to_analyse"]
@@ -18,11 +19,43 @@ list_name_for_movement = data_loaded["list_name_for_movement"]
 X, Y = np.meshgrid([-7 * 0.3048, 7 * 0.3048], [-3.5 * 0.3048, 3.5 * 0.3048])
 
 name_to_color = {
-    'GuSe': '#1f77b4', 'JaSh': '#ff7f0e', 'JeCa': '#2ca02c', 'AnBe': '#d62728',
-    'AnSt': '#9467bd', 'SaBe': '#8c564b', 'JoBu': '#e377c2', 'JaNo': '#7f7f7f',
-    'SaMi': '#bcbd22', 'AlLe': '#17becf', 'MaBo': '#aec7e8', 'SoMe': '#ffbb78',
-    'JeCh': '#98df8a', 'LiDu': '#ff9896', 'LeJa': '#c5b0d5', 'ArMa': '#c49c94',
+    'GuSe': '#1f77b4',
+    'JaSh': '#ff7f0e',
+    'JeCa': '#2ca02c',
+    'AnBe': '#d62728',
+    'AnSt': '#9467bd',
+    'SaBe': '#8c564b',
+    'JoBu': '#e377c2',
+    'JaNo': '#7f7f7f',
+    'SaMi': '#bcbd22',
+    'AlLe': '#17becf',
+    'MaBo': '#aec7e8',
+    'SoMe': '#ffbb78',
+    'JeCh': '#98df8a',
+    'LiDu': '#ff9896',
+    'LeJa': '#c5b0d5',
+    'ArMa': '#c49c94',
     'AlAd': '#dbdb8d'
+}
+
+name_to_linestyle = {
+    'GuSe': '--',
+    'JaSh': ':',
+    'JeCa': '--',
+    'AnBe': ':',
+    'AnSt': ':',
+    'SaBe': '--',
+    'JoBu': ':',
+    'JaNo': ':',
+    'SaMi': '--',
+    'AlLe': '--',
+    'MaBo': '--',
+    'SoMe': '--',
+    'JeCh': '--',
+    'LiDu': ':',
+    'LeJa': ':',
+    'ArMa': ':',
+    'AlAd': '--'
 }
 
 anonyme_name = {
@@ -64,6 +97,27 @@ full_name_acrobatics = {
 
 num_points = 100
 
+time_spent_looking = {
+    "gymnasium_floor": {mvt: {name_subject: [] for name_subject in list_name_for_movement[0][idx_mvt]}
+                        for idx_mvt, mvt in enumerate(movement_to_analyse)},
+    "trampoline_bed": {mvt: {name_subject: [] for name_subject in list_name_for_movement[0][idx_mvt]}
+                       for idx_mvt, mvt in enumerate(movement_to_analyse)}}
+mean_time_spent_looking = {
+    "gymnasium_floor": {mvt: {name_subject: 0 for name_subject in list_name_for_movement[0][idx_mvt]}
+                        for idx_mvt, mvt in enumerate(movement_to_analyse)},
+    "trampoline_bed": {mvt: {name_subject: 0 for name_subject in list_name_for_movement[0][idx_mvt]}
+                        for idx_mvt, mvt in enumerate(movement_to_analyse)}}
+std_time_spent_looking = {
+    "gymnasium_floor": {mvt: {name_subject: 0 for name_subject in list_name_for_movement[0][idx_mvt]}
+                        for idx_mvt, mvt in enumerate(movement_to_analyse)},
+    "trampoline_bed": {mvt: {name_subject: 0 for name_subject in list_name_for_movement[0][idx_mvt]}
+                       for idx_mvt, mvt in enumerate(movement_to_analyse)}}
+min_time_gymnasium = ['none', 100]
+max_time_gymnasium = ['none', 0]
+time_spent_looking_gymnasium_array = []
+min_time_bed = ['none', 100]
+max_time_bed = ['none', 0]
+time_spent_looking_bed_array = []
 for idx_mvt, mvt in enumerate(movement_to_analyse):
     name_acro = full_name_acrobatics[mvt]
 
@@ -77,6 +131,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
 
     for idx_subject, name_subject in enumerate(list_name_for_movement[0][idx_mvt]):
         color = name_to_color[name_subject]
+        line_style = name_to_linestyle[name_subject]
         anonyme = anonyme_name[name_subject]
         up_line = max_value + up_subject
         trial_count = 0
@@ -93,7 +148,8 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                     data_ground[idx_ligne] = 0
                 else:
                     data_ground[idx_ligne] = 1
-            data_ground = pd.DataFrame(data_ground)
+            data_ground_pd = None
+            data_ground_pd = pd.DataFrame(data_ground[:])
 
             data_mat = np.zeros(len(gaze_position), dtype=int)
 
@@ -102,12 +158,13 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
                     data_mat[idx_ligne] = 0
                 else:
                     data_mat[idx_ligne] = 1
-            data_mat = pd.DataFrame(data_mat)
+            data_mat_pd = None
+            data_mat_pd = pd.DataFrame(data_mat[:])
 
             pd.set_option('display.max_rows', None)
 
-            data_norm_ground = data_ground.apply(lambda x: safe_interpolate(x, num_points))
-            data_norm_mat = data_mat.apply(lambda x: safe_interpolate(x, num_points))
+            data_norm_ground = data_ground_pd.apply(lambda x: safe_interpolate(x, num_points))
+            data_norm_mat = data_mat_pd.apply(lambda x: safe_interpolate(x, num_points))
 
             y_line_position = up_line
             y_values_ground = np.full(len(data_norm_ground[0]), np.nan)
@@ -129,12 +186,50 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
             up_line += 0.04
             trial_count += 0.08
 
+            gym_data = np.where(data_ground == 0)[0].shape[0] / np.shape(data_ground)[0]
+            bed_data = np.where(data_mat == 0)[0].shape[0] / np.shape(data_mat)[0]
+            
+            time_spent_looking["gymnasium_floor"][mvt][name_subject].append(gym_data)
+            time_spent_looking_gymnasium_array += [gym_data]
+            if np.min(gym_data) < min_time_gymnasium[1]:
+                min_time_gymnasium[1] = np.min(gym_data)
+                min_time_gymnasium[0] = mvt
+            if np.max(gym_data) > 0.99999:
+                print(mvt)
+            if np.max(gym_data) > max_time_gymnasium[1]:
+                max_time_gymnasium[1] = np.max(gym_data)
+                max_time_gymnasium[0] = mvt
+
+            time_spent_looking["trampoline_bed"][mvt][name_subject].append(bed_data)
+            time_spent_looking_bed_array += [bed_data]
+            if np.min(bed_data) < min_time_bed[1]:
+                min_time_bed[1] = np.min(bed_data)
+                min_time_bed[0] = mvt
+            if np.max(bed_data) > 0.99999:
+                print('-------------------', mvt)
+            if np.max(bed_data) > max_time_bed[1]:
+                max_time_bed[1] = np.max(bed_data)
+                max_time_bed[0] = mvt
+                
         plt.plot(np.degrees(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt][idx_subject]), label=f'Subject {idx_subject + 1}',
-                 color=color, linestyle='--')
+                 color=color, linestyle=line_style)
+
+        array_this_time_bed = np.array(time_spent_looking["trampoline_bed"][mvt][name_subject])
+        mean_time_spent_looking["trampoline_bed"][mvt][name_subject] = np.mean(array_this_time_bed)
+        std_time_spent_looking["trampoline_bed"][mvt][name_subject] = np.std(array_this_time_bed)
+        array_this_time_gymnasium = np.array(time_spent_looking["gymnasium_floor"][mvt][name_subject])
+        mean_time_spent_looking["gymnasium_floor"][mvt][name_subject] = np.mean(array_this_time_gymnasium)
+        std_time_spent_looking["gymnasium_floor"][mvt][name_subject] = np.std(array_this_time_gymnasium)
+        plt.text(101, up_line-1, f"{round(mean_time_spent_looking["gymnasium_floor"][mvt][name_subject] * 100)}%", fontsize=6)
 
         up_subject += 2
 
-    plt.plot(np.degrees(np.mean(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt], axis=0)), color="black", linestyle= '-', linewidth=2)
+    mean_array = np.mean(mean_SD_pelvis_all_subjects_acrobatics[0][idx_mvt], axis=0)
+    plt.plot(np.degrees(mean_array), color="black", linestyle= '-', linewidth=2)
+    if mvt in ["8--o", "831<"]:
+        mean_array[:50] = 0
+    horz_max = np.argmax(mean_array)
+    plt.plot(np.array([horz_max, horz_max]), np.array([0, 1000]), linewidth=0.5, color="black")
 
     ax.set_yticks(current_ticks)
     ax.set_yticklabels(current_labels, fontweight='normal')
@@ -160,7 +255,7 @@ for idx_mvt, mvt in enumerate(movement_to_analyse):
     line2, = plt.plot([], [], color='black', linestyle='--', label='SDtotal on pelvic rotation')
 
     plt.title(f'{name_acro}', fontsize=11)
-    plt.subplots_adjust(left=0.102, right=0.960, top=0.945, bottom=0.047)
+    plt.subplots_adjust(left=0.102, right=0.9, top=0.945, bottom=0.047)
     plt.savefig(f"/home/lim/Documents/StageMathieu/Gaze_ground/{mvt}_gaze.png", dpi=1000)
     # plt.show()
 
@@ -178,3 +273,8 @@ plt.figlegend(handles=[line1, line2, line3, line4], loc='center', fontsize='smal
 
 figlegend.savefig('/home/lim/Documents/StageMathieu/Gaze_ground/legend.png', bbox_inches='tight', pad_inches=0, dpi=1000)
 
+print("\n\nGymnasium floor : \nMin : ", min_time_gymnasium, "\nMax : ", max_time_gymnasium, "\nMean : ", np.mean(time_spent_looking_gymnasium_array))
+print("\n\nTrampoline bed : \nMin : ", min_time_bed, "\nMax : ", max_time_bed, "\nMean : ", np.mean(time_spent_looking_bed_array))
+
+with open("/home/lim/Documents/StageMathieu/Tab_result3/time_spent_looking.pkl", 'wb') as f:
+    pickle.dump([time_spent_looking, mean_time_spent_looking, std_time_spent_looking], f)

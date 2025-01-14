@@ -52,6 +52,7 @@ slope, intercept, r_value, p_value, std_err = linregress(all_x_positions, all_va
 
 x_reg_line = np.linspace(min(x_boxplot_centers), max(x_boxplot_centers), 100)
 y_reg_line = slope * x_reg_line + intercept
+print(f"*** All acrobatics regression equation : {slope} x + {intercept} ***")
 
 fig, ax = plt.subplots(figsize=(10, 6))
 sns.boxplot(data=complete_data[order], ax=ax, color="skyblue", positions=x_boxplot_centers)
