@@ -1,9 +1,7 @@
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import levene, shapiro
 import numpy as np
-from statsmodels.formula.api import ols
 import os
 from TrampolineAcrobaticVariability.Function.Function_Class_Basics import extract_identifier
 from TrampolineAcrobaticVariability.Function.Function_stat import (perform_anova_and_tukey,
@@ -36,6 +34,23 @@ full_name_acrobatics = {
 
 }
 
+name_to_color = {
+    '4-': '#1f77b4',
+    '4-o': '#ff7f0e',
+    '8--o': '#2ca02c',
+    '8-1<': '#d62728',
+    '8-1o': '#9467bd',
+    '41': '#8c564b',
+    '811<': '#e377c2',
+    '41o': '#7f7f7f',
+    '8-3<': '#bcbd22',
+    '42': '#17becf',
+    '822': '#aec7e8',
+    '831<': '#ffbb78',
+    '43': '#98df8a',
+}
+
+
 index = ['takeoff_75', '75_landing', 'takeoff_landing']
 body_parts = ['upper_body', 'lower_body']
 
@@ -58,7 +73,7 @@ for file in position_files:
     mvt_name = file.split('/')[-1].replace('results_', '').replace('_position.csv', '')
     data_prepared['Source'] = mvt_name
 
-    print(f"===== Movement {mvt_name} is running =====")
+    print(f"\n===== Movement {mvt_name} is running =====")
 
     issues = []
 
@@ -85,13 +100,13 @@ for file in position_files:
     posthoc_results_upper_body = perform_kruskal_and_dunn(data_prepared, 'upper_body', 'Timing')
     posthoc_results_lower_body = perform_kruskal_and_dunn(data_prepared, 'lower_body', 'Timing')
 
-    significant_value_upper_body.loc["takeoff_75", mvt_name] = posthoc_results_upper_body.loc["Takeoff", "75%"]
-    significant_value_upper_body.loc["75_landing", mvt_name] = posthoc_results_upper_body.loc["75%", "Landing"]
-    significant_value_upper_body.loc["takeoff_landing", mvt_name] = posthoc_results_upper_body.loc["Takeoff", "Landing"]
+    significant_value_upper_body.loc["takeoff_75", mvt_name] = posthoc_results_upper_body["P-Value"][0]
+    significant_value_upper_body.loc["75_landing", mvt_name] = posthoc_results_upper_body["P-Value"][2]
+    significant_value_upper_body.loc["takeoff_landing", mvt_name] = posthoc_results_upper_body["P-Value"][1]
 
-    significant_value_lower_body.loc["takeoff_75", mvt_name] = posthoc_results_lower_body.loc["Takeoff", "75%"]
-    significant_value_lower_body.loc["75_landing", mvt_name] = posthoc_results_lower_body.loc["75%", "Landing"]
-    significant_value_lower_body.loc["takeoff_landing", mvt_name] = posthoc_results_lower_body.loc["Takeoff", "Landing"]
+    significant_value_lower_body.loc["takeoff_75", mvt_name] = posthoc_results_lower_body["P-Value"][0]
+    significant_value_lower_body.loc["75_landing", mvt_name] = posthoc_results_lower_body["P-Value"][2]
+    significant_value_lower_body.loc["takeoff_landing", mvt_name] = posthoc_results_lower_body["P-Value"][1]
 
     all_data = pd.concat([all_data, data_prepared], ignore_index=True)
 
@@ -101,7 +116,6 @@ all_data['Timing'] = all_data['Timing'].cat.rename_categories({"75%": "T75"})
 
 categories = all_data['Timing'].cat.categories
 pos_plot = np.array([1, 5, 9])
-colors = plt.get_cmap('tab10')(np.linspace(0, 1, len(all_data['Source'].unique())))
 
 
 ## Plot upper body each acrobatics
@@ -112,8 +126,6 @@ current_ticks = list(initial_ticks)
 current_labels = [f"{tick:.1f}" for tick in initial_ticks]
 ax = plt.gca()
 i_plot = 0
-
-colors = plt.get_cmap('tab10')(np.linspace(0, 1, len(order)))
 
 y_max = all_data["upper_body"].max()
 line_y = y_max + i_plot
@@ -128,9 +140,9 @@ for i, mvt_name in enumerate(order):
     std_devs = filtered_data.groupby('Timing', observed=True)["upper_body"].std()
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
-                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
+                 color=name_to_color[mvt_name], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
 
-    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
+    plt.plot(pos_plot + i * 0.1, means, '-', color=name_to_color[mvt_name], linewidth=0.75)
 
     significant_added = False
 
@@ -143,11 +155,11 @@ for i, mvt_name in enumerate(order):
             p_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*"
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
 
-            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 + 0.1, xmax=pos_plot[j + 1] + i * 0.1 -0.1, colors=colors[i],
+            ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 + 0.1, xmax=pos_plot[j + 1] + i * 0.1 -0.1, colors=name_to_color[mvt_name],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1+0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1-0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.035, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+            ax.vlines(x=pos_plot[j] + i * 0.1+0.1, ymin=line_y - 0.04, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid', lw=1)
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1-0.1, ymin=line_y - 0.04, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid', lw=1)
+            ax.text(mid_point, line_y - 0.035, p_text, ha='center', va='bottom', color=name_to_color[mvt_name], fontsize=7)
 
     if significant_added:
         line_y += y_increment
@@ -159,11 +171,11 @@ for i, mvt_name in enumerate(order):
         p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
         mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
 
-        ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 + 0.1, xmax=pos_plot[2] + i * 0.1 - 0.1, colors=colors[i],
+        ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 + 0.1, xmax=pos_plot[2] + i * 0.1 - 0.1, colors=name_to_color[mvt_name],
                   linestyles='solid', lw=1)
-        ax.vlines(x=pos_plot[0] + i * 0.1 + 0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-        ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.04, ymax=line_y, colors=colors[i], linestyles='solid', lw=1)
-        ax.text(mid_point_tl, line_y - 0.035, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
+        ax.vlines(x=pos_plot[0] + i * 0.1 + 0.1, ymin=line_y - 0.04, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid', lw=1)
+        ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.04, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid', lw=1)
+        ax.text(mid_point_tl, line_y - 0.035, p_text_tl, ha='center', va='bottom', color=name_to_color[mvt_name], fontsize=7)
 
     if significant_added:
         line_y += y_increment
@@ -178,7 +190,7 @@ for spine in ax.spines.values():
 
 plt.xticks([1.5, 5.5, 9.5], labels_x_empty)
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body_all_analysis.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/upper_body_all_analysis.svg", format='svg')
 
 
 ## Plot lower body each acrobatics
@@ -202,9 +214,9 @@ for i, mvt_name in enumerate(order):
     std_devs = filtered_data.groupby('Timing', observed=True)["lower_body"].std()
 
     plt.errorbar(x=pos_plot + i * 0.1, y=means, yerr=std_devs, fmt='o', label=name_acro,
-                 color=colors[i], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
+                 color=name_to_color[mvt_name], capsize=5, elinewidth=0.5, capthick=0.5, markersize=3)
 
-    plt.plot(pos_plot + i * 0.1, means, '-', color=colors[i], linewidth=0.75)
+    plt.plot(pos_plot + i * 0.1, means, '-', color=name_to_color[mvt_name], linewidth=0.75)
 
     significant_added = False
 
@@ -218,13 +230,13 @@ for i, mvt_name in enumerate(order):
             mid_point = (pos_plot[j] + pos_plot[j + 1]) / 2 + i * 0.1
 
             ax.hlines(y=line_y, xmin=pos_plot[j] + i * 0.1 + 0.1, xmax=pos_plot[j + 1] + i * 0.1 - 0.1,
-                      colors=colors[i],
+                      colors=name_to_color[mvt_name],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j] + i * 0.1 + 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j] + i * 0.1 + 0.1, ymin=line_y - 0.02, ymax=line_y, colors=name_to_color[mvt_name],
                       linestyles='solid', lw=1)
-            ax.vlines(x=pos_plot[j + 1] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i],
+            ax.vlines(x=pos_plot[j + 1] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=name_to_color[mvt_name],
                       linestyles='solid', lw=1)
-            ax.text(mid_point, line_y - 0.015, p_text, ha='center', va='bottom', color=colors[i], fontsize=7)
+            ax.text(mid_point, line_y - 0.015, p_text, ha='center', va='bottom', color=name_to_color[mvt_name], fontsize=7)
 
     if significant_added:
         line_y += y_increment
@@ -236,13 +248,13 @@ for i, mvt_name in enumerate(order):
         p_text_tl = "***" if p_value_tl < 0.001 else "**" if p_value_tl < 0.01 else "*"
         mid_point_tl = (pos_plot[0] + pos_plot[2]) / 2 + i * 0.1
 
-        ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 + 0.1, xmax=pos_plot[2] + i * 0.1 - 0.1, colors=colors[i],
+        ax.hlines(y=line_y, xmin=pos_plot[0] + i * 0.1 + 0.1, xmax=pos_plot[2] + i * 0.1 - 0.1, colors=name_to_color[mvt_name],
                   linestyles='solid', lw=1)
-        ax.vlines(x=pos_plot[0] + i * 0.1 + 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i], linestyles='solid',
+        ax.vlines(x=pos_plot[0] + i * 0.1 + 0.1, ymin=line_y - 0.02, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid',
                   lw=1)
-        ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=colors[i], linestyles='solid',
+        ax.vlines(x=pos_plot[2] + i * 0.1 - 0.1, ymin=line_y - 0.02, ymax=line_y, colors=name_to_color[mvt_name], linestyles='solid',
                   lw=1)
-        ax.text(mid_point_tl, line_y - 0.015, p_text_tl, ha='center', va='bottom', color=colors[i], fontsize=7)
+        ax.text(mid_point_tl, line_y - 0.015, p_text_tl, ha='center', va='bottom', color=name_to_color[mvt_name], fontsize=7)
 
     if significant_added:
         line_y += y_increment
@@ -257,19 +269,14 @@ for spine in ax.spines.values():
 plt.xticks([1.5, 5.5, 9.5], labels_x)
 plt.xlabel('Timing')
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body_all_analysis.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/lower_body_all_analysis.svg", format='svg')
 
 
-print("Statistical test for all acrobatics")
+print("\n===== Statistical test for all acrobatics (upper body) =====")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'upper_body', 'Timing')
-significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "T75"]
-significant_value_75_landing = posthoc_results_total.loc["T75", "Landing"]
-significant_value_takeoff_landing = posthoc_results_total.loc["Takeoff", "Landing"]
-
-
-
-
-
+significant_value_takeoff_75 = posthoc_results_total["P-Value"][0]
+significant_value_75_landing = posthoc_results_total["P-Value"][2]
+significant_value_takeoff_landing = posthoc_results_total["P-Value"][1]
 
 
 
@@ -333,15 +340,14 @@ for spine in ax.spines.values():
 
 plt.xticks([1, 5, 9], labels_x_empty)
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_upper_body.svg", format='svg')
 
 
-print("Statistical test for all acrobatics")
+print("\n===== Statistical test for all acrobatics (lower body) =====")
 posthoc_results_total = perform_kruskal_and_dunn(all_data, 'lower_body', 'Timing')
-significant_value_takeoff_75 = posthoc_results_total.loc["Takeoff", "T75"]
-significant_value_75_landing = posthoc_results_total.loc["T75", "Landing"]
-significant_value_takeoff_landing = posthoc_results_total.loc["Takeoff", "Landing"]
-
+significant_value_takeoff_75 = posthoc_results_total["P-Value"][0]
+significant_value_75_landing = posthoc_results_total["P-Value"][2]
+significant_value_takeoff_landing = posthoc_results_total["P-Value"][1]
 
 
 ## Lower body mean
@@ -402,6 +408,6 @@ for spine in ax.spines.values():
 plt.xticks([1, 5, 9], labels_x)
 plt.xlabel('Timing')
 plt.subplots_adjust(left=0.090, right=0.965, top=0.982, bottom=0.102)
-plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.png", dpi=1000)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/mean_lower_body.svg", format='svg')
 
 plt.show()

@@ -13,10 +13,14 @@ files = [
     '/home/lim/Documents/StageMathieu/Tab_result3/results_42_rotation.csv',
     '/home/lim/Documents/StageMathieu/Tab_result3/results_43_rotation.csv'
 ]
-
+colors = ['lightblue', 'lightgreen']
+real_mvt_name = {'41': '41/',
+                 '41o': '41o',
+                 '42': '42/',
+                 '43': '43/'}
 num_axes = 0
 
-fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+fig, axes = plt.subplots(2, 2, figsize=(10, 6))
 
 legend_added = False
 
@@ -77,22 +81,27 @@ for file in files:
     data['Expertise'] = pd.Categorical(data['Expertise'], categories=["Elite", "SubElite"], ordered=True)
 
     sns.pointplot(x='Timing', y='Std', hue='Expertise', data=data, dodge=True, markers=['o', 's'],
-                  capsize=0.1, err_kws={'linewidth': 0.5}, palette='deep', errorbar='sd',
+                  capsize=0.1, err_kws={'linewidth': 0.5}, palette=['lightblue', 'lightgreen'], errorbar='sd', color=colors,
                   ax=axes[num_axes // 2, num_axes % 2])
 
     axes[num_axes // 2, num_axes % 2].set_title(
-        f"{mvt_name}")
-    axes[num_axes // 2, num_axes % 2].set_xlabel('Timing')
-    axes[num_axes // 2, num_axes % 2].set_ylabel('Standard Deviation')
+        f"{real_mvt_name[mvt_name]}")
+    axes[num_axes // 2, num_axes % 2].set_xlabel('')
+    axes[num_axes // 2, num_axes % 2].set_ylabel(r"Pelvis orientation SDtotal ($^\circ$)")
 
-    if num_axes > 0:
+    if num_axes != 1:
         axes[num_axes // 2, num_axes % 2].get_legend().remove()
+    else:
+        axes[num_axes // 2, num_axes % 2].legend(bbox_to_anchor=(1.05, 0.5))
+
+    axes[num_axes // 2, num_axes % 2].set_xticks([0, 1, 2], [r'$T_{TO}$', r'$T_{75}$', r'$T_{LA}$'])
 
     num_axes += 1
 
 for i in range(num_axes, 4):
     fig.delaxes(axes.flatten()[i])
 
-plt.suptitle("Interaction Between Timing and Expertise on Standard Deviation")
-
+# plt.suptitle("Interaction Between Timing and Expertise on Standard Deviation")
+plt.subplots_adjust(hspace=0.3, left=0.1, right=0.85)
+plt.savefig("/home/lim/Documents/StageMathieu/meeting/pelvis_SD_vs_expertise.svg", format="svg")
 plt.show()

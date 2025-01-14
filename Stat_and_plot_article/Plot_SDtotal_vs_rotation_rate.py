@@ -12,7 +12,7 @@ list_name_for_movement = data_loaded["list_name_for_movement"]
 movement_to_analyse = np.char.strip(movement_to_analyse)
 
 with open("/home/lim/Documents/StageMathieu/Tab_result3/pelvis_omega.pkl", 'rb') as f:
-    pelvis_omega = pickle.load(f)
+    pelvis_omega, result_df = pickle.load(f)
 
 name_to_color = {
     '4-': '#1f77b4',
@@ -68,7 +68,7 @@ name_to_marker = {
 
 all_points_x = None
 all_points_y = None
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(8, 5))
 for idx_mvt, mvt in enumerate(movement_to_analyse):
     name_acro = full_name_acrobatics[mvt]
 
@@ -100,7 +100,7 @@ plt.plot(x_line, y_line, '--', color='gray', linewidth=1.5, label='Linear regres
 plt.xlabel(r"Rotation rate ($^\circ$/s)")
 plt.ylabel(r"Variability of pelvis orientation ($^\circ$)")
 plt.legend()
-plt.subplots_adjust(left=0.102, right=0.9, top=0.945, bottom=0.047)
+plt.subplots_adjust(left=0.102, right=0.9, top=0.945, bottom=0.1)
 plt.savefig(f"/home/lim/Documents/StageMathieu/pelvis_velocity_vs_SD/all.png", dpi=1000)
 # plt.show()
 

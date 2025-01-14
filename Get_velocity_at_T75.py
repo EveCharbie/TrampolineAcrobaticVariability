@@ -291,5 +291,5 @@ result_df_sorted = result_df.sort_values(by='Mean Velocity at T75')
 print(result_df_sorted)
 
 with open("/home/lim/Documents/StageMathieu/Tab_result3/pelvis_omega.pkl", 'wb') as f:
-    pickle.dump(pelvis_omega, f)
+    pickle.dump([pelvis_omega, result_df], f)
 
